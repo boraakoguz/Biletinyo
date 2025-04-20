@@ -1,0 +1,18 @@
+# ---- macOS system files ----
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon?
+._*
+
+# macOS folder custom attributes
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*.sqlite3
+*.
