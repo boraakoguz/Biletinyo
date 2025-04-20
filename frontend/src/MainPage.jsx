@@ -1,26 +1,55 @@
 import { useEffect, useState } from "react";
+import {
+  Container,
+  Typography,
+  List,
+  ListItem,
+  ListItemText,
+  CircularProgress,
+  Alert,
+} from "@mui/material";
 
 function MainPage() {
   const [applications, setApplications] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     fetch("http://localhost:8080/api/applications")
-      .then((res) => res.json())
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to fetch applications");
+        return res.json();
+      })
       .then(setApplications)
-      .catch(console.error);
+      .catch(setError)
+      .finally(() => setLoading(false));
   }, []);
 
   return (
-    <div>
-      <h1>Student Applications</h1>
-      <ul>
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4" gutterBottom>
+        Student Applications
+      </Typography>
+
+      {loading && <CircularProgress />}
+
+      {error && (
+        <Alert severity="error" sx={{ my: 2 }}>
+          {error.message}
+        </Alert>
+      )}
+
+      <List>
         {applications.map((app, index) => (
-          <li key={index}>
-            {app.sname} ({app.sid}) applied to {app.cname} ({app.cid})
-          </li>
+          <ListItem key={index} divider>
+            <ListItemText
+              primary={`${app.sname} (${app.sid})`}
+              secondary={`Applied to ${app.cname} (${app.cid})`}
+            />
+          </ListItem>
         ))}
-      </ul>
-    </div>
+      </List>
+    </Container>
   );
 }
 
