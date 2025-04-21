@@ -69,7 +69,7 @@ function MainPage() {
           <Box sx={{ flexGrow: 1, mx: 2 }}>
             <TextField
               variant="outlined"
-              placeholder="Etkinlik, sanatçı veya mekan arayın..."
+              placeholder="Etkinlik, sanatçı ya da mekan arayın..."
               size="small"
               fullWidth
               sx={{ backgroundColor: "white", borderRadius: 1 }}

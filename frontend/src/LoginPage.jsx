@@ -16,8 +16,7 @@ function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    // Simulate login request
-    await new Promise((res) => setTimeout(res, 2000)); // simulate delay
+    await new Promise((res) => setTimeout(res, 2000));
 
     console.log("Logged in with", { email, password });
     setLoading(false);
