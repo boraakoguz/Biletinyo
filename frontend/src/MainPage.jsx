@@ -289,6 +289,7 @@ function MainPage() {
                   height: 300,
                   display: "flex",
                   flexDirection: "column",
+                  boxShadow: 5,
                 }}
               >
                 <CardMedia

@@ -21,6 +21,7 @@ function LoginPage() {
     console.log("Logged in with", { email, password });
     setLoading(false);
   };
+
   return (
     <Box
       sx={{
