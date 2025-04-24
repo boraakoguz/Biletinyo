@@ -17,7 +17,7 @@ import {
 } from "@mui/material";
 
 function SignInPage() {
-  const [role, setRole] = useState("organizer");
+  const [role, setRole] = useState("attendee");
   const currentYear = new Date().getFullYear();
   const years = Array.from({ length: 80 }, (_, i) => currentYear - i - 18); // 80 years back
   const [formData, setFormData] = useState({
@@ -46,14 +46,27 @@ function SignInPage() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: "#f0f2f5",
+        backgroundColor: "#002fa7",
       }}
     >
       <Container maxWidth="md">
         <Paper elevation={3} sx={{ p: 3 }}>
           <Box textAlign="center" mb={2}>
-            <Typography variant="h4">Biletinyo</Typography>
-            <Typography variant="subtitle1">Sign In</Typography>
+            <Typography
+              variant="h1"
+              display="inline"
+              sx={{
+                fontWeight: "bold",
+                fontStyle: "italic",
+                color: "#002fa7",
+                textDecoration: "underline",
+              }}
+            >
+              Biletinyo
+            </Typography>
+            <Typography variant="h4" color="#002fa7">
+              Sign In
+            </Typography>
           </Box>
 
           <Box display="flex" justifyContent="center" mb={3}>
@@ -112,17 +125,6 @@ function SignInPage() {
               <Grid item size={6}>
                 <TextField
                   fullWidth
-                  label="Password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-              <Grid item size={6}>
-                <TextField
-                  fullWidth
                   label="Contact Number"
                   name="contact"
                   value={formData.contact}
@@ -165,6 +167,17 @@ function SignInPage() {
                   />
                 </Grid>
               )}
+              <Grid item size={6}>
+                <TextField
+                  fullWidth
+                  label="Password"
+                  name="password"
+                  type="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+              </Grid>
             </Grid>
             <Grid item size={12} sx={{ mt: 2 }}>
               <Button fullWidth type="submit" variant="contained">
