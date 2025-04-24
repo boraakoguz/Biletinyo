@@ -1,8 +1,6 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Container,
   TextField,
@@ -23,7 +21,7 @@ const exampleEvents = [
   {
     title: "Duman",
     location: "CerModern",
-    date: "02 May 2025",
+    date: "02 Mayıs 2025",
     price: "900 TL",
     image: "https://via.placeholder.com/300x180?text=Duman",
   },
@@ -62,6 +60,41 @@ const exampleEvents = [
     price: "1000 TL",
     image: "https://via.placeholder.com/300x180?text=Hadise",
   },
+  {
+    title: "Tarkan",
+    location: "İstanbul Harbiye Açıkhava",
+    date: "05 Temmuz 2025",
+    price: "1400 TL",
+    image: "https://via.placeholder.com/300x180?text=Tarkan",
+  },
+  {
+    title: "Sezen Aksu",
+    location: "Bursa Kültürpark",
+    date: "22 Haziran 2025",
+    price: "1200 TL",
+    image: "https://via.placeholder.com/300x180?text=Sezen+Aksu",
+  },
+  {
+    title: "Teoman",
+    location: "İzmir Arena",
+    date: "17 Mayıs 2025",
+    price: "750 TL",
+    image: "https://via.placeholder.com/300x180?text=Teoman",
+  },
+  {
+    title: "Zeynep Bastık",
+    location: "Antalya Açıkhava",
+    date: "08 Haziran 2025",
+    price: "900 TL",
+    image: "https://via.placeholder.com/300x180?text=Zeynep+Bastık",
+  },
+  {
+    title: "MFÖ",
+    location: "Adana Merkez Park",
+    date: "25 Haziran 2025",
+    price: "800 TL",
+    image: "https://via.placeholder.com/300x180?text=MFÖ",
+  },
 ];
 
 function MainPage() {
@@ -84,6 +117,7 @@ function MainPage() {
           boxShadow: 10,
           backgroundColor: "#002fa7",
           color: "white",
+          flexWrap: "wrap",
         }}
       >
         <Box
@@ -97,8 +131,11 @@ function MainPage() {
             px: 6,
           }}
         >
-          <Typography variant="h4">Biletinyo</Typography>
-          <Box sx={{ flexGrow: 1, mx: 5 }}>
+          <Typography variant="h4" sx={{ fontWeight: "bold" }}>
+            Quicket
+          </Typography>
+
+          <Box sx={{ flexGrow: 1, mx: 5, minWidth: 200 }}>
             <TextField
               variant="outlined"
               placeholder="Etkinlik, mekan ya da sanatçı arayın..."
@@ -146,15 +183,31 @@ function MainPage() {
           </Stack>
         </Box>
       </Box>
-      {/* Continue */}
       <Container sx={{ mt: 5 }}>
         <Stack
-          direction="row"
+          direction={{ xs: "column", sm: "row" }}
           spacing={2}
           sx={{ mb: 5 }}
           justifyContent="center"
+          alignItems="center"
         >
-          <FormControl sx={{ minWidth: 150 }}>
+          <FormControl
+            sx={{
+              minWidth: 200,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 3,
+                paddingY: 0,
+              },
+              "& .MuiSelect-select": {
+                paddingTop: "6px",
+                paddingBottom: "6px",
+                minHeight: "unset",
+              },
+              "& .MuiInputLabel-root": {
+                top: "-10px",
+              },
+            }}
+          >
             <InputLabel>Kategori</InputLabel>
             <Select label="Kategori" defaultValue="">
               <MenuItem value="">Tümü</MenuItem>
@@ -164,7 +217,24 @@ function MainPage() {
               <MenuItem value="sinema">Sinema</MenuItem>
             </Select>
           </FormControl>
-          <FormControl sx={{ minWidth: 150 }}>
+
+          <FormControl
+            sx={{
+              minWidth: 200,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 3,
+                paddingY: 0,
+              },
+              "& .MuiSelect-select": {
+                paddingTop: "6px",
+                paddingBottom: "6px",
+                minHeight: "unset",
+              },
+              "& .MuiInputLabel-root": {
+                top: "-10px",
+              },
+            }}
+          >
             <InputLabel>Tarih</InputLabel>
             <Select label="Tarih" defaultValue="">
               <MenuItem value="">Tümü</MenuItem>
@@ -173,7 +243,23 @@ function MainPage() {
               <MenuItem value="future">Bu Yıl</MenuItem>
             </Select>
           </FormControl>
-          <FormControl sx={{ minWidth: 150 }}>
+          <FormControl
+            sx={{
+              minWidth: 200,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 3,
+                paddingY: 0,
+              },
+              "& .MuiSelect-select": {
+                paddingTop: "6px",
+                paddingBottom: "6px",
+                minHeight: "unset",
+              },
+              "& .MuiInputLabel-root": {
+                top: "-10px",
+              },
+            }}
+          >
             <InputLabel>Şehir</InputLabel>
             <Select label="Şehir" defaultValue="">
               <MenuItem value="">Tümü</MenuItem>
@@ -187,7 +273,7 @@ function MainPage() {
           </FormControl>
         </Stack>
 
-        <Grid container spacing={3} justifyContent="center">
+        <Grid container spacing={3} justifyContent="left" mb={3}>
           {exampleEvents.map((event, i) => (
             <Grid item key={i}>
               <Card
@@ -207,13 +293,10 @@ function MainPage() {
                 <CardContent sx={{ flexGrow: 1 }}>
                   <Typography variant="h6">{event.title}</Typography>
                   <Typography variant="body2" color="text.secondary">
-                    {event.location} – {event.date}
+                    {event.location}
                   </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{ mt: 1, fontWeight: "bold" }}
-                  >
-                    {event.price}
+                  <Typography variant="body2" color="text.secondary">
+                    {event.date}
                   </Typography>
                 </CardContent>
               </Card>
