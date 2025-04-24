@@ -1,4 +1,5 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -61,6 +62,14 @@ const exampleEvents = [
 ];
 
 function MainPage() {
+  const navigate = useNavigate();
+
+  const handleSignInRedirect = () => {
+    navigate("/signin"); // Replace with your desired route
+  };
+  const handleLoginRedirect = () => {
+    navigate("/login"); // Replace with your desired route
+  };
   return (
     <>
       <AppBar position="fixed">
@@ -76,8 +85,14 @@ function MainPage() {
             />
           </Box>
           <Stack direction="row" spacing={1}>
-            <Button color="inherit">Üye Girişi</Button>
-            <Button color="inherit" variant="outlined">
+            <Button color="inherit" onClick={handleLoginRedirect}>
+              Üye Girişi
+            </Button>
+            <Button
+              color="inherit"
+              variant="outlined"
+              onClick={handleSignInRedirect}
+            >
               Üye Ol
             </Button>
           </Stack>
