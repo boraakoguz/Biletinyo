@@ -28,17 +28,29 @@ function LoginPage() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: " #F9FAFB",
+        backgroundColor: " #002fa7",
       }}
     >
-      <Container maxWidth="xs">
+      <Container sx={{ width: "40%" }}>
         <Paper elevation={3} sx={{ p: 4 }}>
-          <Typography variant="h4" gutterBottom align="center">
-            Biletinyo
-          </Typography>
-          <Typography variant="h5" gutterBottom align="center">
-            Login
-          </Typography>
+          <Box textAlign="center" mb={2}>
+            <Typography
+              variant="h1"
+              display="inline"
+              sx={{
+                fontWeight: "bold",
+                fontStyle: "italic",
+                color: "#002fa7",
+                textDecoration: "underline",
+              }}
+            >
+              Biletinyo
+            </Typography>
+            <Typography variant="h4" color="#002fa7">
+              Login
+            </Typography>
+          </Box>
+
           <Box
             component="form"
             sx={{ display: "flex", flexDirection: "column", gap: 2 }}
