@@ -13,7 +13,10 @@ import {
   CardMedia,
   Box,
   Stack,
-  Chip,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
 } from "@mui/material";
 
 const exampleEvents = [
@@ -65,51 +68,123 @@ function MainPage() {
   const navigate = useNavigate();
 
   const handleSignInRedirect = () => {
-    navigate("/signin"); // Replace with your desired route
+    navigate("/signin");
   };
   const handleLoginRedirect = () => {
-    navigate("/login"); // Replace with your desired route
+    navigate("/login");
   };
   return (
     <>
-      <AppBar position="fixed">
-        <Toolbar sx={{ justifyContent: "space-between" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          p: 2,
+          boxShadow: 10,
+          backgroundColor: "#002fa7",
+          color: "white",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            color: "white",
+            width: "100%",
+            maxWidth: 1000,
+            px: 6,
+          }}
+        >
           <Typography variant="h4">Biletinyo</Typography>
-          <Box sx={{ flexGrow: 1, mx: 2 }}>
+          <Box sx={{ flexGrow: 1, mx: 5 }}>
             <TextField
               variant="outlined"
-              placeholder="Etkinlik, sanatçı ya da mekan arayın..."
+              placeholder="Etkinlik, mekan ya da sanatçı arayın..."
               size="small"
               fullWidth
-              sx={{ backgroundColor: "white", borderRadius: 1 }}
+              sx={{
+                backgroundColor: "white",
+                borderRadius: 3,
+                "& .MuiOutlinedInput-root": {
+                  "& fieldset": {
+                    border: "none",
+                  },
+                },
+              }}
             />
           </Box>
           <Stack direction="row" spacing={1}>
-            <Button color="inherit" onClick={handleLoginRedirect}>
+            <Button
+              color="inherit"
+              onClick={handleLoginRedirect}
+              sx={{
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                },
+              }}
+            >
               Üye Girişi
             </Button>
             <Button
               color="inherit"
               variant="outlined"
               onClick={handleSignInRedirect}
+              sx={{
+                borderColor: "white",
+                color: "white",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+                  borderColor: "white",
+                },
+              }}
             >
               Üye Ol
             </Button>
           </Stack>
-        </Toolbar>
-      </AppBar>
-
-      <Container sx={{ mt: 10 }}>
+        </Box>
+      </Box>
+      {/* Continue */}
+      <Container sx={{ mt: 5 }}>
         <Stack
           direction="row"
           spacing={2}
-          sx={{ mb: 3 }}
+          sx={{ mb: 5 }}
           justifyContent="center"
         >
-          <Chip label="Konser" color="primary" clickable />
-          <Chip label="Tiyatro" color="primary" clickable />
-          <Chip label="Festival" color="primary" clickable />
-          <Chip label="Spor" color="primary" clickable />
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel>Kategori</InputLabel>
+            <Select label="Kategori" defaultValue="">
+              <MenuItem value="">Tümü</MenuItem>
+              <MenuItem value="konser">Konser</MenuItem>
+              <MenuItem value="tiyatro">Tiyatro</MenuItem>
+              <MenuItem value="festival">Festival</MenuItem>
+              <MenuItem value="sinema">Sinema</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel>Tarih</InputLabel>
+            <Select label="Tarih" defaultValue="">
+              <MenuItem value="">Tümü</MenuItem>
+              <MenuItem value="this-week">Bu Hafta</MenuItem>
+              <MenuItem value="this-month">Bu Ay</MenuItem>
+              <MenuItem value="future">Bu Yıl</MenuItem>
+            </Select>
+          </FormControl>
+          <FormControl sx={{ minWidth: 150 }}>
+            <InputLabel>Şehir</InputLabel>
+            <Select label="Şehir" defaultValue="">
+              <MenuItem value="">Tümü</MenuItem>
+              <MenuItem value="ankara">Ankara</MenuItem>
+              <MenuItem value="istanbul">İstanbul</MenuItem>
+              <MenuItem value="izmir">İzmir</MenuItem>
+              <MenuItem value="bursa">Bursa</MenuItem>
+              <MenuItem value="antalya">Antalya</MenuItem>
+              <MenuItem value="adana">Adana</MenuItem>
+            </Select>
+          </FormControl>
         </Stack>
 
         <Grid container spacing={3} justifyContent="center">
