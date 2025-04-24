@@ -131,8 +131,13 @@ function MainPage() {
             px: 6,
           }}
         >
-          <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-            Quicket
+          <Typography
+            variant="h4"
+            sx={{
+              textDecoration: "underline",
+            }}
+          >
+            Biletinyo
           </Typography>
 
           <Box sx={{ flexGrow: 1, mx: 5, minWidth: 200 }}>
