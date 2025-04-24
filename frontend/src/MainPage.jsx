@@ -135,6 +135,8 @@ function MainPage() {
             variant="h4"
             sx={{
               textDecoration: "underline",
+              fontWeight: "bold",
+              fontStyle: "italic",
             }}
           >
             Biletinyo
