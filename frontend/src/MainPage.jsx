@@ -15,6 +15,7 @@ import {
   InputLabel,
   MenuItem,
   Select,
+  CardActionArea,
 } from "@mui/material";
 
 const exampleEvents = [
@@ -105,6 +106,9 @@ function MainPage() {
   };
   const handleLoginRedirect = () => {
     navigate("/login");
+  };
+  const openEvent = (event) => {
+    navigate("/event", { state: event });
   };
   return (
     <>
@@ -292,21 +296,26 @@ function MainPage() {
                   boxShadow: 5,
                 }}
               >
-                <CardMedia
-                  component="img"
-                  image={event.image}
-                  alt={event.title}
-                  sx={{ height: 180, objectFit: "cover" }}
-                />
-                <CardContent sx={{ flexGrow: 1 }}>
-                  <Typography variant="h6">{event.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {event.location}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {event.date}
-                  </Typography>
-                </CardContent>
+                <CardActionArea
+                  sx={{ height: "100%" }}
+                  onClick={() => openEvent(event)}
+                >
+                  <CardMedia
+                    component="img"
+                    image={event.image}
+                    alt={event.title}
+                    sx={{ height: 180, objectFit: "cover" }}
+                  />
+                  <CardContent sx={{ flexGrow: 1 }}>
+                    <Typography variant="h6">{event.title}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {event.location}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {event.date}
+                    </Typography>
+                  </CardContent>
+                </CardActionArea>
               </Card>
             </Grid>
           ))}
