@@ -42,9 +42,13 @@ function EventPage() {
   const [selectedTicket, setSelectedTicket] = useState(null);
 
   const handlePurchase = () => {};
-  const handleComments = () => {};
-  const handleSignInRedirect = () => navigate("/signin");
-  const handleLoginRedirect = () => navigate("/login");
+  const handleComments = () => navigate("/comment", { state: { event } });
+  const handleSignInRedirect = () => {
+    navigate("/signin");
+  };
+  const handleLoginRedirect = () => {
+    navigate("/login");
+  };
 
   return (
     <>

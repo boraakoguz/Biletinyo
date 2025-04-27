@@ -4,8 +4,10 @@ import MainPage from "./MainPage";
 import SignInPage from "./SignInPage";
 import ProfilePage from "./ProfilePage";
 import EventPage from "./EventPage";
+import CommentPage from "./CommentPage";
 
 function App() {
+  // SOME MIGHT CHANGE
   return (
     <BrowserRouter>
       <Routes>
@@ -14,6 +16,7 @@ function App() {
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/event" element={<EventPage />} />
+        <Route path="/comment" element={<CommentPage />} />
       </Routes>
     </BrowserRouter>
   );
