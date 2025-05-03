@@ -19,10 +19,10 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/event" element={<EventPage />} />
-        <Route path="/comment" element={<CommentPage />} />
+        <Route path="/event/:id" element={<EventPage />} />
+        <Route path="/event/:id/comments" element={<CommentPage />} />
+        <Route path="/event/:id/seating" element={<Seating />} />
         <Route path="/guest" element={<GuestPage />} />
-        <Route path="/seating" element={<Seating />} />
         <Route path="/ticket" element={<TicketPage />} />
         <Route path="/seating" element={<Seating />} />,
         <Route path="/payment" element={<PaymentPage />} />
