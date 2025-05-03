@@ -1,64 +1,157 @@
-CREATE TABLE student (
-    sid CHAR(6) PRIMARY KEY,
-    sname VARCHAR(50) NOT NULL,
-    bdate DATE,
-    dept CHAR(2),
-    year INT,
-    gpa FLOAT
+CREATE TABLE users (
+    user_id     SERIAL PRIMARY KEY,
+    name        VARCHAR(50) NOT NULL,
+    email       VARCHAR(50) NOT NULL UNIQUE,
+    password    VARCHAR(50) NOT NULL,
+    user_type   INT NOT NULL,
+    phone       VARCHAR(15)
 );
 
-CREATE TABLE company (
-    cid CHAR(5) PRIMARY KEY,
-    cname VARCHAR(20) NOT NULL,
-    quota INT,
-    gpa_threshold FLOAT,
-    city VARCHAR(20)
+CREATE TABLE attendee (
+    user_id                 INT PRIMARY KEY,
+    attended_event_number   INT NOT NULL,
+    account_balance         DECIMAL(10,2),
+    birth_date              DATE,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
-CREATE TABLE apply (
-    app_no SERIAL PRIMARY KEY,
-    sid CHAR(6),
-    cid CHAR(5),
-    FOREIGN KEY (sid) REFERENCES student(sid),
-    FOREIGN KEY (cid) REFERENCES company(cid)
+CREATE TABLE organizer (
+    user_id             INT PRIMARY KEY,
+    organization_name   VARCHAR(100) NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
-INSERT INTO student (sid, sname, bdate, dept, year, gpa) VALUES
-('S101', 'Ali', '2005-03-11', 'CS', 2, 2.92),
-('S102', 'Veli', '2002-01-07', 'EE', 3, 3.96),
-('S103', 'Ayşe', '2004-02-12', 'IE', 1, 3.30),
-('S104', 'Mehmet', '2003-05-23', 'CS', 3, 3.07),
-('S105', 'Zeynep', '2002-11-19', 'ME', 3, 2.55);
+CREATE TABLE venue(
+    venue_id			SERIAL PRIMARY KEY,
+    capacity			INT NOT NULL, 
+    location			VARCHAR(100) NOT NULL,
+    venue_name			VARCHAR(100) NOT NULL,
+    venue_description	TEXT,
+    row_number			INT NOT NULL,
+    column_number		INT NOT NULL
+);
 
-INSERT INTO company (cid, cname, quota, gpa_threshold, city) VALUES
-('C101', 'tübitak', 10, 2.50, 'Ankara'),
-('C102', 'bist', 2, 2.80, 'Istanbul'),
-('C103', 'aselsan', 3, 3.00, 'Ankara'),
-('C104', 'thy', 5, 2.40, 'Istanbul'),
-('C105', 'milsoft', 6, 2.50, 'Ankara'),
-('C106', 'amazon', 1, 3.80, 'Palo Alto'),
-('C107', 'tai', 4, 3.00, 'Ankara'),
-('C108', 'arcelik', 5, 2.75, 'Istanbul'),
-('C109', 'siemens', 2, 2.50, 'Istanbul');
+CREATE TABLE event (
+    event_id 	 SERIAL PRIMARY KEY,
+    event_title	 VARCHAR(100) NOT NULL UNIQUE,
+    description	 TEXT,
+    event_date	 DATE NOT NULL,
+    category 	 VARCHAR(50) NOT NULL,
+    revenue	     DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    regulations	 TEXT,
+    organizer_id INT NOT NULL,
+    venue_id INT NOT NULL,
+    FOREIGN KEY (organizer_id) REFERENCES organizer(user_id),
+    FOREIGN KEY (venue_id) REFERENCES venue(venue_id)
+);
 
-INSERT INTO apply (app_no, sid, cid) VALUES
-(1, 'S101', 'C101'),
-(2, 'S101', 'C102'),
-(3, 'S101', 'C104'),
-(4, 'S101', 'C108'),
-(5, 'S101', 'C109'),
-(6, 'S102', 'C103'),
-(7, 'S102', 'C106'),
-(8, 'S102', 'C107'),
-(9, 'S103', 'C104'),
-(10, 'S103', 'C107'),
-(11, 'S103', 'C109'),
-(12, 'S104', 'C102'),
-(13, 'S104', 'C103'),
-(14, 'S104', 'C107'),
-(15, 'S104', 'C108'),
-(16, 'S104', 'C109'),
-(17, 'S105', 'C101'),
-(18, 'S105', 'C104'),
-(19, 'S105', 'C105'),
-(20, 'S105', 'C109');
+CREATE TABLE seat(
+    venue_id			INT NOT NULL,
+    seat_row			INT NOT NULL, 
+    seat_column			INT NOT NULL,
+ 	
+	PRIMARY KEY (venue_id, seat_row, seat_column),
+	FOREIGN KEY (venue_id) REFERENCES venue(venue_id)
+);
+
+CREATE TABLE ticket_category (
+    event_id          		INT NOT NULL,
+    category_name     		VARCHAR(50) NOT NULL,
+    category_capacity		INT NOT NULL,
+    price            		DECIMAL(10,2) NOT NULL,
+
+    PRIMARY KEY (event_id, category_name),
+    FOREIGN KEY (event_id) REFERENCES event(event_id)
+);
+
+CREATE TABLE ticket (
+    user_id        INT NOT NULL,
+    event_id       INT NOT NULL,
+    ticket_no      INT NOT NULL,
+    category_name  VARCHAR(50) NOT NULL,
+    PRIMARY KEY (user_id, event_id, ticket_no),
+    FOREIGN KEY (user_id) REFERENCES attendee(user_id),
+    FOREIGN KEY (event_id) REFERENCES event(event_id),
+    FOREIGN KEY (event_id, category_name) REFERENCES ticket_category(event_id, category_name)
+);
+
+CREATE TABLE comment(
+    comment_id      SERIAL PRIMARY KEY,
+    rating          INT NOT NULL, 
+    comment_title	VARCHAR(100) NOT NULL,
+    comment_text	TEXT NOT NULL,
+    comment_date	DATE NOT NULL
+);
+
+CREATE TABLE payment(
+    payment_id			SERIAL PRIMARY KEY,
+    payment_amount		DECIMAL(10,2) NOT NULL, 
+    payment_method		VARCHAR(50),
+    payment_status		VARCHAR(50) NOT NULL,
+    payment_date		DATE
+);
+
+CREATE TABLE books (
+    user_id     	INT NOT NULL,
+   	event_id    	INT NOT NULL,
+    ticket_no  	    INT NOT NULL,
+    PRIMARY KEY (user_id, event_id, ticket_no),
+   	FOREIGN KEY (user_id, event_id, ticket_no) REFERENCES ticket(user_id, event_id, ticket_no)
+);
+
+CREATE TABLE writes(
+    user_id	    INT NOT NULL,
+    comment_id	INT NOT NULL, 
+    PRIMARY KEY (user_id, comment_id),
+    FOREIGN KEY (user_id) REFERENCES attendee(user_id),
+    FOREIGN KEY (comment_id) REFERENCES comment(comment_id)
+);
+
+CREATE TABLE about(
+    comment_id  INT NOT NULL,
+    event_id    INT NOT NULL, 
+    PRIMARY KEY (comment_id, event_id),
+    FOREIGN KEY (comment_id) REFERENCES comment(comment_id),
+    FOREIGN KEY (event_id) REFERENCES event(event_id)
+);
+
+CREATE TABLE ticket_seats (
+    user_id        	INT NOT NULL,
+    event_id       	INT NOT NULL,
+    ticket_no      	INT NOT NULL,
+    venue_id       	INT NOT NULL,
+    seat_row       	INT NOT NULL,
+    seat_column   	INT NOT NULL,
+    PRIMARY KEY (user_id, event_id, ticket_no, venue_id, seat_row, seat_column),
+    FOREIGN KEY (user_id, event_id, ticket_no) REFERENCES ticket(user_id, event_id, ticket_no),
+    FOREIGN KEY (venue_id, seat_row, seat_column) REFERENCES seat(venue_id, seat_row, seat_column)
+);
+
+CREATE TABLE payments_of (
+    payment_id   	INT NOT NULL,
+    user_id      	INT NOT NULL,
+    event_id     	INT NOT NULL,
+    ticket_no    	INT NOT NULL,
+    PRIMARY KEY (payment_id, user_id, event_id, ticket_no),
+    FOREIGN KEY (payment_id) REFERENCES payment(payment_id),
+    FOREIGN KEY (user_id, event_id, ticket_no) REFERENCES ticket(user_id, event_id, ticket_no)
+);
+
+CREATE TABLE ticket_guest (
+    user_id     INT NOT NULL,
+    event_id    INT NOT NULL,
+    ticket_no   INT NOT NULL,
+    guest_no    INT NOT NULL,
+    guest_name  VARCHAR(100),
+    guest_mail  VARCHAR(100),
+    guest_phone VARCHAR(20),
+    guest_age   INT,
+    PRIMARY KEY (user_id, event_id, ticket_no, guest_no),
+    FOREIGN KEY (user_id, event_id, ticket_no)
+    REFERENCES ticket(user_id, event_id, ticket_no)
+);
+
+INSERT INTO users (name, email, password, user_type, phone) VALUES
+('Alice Johnson', 'alice@example.com', 'hashed_pass1', 0, '555-1234'),
+('Bob Smith', 'bob@example.com', 'hashed_pass2', 1, '555-5678'),
+('Charlie Brown', 'charlie@example.com', 'hashed_pass3', 0, '555-8765');
