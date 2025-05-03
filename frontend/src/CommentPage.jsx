@@ -46,6 +46,20 @@ function CommentPage() {
   const handleSignInRedirect = () => navigate("/signin");
   const handleLoginRedirect = () => navigate("/login");
 
+  const timeString =
+    event.time ||
+    (event.datetime &&
+      new Date(event.datetime).toLocaleTimeString("tr-TR", {
+        hour: "2-digit",
+        minute: "2-digit",
+      })) ||
+    "HH:MM";
+
+  const dateString =
+    event.date ||
+    (event.datetime && new Date(event.datetime).toLocaleDateString("tr-TR")) ||
+    "DD/MM/YYYY";
+
   return (
     <>
       <Box
@@ -84,7 +98,7 @@ function CommentPage() {
           <Box sx={{ flexGrow: 1, mx: 5, minWidth: 200 }}>
             <TextField
               variant="outlined"
-              placeholder="Arama yapmak için bu sayfadan çıkın..."
+              placeholder="Arama yapmak için bu etkinlikten çıkın..."
               size="small"
               disabled
               fullWidth
@@ -126,22 +140,45 @@ function CommentPage() {
         </Box>
       </Box>
 
-      <Box sx={{ p: 3, display: "flex", justifyContent: "center" }}>
-        <Card sx={{ width: "100%", maxWidth: 1000, p: 3, boxShadow: 5 }}>
+      <Box sx={{ p: 3, mt: 8, display: "flex", justifyContent: "center" }}>
+        <Card
+          sx={{
+            width: "100%",
+            maxWidth: 1200,
+            p: 4,
+            boxShadow: 5,
+            minHeight: 550,
+          }}
+        >
+          <Box sx={{ mb: 2 }}>
+            <Typography variant="h5" fontWeight={700} gutterBottom>
+              {event.title}
+            </Typography>
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              sx={{ mt: 0.5 }}
+            >
+              {timeString} • {dateString} • {event.location ?? "Null Venue"}
+            </Typography>
+          </Box>
+
           <Stack
             direction="row"
-            justifyContent="space-between"
+            justifyContent="right"
             alignItems="center"
+            spacing={1}
+            sx={{ mb: 3 }}
           >
-            <Typography variant="h6">{event.title}</Typography>
+            <Typography variant="h8">Overall Rating</Typography>
             <Stack direction="row" spacing={1} alignItems="center">
               <Rating value={average} precision={0.5} readOnly />
-              <Typography>Rating: {average.toFixed(1)}/5</Typography>
+              <Typography>{average.toFixed(1)}/5</Typography>
             </Stack>
           </Stack>
 
-          <Box sx={{ mt: 4, display: "flex", gap: 2 }}>
-            <Box sx={{ minWidth: 260 }}>
+          <Box sx={{ display: "flex", gap: 3 }}>
+            <Box sx={{ minWidth: 280 }}>
               <Typography fontWeight={600} mb={1}>
                 Leave a Comment
               </Typography>
@@ -170,7 +207,7 @@ function CommentPage() {
             <Box
               sx={{
                 flexGrow: 1,
-                maxHeight: 300,
+                maxHeight: 350,
                 overflowY: "auto",
                 pl: 1,
               }}

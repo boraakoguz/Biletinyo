@@ -154,7 +154,7 @@ function EventPage() {
                   divider={<span style={{ opacity: 0.25 }}>•</span>}
                   sx={{ mb: 1, fontWeight: 500 }}
                 >
-                  <Typography>{event.time ?? "19.00"}</Typography>
+                  <Typography>{event.time ?? "TT.TT"}</Typography>
                   <Typography>{event.date}</Typography>
                   <Typography>{event.location}</Typography>
                   <Typography>{event.city ?? "Ankara"}</Typography>
