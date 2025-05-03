@@ -23,8 +23,8 @@ function App() {
         <Route path="/event/:id/comments" element={<CommentPage />} />
         <Route path="/event/:id/seating" element={<Seating />} />
         <Route path="/guest" element={<GuestPage />} />
-        <Route path="/ticket" element={<TicketPage />} />
-        <Route path="/seating" element={<Seating />} />,
+        <Route path="/ticket/:id" element={<TicketPage />} />
+        <Route path="/seating" element={<Seating />} />
         <Route path="/payment" element={<PaymentPage />} />
       </Routes>
     </BrowserRouter>
