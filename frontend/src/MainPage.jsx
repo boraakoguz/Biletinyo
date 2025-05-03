@@ -20,6 +20,7 @@ import {
 
 const exampleEvents = [
   {
+    id: 1,
     title: "Duman",
     location: "CerModern",
     date: "02 Mayıs 2025",
@@ -28,6 +29,7 @@ const exampleEvents = [
     time: "20.00",
   },
   {
+    id: 2,
     title: "Ajda Pekkan",
     location: "Oran Açıkhava",
     date: "20 Haziran 2025",
@@ -36,76 +38,13 @@ const exampleEvents = [
     time: "19.00",
   },
   {
+    id: 3,
     title: "Yaşar",
     location: "ODTÜ MD",
     date: "31 Mayıs 2025",
     price: "700 TL",
     image: "https://via.placeholder.com/300x180?text=Yaşar",
     time: "19.00",
-  },
-  {
-    title: "Mahmut Orhan",
-    location: "Garden Music Hall",
-    date: "01 Haziran 2025",
-    price: "850 TL",
-    image: "https://via.placeholder.com/300x180?text=Mahmut+Orhan",
-    time: "19.00",
-  },
-  {
-    title: "Edis",
-    location: "Ankara Arena",
-    date: "15 Mayıs 2025",
-    price: "950 TL",
-    image: "https://via.placeholder.com/300x180?text=Edis",
-    time: "19.00",
-  },
-  {
-    title: "Hadise",
-    location: "Next Level AVM",
-    date: "28 Mayıs 2025",
-    price: "1000 TL",
-    image: "https://via.placeholder.com/300x180?text=Hadise",
-    time: "19.00",
-  },
-  {
-    title: "Tarkan",
-    location: "İstanbul Harbiye Açıkhava",
-    date: "05 Temmuz 2025",
-    price: "1400 TL",
-    image: "https://via.placeholder.com/300x180?text=Tarkan",
-    time: "19.00",
-  },
-  {
-    title: "Sezen Aksu",
-    location: "Bursa Kültürpark",
-    date: "22 Haziran 2025",
-    price: "1200 TL",
-    image: "https://via.placeholder.com/300x180?text=Sezen+Aksu",
-    time: "19.00",
-  },
-  {
-    title: "Teoman",
-    location: "İzmir Arena",
-    date: "17 Mayıs 2025",
-    price: "750 TL",
-    image: "https://via.placeholder.com/300x180?text=Teoman",
-    time: "19.00",
-  },
-  {
-    title: "Zeynep Bastık",
-    location: "Antalya Açıkhava",
-    date: "08 Haziran 2025",
-    price: "900 TL",
-    image: "https://via.placeholder.com/300x180?text=Zeynep+Bastık",
-    time: "19.00",
-  },
-  {
-    title: "MFÖ",
-    location: "Adana Merkez Park",
-    date: "25 Haziran 2025",
-    price: "800 TL",
-    image: "https://via.placeholder.com/300x180?text=MFÖ",
-    time: "20.00",
   },
 ];
 
@@ -119,7 +58,7 @@ function MainPage() {
     navigate("/login");
   };
   const openEvent = (event) => {
-    navigate("/event", { state: event });
+    navigate(`/event/${event.id}`, { state: { event } });
   };
   return (
     <>
