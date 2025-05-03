@@ -5,6 +5,7 @@ import SignInPage from "./SignInPage";
 import ProfilePage from "./ProfilePage";
 import EventPage from "./EventPage";
 import CommentPage from "./CommentPage";
+import GuestPage from "./GuestPage";
 
 function App() {
   // SOME MIGHT CHANGE
@@ -17,6 +18,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/event" element={<EventPage />} />
         <Route path="/comment" element={<CommentPage />} />
+        <Route path="/guest" element={<GuestPage />} />
       </Routes>
     </BrowserRouter>
   );
