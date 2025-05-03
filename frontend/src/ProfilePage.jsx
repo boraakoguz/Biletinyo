@@ -36,38 +36,9 @@ function ProfilePage() {
       guest: 3,
     },
   ];
-  const slides = [
-    {
-      image:
-        "https://thumbs.dreamstime.com/b/rock-concert-large-group-happy-people-enjoying-clapping-raised-up-hands-blue-lights-stage-new-year-celebration-46521228.jpg",
-    },
-    {
-      image:
-        "https://images.pexels.com/photos/167636/pexels-photo-167636.jpeg?cs=srgb&dl=pexels-thibault-trillet-44912-167636.jpg&fm=jpg",
-    },
-  ];
-  const [slideIndex, setSlideIndex] = useState(0);
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setSlideIndex((prev) => (prev + 1) % slides.length);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [slides.length]);
 
   return (
-    <Box position="relative">
-      <Box
-        sx={{
-          position: "fixed",
-          inset: 0,
-          backgroundImage: `url(${slides[slideIndex].image})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          transition: "background-image 1s ease-in-out",
-          zIndex: -1,
-        }}
-      />
+    <Box position="relative" sx={{ backgroundColor: "gray" }}>
       <Grid container spacing={0} sx={{ height: "80%" }}>
         <Grid
           size={4}
