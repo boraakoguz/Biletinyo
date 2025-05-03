@@ -25,6 +25,7 @@ const exampleEvents = [
     date: "02 Mayıs 2025",
     price: "900 TL",
     image: "https://via.placeholder.com/300x180?text=Duman",
+    time: "20.00",
   },
   {
     title: "Ajda Pekkan",
@@ -32,6 +33,7 @@ const exampleEvents = [
     date: "20 Haziran 2025",
     price: "1100 TL",
     image: "https://via.placeholder.com/300x180?text=Ajda+Pekkan",
+    time: "19.00",
   },
   {
     title: "Yaşar",
@@ -39,6 +41,7 @@ const exampleEvents = [
     date: "31 Mayıs 2025",
     price: "700 TL",
     image: "https://via.placeholder.com/300x180?text=Yaşar",
+    time: "19.00",
   },
   {
     title: "Mahmut Orhan",
@@ -46,6 +49,7 @@ const exampleEvents = [
     date: "01 Haziran 2025",
     price: "850 TL",
     image: "https://via.placeholder.com/300x180?text=Mahmut+Orhan",
+    time: "19.00",
   },
   {
     title: "Edis",
@@ -53,6 +57,7 @@ const exampleEvents = [
     date: "15 Mayıs 2025",
     price: "950 TL",
     image: "https://via.placeholder.com/300x180?text=Edis",
+    time: "19.00",
   },
   {
     title: "Hadise",
@@ -60,6 +65,7 @@ const exampleEvents = [
     date: "28 Mayıs 2025",
     price: "1000 TL",
     image: "https://via.placeholder.com/300x180?text=Hadise",
+    time: "19.00",
   },
   {
     title: "Tarkan",
@@ -67,6 +73,7 @@ const exampleEvents = [
     date: "05 Temmuz 2025",
     price: "1400 TL",
     image: "https://via.placeholder.com/300x180?text=Tarkan",
+    time: "19.00",
   },
   {
     title: "Sezen Aksu",
@@ -74,6 +81,7 @@ const exampleEvents = [
     date: "22 Haziran 2025",
     price: "1200 TL",
     image: "https://via.placeholder.com/300x180?text=Sezen+Aksu",
+    time: "19.00",
   },
   {
     title: "Teoman",
@@ -81,6 +89,7 @@ const exampleEvents = [
     date: "17 Mayıs 2025",
     price: "750 TL",
     image: "https://via.placeholder.com/300x180?text=Teoman",
+    time: "19.00",
   },
   {
     title: "Zeynep Bastık",
@@ -88,6 +97,7 @@ const exampleEvents = [
     date: "08 Haziran 2025",
     price: "900 TL",
     image: "https://via.placeholder.com/300x180?text=Zeynep+Bastık",
+    time: "19.00",
   },
   {
     title: "MFÖ",
@@ -95,6 +105,7 @@ const exampleEvents = [
     date: "25 Haziran 2025",
     price: "800 TL",
     image: "https://via.placeholder.com/300x180?text=MFÖ",
+    time: "20.00",
   },
 ];
 
