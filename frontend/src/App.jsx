@@ -7,6 +7,7 @@ import EventPage from "./EventPage";
 import CommentPage from "./CommentPage";
 import GuestPage from "./GuestPage";
 import Seating from "./Seating";
+import TicketPage from "./TicketPage";
 import PaymentPage from "./PaymentPage";
 
 function App() {
@@ -21,6 +22,8 @@ function App() {
         <Route path="/event" element={<EventPage />} />
         <Route path="/comment" element={<CommentPage />} />
         <Route path="/guest" element={<GuestPage />} />
+        <Route path="/seating" element={<Seating />} />
+        <Route path="/ticket" element={<TicketPage />} />
         <Route path="/seating" element={<Seating />} />,
         <Route path="/payment" element={<PaymentPage />} />
       </Routes>
