@@ -7,6 +7,7 @@ import EventPage from "./EventPage";
 import CommentPage from "./CommentPage";
 import GuestPage from "./GuestPage";
 import Seating from "./Seating";
+import TicketPage from "./TicketPage";
 
 function App() {
   // SOME MIGHT CHANGE
@@ -21,6 +22,7 @@ function App() {
         <Route path="/comment" element={<CommentPage />} />
         <Route path="/guest" element={<GuestPage />} />
         <Route path="/seating" element={<Seating />} />
+        <Route path="/ticket" element={<TicketPage />} />
       </Routes>
     </BrowserRouter>
   );
