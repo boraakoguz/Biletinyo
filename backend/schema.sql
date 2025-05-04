@@ -41,6 +41,7 @@ CREATE TABLE event (
     regulations	 TEXT,
     organizer_id INT NOT NULL,
     venue_id INT NOT NULL,
+    image_ids INT[],
     FOREIGN KEY (organizer_id) REFERENCES organizer(user_id),
     FOREIGN KEY (venue_id) REFERENCES venue(venue_id)
 );
