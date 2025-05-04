@@ -13,11 +13,15 @@ import {
   Button,
 } from "@mui/material";
 
+import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
 
 function ProfilePage() {
+  const navigate = useNavigate();
+  const viewTicket = (ticketId) => navigate(`/ticket/${ticketId}`);
   const rows = [
     {
+      id: "101",
       image:
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9rPoOy-JnLdYc9O8BubM4URYh_N8BNOO8hQ&s",
       name: "BOOM CONCERT",
@@ -27,6 +31,7 @@ function ProfilePage() {
       guest: 2,
     },
     {
+      id: "102",
       image:
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKpMysp9ltSCrNetbD7nYWn2N3NNPl97nZyg&s",
       name: "YALIN",
@@ -204,7 +209,12 @@ function ProfilePage() {
                         <Typography>Guest Number: {row.guest}</Typography>
                       </TableCell>
                       <TableCell align="right" width={"10%"}>
-                        <Button variant="outlined">View Ticket</Button>
+                        <Button
+                          variant="outlined"
+                          onClick={() => viewTicket(row.id)}
+                        >
+                          View Ticket
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}

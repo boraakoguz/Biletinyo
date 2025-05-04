@@ -27,7 +27,7 @@ function SignInPage() {
     password: "",
     contact: "",
     organization: "",
-    birthYear: 0,
+    birthDate: 0,
   });
 
   const handleChange = (e) => {
@@ -134,24 +134,18 @@ function SignInPage() {
               </Grid>
 
               {role === "attendee" && (
-                <Grid item size={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Birth Year</InputLabel>
-                    <Select
-                      id="birth-year"
-                      name="birthYear"
-                      value={formData.birthYear}
-                      label="Birth Year"
-                      onChange={handleChange}
-                      required
-                    >
-                      {years.map((year) => (
-                        <MenuItem key={year} value={year}>
-                          {year}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
+                <Grid item xs={6}>
+                  <TextField
+                    fullWidth
+                    type="date"
+                    id="birth-date"
+                    name="birthDate"
+                    label="Birth Date"
+                    InputLabelProps={{ shrink: true }}
+                    value={formData.birthDate}
+                    onChange={handleChange}
+                    required
+                  />
                 </Grid>
               )}
 
