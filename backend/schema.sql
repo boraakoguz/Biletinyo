@@ -41,6 +41,7 @@ CREATE TABLE event (
     regulations	 TEXT,
     organizer_id INT NOT NULL,
     venue_id INT NOT NULL,
+    image_ids INT[],
     FOREIGN KEY (organizer_id) REFERENCES organizer(user_id),
     FOREIGN KEY (venue_id) REFERENCES venue(venue_id)
 );
@@ -155,3 +156,40 @@ INSERT INTO users (name, email, password, user_type, phone) VALUES
 ('Alice Johnson', 'alice@example.com', 'hashed_pass1', 0, '555-1234'),
 ('Bob Smith', 'bob@example.com', 'hashed_pass2', 1, '555-5678'),
 ('Charlie Brown', 'charlie@example.com', 'hashed_pass3', 0, '555-8765');
+
+
+INSERT INTO organizer (user_id, organization_name)
+VALUES
+  (1, 'Duman Productions'),
+  (2, 'Bora Productions');
+
+
+INSERT INTO venue (capacity, location, venue_name, venue_description, row_number, column_number)
+VALUES
+  (5000, 'Congresium',   'Main Hall',      'Indoor concert hall', 50, 100),
+  (1000, 'City Park',     'Open-Air Stage', 'Outdoor amphitheater', 20,  30);
+
+
+INSERT INTO event
+  (event_title, description, event_date, category, revenue, regulations, organizer_id, venue_id)
+VALUES
+  (
+    'Rock Concert – Duman',
+    'Legendary Turkish rock band Duman will perform their greatest hits live.',
+    '2025-05-02',
+    'Music',
+    85000.00,
+    'No outside food or drinks. Bags will be searched at entrance.',
+    1,  
+    1  
+  ),
+  (
+    'Ajda Pekkan Open-Air',
+    'The superstar returns to the stage with a spectacular open-air show.',
+    '2025-06-20',
+    'Music',
+    120000.00,
+    'Event is 18+. ID required at the gate.',
+    2,  
+    2   
+  );

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Typography,
@@ -12,45 +12,45 @@ import {
   Box,
   Stack,
   FormControl,
+  CircularProgress,
   InputLabel,
   MenuItem,
   Select,
   CardActionArea,
 } from "@mui/material";
 
-const exampleEvents = [
-  {
-    id: 1,
-    title: "Duman",
-    location: "CerModern",
-    date: "02 Mayıs 2025",
-    price: "900 TL",
-    image: "https://via.placeholder.com/300x180?text=Duman",
-    time: "20.00",
-  },
-  {
-    id: 2,
-    title: "Ajda Pekkan",
-    location: "Oran Açıkhava",
-    date: "20 Haziran 2025",
-    price: "1100 TL",
-    image: "https://via.placeholder.com/300x180?text=Ajda+Pekkan",
-    time: "19.00",
-  },
-  {
-    id: 3,
-    title: "Yaşar",
-    location: "ODTÜ MD",
-    date: "31 Mayıs 2025",
-    price: "700 TL",
-    image: "https://via.placeholder.com/300x180?text=Yaşar",
-    time: "19.00",
-  },
-];
-
 function MainPage() {
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState([]);
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/events/");
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        const data = await res.json();
+        console.log("Fetched events:", data);
+        setEvents(data);
+      } catch (err) {
+        console.error("Error loading events:", err);
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchEvents();
+  }, []);
+
+  if (loading) {
+    return (
+      <Box sx={{ mt: 10, textAlign: "center" }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
   const handleSignInRedirect = () => {
     navigate("/signin");
   };
@@ -58,8 +58,9 @@ function MainPage() {
     navigate("/login");
   };
   const openEvent = (event) => {
-    navigate(`/event/${event.id}`, { state: { event } });
+    navigate(`/event/${event.event_id}`, { state: { event } });
   };
+
   return (
     <>
       <Box
@@ -235,7 +236,7 @@ function MainPage() {
         </Stack>
 
         <Grid container spacing={3} justifyContent="left" mb={3}>
-          {exampleEvents.map((event, i) => (
+          {events.map((event, i) => (
             <Grid item key={i}>
               <Card
                 sx={{
@@ -257,12 +258,12 @@ function MainPage() {
                     sx={{ height: 180, objectFit: "cover" }}
                   />
                   <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography variant="h6">{event.title}</Typography>
+                    <Typography variant="h6">{event.event_title}</Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {event.location}
+                      {event.venue_name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {event.date}
+                      {event.event_date}
                     </Typography>
                   </CardContent>
                 </CardActionArea>
