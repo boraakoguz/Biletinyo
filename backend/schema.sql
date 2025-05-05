@@ -191,3 +191,56 @@ VALUES
     2,  
     2   
   );
+
+INSERT INTO attendee (user_id, attended_event_number, account_balance, birth_date) VALUES
+(1, 3, 120.00, '1995-06-15'),
+(3, 1, 60.50, '2000-09-30');
+
+INSERT INTO seat (venue_id, seat_row, seat_column) VALUES
+(1, 1, 1), (1, 1, 2), (1, 2, 1), (1, 2, 2),
+(2, 1, 1), (2, 1, 2), (2, 2, 1), (2, 2, 2);
+
+INSERT INTO ticket_category (event_id, category_name, category_capacity, price) VALUES
+(1, 'VIP', 100, 500.00),
+(1, 'General', 400, 150.00),
+(2, 'VIP', 50, 600.00),
+(2, 'General', 300, 200.00);
+
+INSERT INTO ticket (user_id, event_id, ticket_no, category_name) VALUES
+(1, 1, 1, 'VIP'),
+(3, 1, 1, 'General'),
+(3, 2, 1, 'VIP');
+
+INSERT INTO comment (rating, comment_title, comment_text, comment_date) VALUES
+(5, 'Amazing concert!', 'Loved the atmosphere and sound quality.', '2025-05-03'),
+(4, 'Great performance', 'Ajda was spectacular but the seats were uncomfortable.', '2025-06-21');
+
+INSERT INTO writes (user_id, comment_id) VALUES
+(1, 1),
+(3, 2);
+
+INSERT INTO about (comment_id, event_id) VALUES
+(1, 1),
+(2, 2);
+
+INSERT INTO payment (payment_amount, payment_method, payment_status, payment_date) VALUES
+(500.00, 'Credit Card', 'Completed', '2025-04-30'),
+(200.00, 'PayPal', 'Completed', '2025-06-18');
+
+INSERT INTO books (user_id, event_id, ticket_no) VALUES
+(1, 1, 1),
+(3, 2, 1);
+
+INSERT INTO ticket_seats (user_id, event_id, ticket_no, venue_id, seat_row, seat_column) VALUES
+(1, 1, 1, 1, 1, 1),
+(3, 1, 1, 1, 2, 2),
+(3, 2, 1, 2, 1, 1);
+
+INSERT INTO payments_of (payment_id, user_id, event_id, ticket_no) VALUES
+(1, 1, 1, 1),
+(2, 3, 2, 1);
+
+INSERT INTO ticket_guest (user_id, event_id, ticket_no, guest_no, guest_name, guest_mail, guest_phone, guest_age) VALUES
+(3, 1, 1, 1, 'John Doe', 'john@example.com', '555-4444', 28),
+(3, 2, 1, 1, 'Jane Smith', 'jane@example.com', '555-8888', 32);
+

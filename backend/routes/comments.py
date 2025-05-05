@@ -14,3 +14,5 @@ def get_comments():
         return jsonify([{"rating": e[0], "comment_title": e[1], "comment_text": e[2], "comment_date": e[3]} for e in comments])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+#POST COMMENT
