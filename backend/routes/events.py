@@ -25,7 +25,7 @@ def get_events():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-# APIs do not get image_ids
+# API'S DO NOT GET IMAGES, FIX LATER
     
 @bp.route("/<int:event_id>", methods=["GET"])
 def get_event_by_id(event_id):
