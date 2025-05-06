@@ -9,6 +9,7 @@ import GuestPage from "./GuestPage";
 import Seating from "./Seating";
 import TicketPage from "./TicketPage";
 import PaymentPage from "./PaymentPage";
+import CreateEvent from "./Organizer/CreateEvent";
 
 function App() {
   // SOME MIGHT CHANGE
@@ -26,6 +27,7 @@ function App() {
         <Route path="/ticket/:id" element={<TicketPage />} />
         <Route path="/seating" element={<Seating />} />
         <Route path="/payment" element={<PaymentPage />} />
+        <Route path="/create" element={<CreateEvent />} />
       </Routes>
     </BrowserRouter>
   );

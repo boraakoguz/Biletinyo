@@ -16,7 +16,6 @@ def get_users():
     finally:
         if conn:
             db_pool.putconn(conn)
-
     
 @bp.route("/<int:user_id>", methods=["GET"])
 def get_user_by_id(user_id):

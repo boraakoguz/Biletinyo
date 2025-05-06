@@ -2,16 +2,16 @@ CREATE TABLE users (
     user_id     SERIAL PRIMARY KEY,
     name        VARCHAR(50) NOT NULL,
     email       VARCHAR(50) NOT NULL UNIQUE,
-    password    VARCHAR(50) NOT NULL,
+    password    VARCHAR(60) NOT NULL,
     user_type   INT NOT NULL,
-    phone       VARCHAR(15)
+    phone       VARCHAR(15),
+    birth_date  DATE
 );
 
 CREATE TABLE attendee (
     user_id                 INT PRIMARY KEY,
     attended_event_number   INT NOT NULL,
     account_balance         DECIMAL(10,2),
-    birth_date              DATE,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
@@ -153,10 +153,10 @@ CREATE TABLE ticket_guest (
     REFERENCES ticket(user_id, event_id, ticket_no)
 );
 
-INSERT INTO users (name, email, password, user_type, phone) VALUES
-('Alice Johnson', 'alice@example.com', 'hashed_pass1', 0, '555-1234'),
-('Bob Smith', 'bob@example.com', 'hashed_pass2', 1, '555-5678'),
-('Charlie Brown', 'charlie@example.com', 'hashed_pass3', 0, '555-8765');
+INSERT INTO users (name, email, password, user_type, phone, birth_date) VALUES
+('User johnson', 'user@user.com', '$2b$12$KKprei.9FfMVomfUWlYYAu8icc7TS58KesyN11GQpI.2eYteMWUXC', 0, '555-1234', '1995-06-15'),
+('Organizer Smith', 'org@org.com', '$2b$12$mGapQFzDalequVp3S7GZpOp8NZbghmNmlMsD4wusmo76lKQQjI4CG', 1, '555-5678', '2000-06-15'),
+('Ege Babs', 'ege@gmail.com', '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-8765', '2015-06-15');
 
 
 INSERT INTO organizer (user_id, organization_name)
@@ -193,8 +193,8 @@ VALUES
     2   
   );
 
-INSERT INTO attendee (user_id, attended_event_number, account_balance, birth_date) VALUES
-(1, 3, 120.00, '1995-06-15'),
+INSERT INTO attendee (user_id, attended_event_number, account_balance) VALUES
+(1, 3, 120.00),
 (3, 1, 60.50, '2000-09-30');
 
 INSERT INTO seat (venue_id, seat_row, seat_column) VALUES
