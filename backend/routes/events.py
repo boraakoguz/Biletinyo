@@ -4,7 +4,7 @@ from database import db_pool
 bp = Blueprint("events", __name__)
     
 @bp.route("/", methods=["GET"])
-def get_events_by_filtering():
+def get_events():
     category    = request.args.get("category")
     event_date  = request.args.get("date")
     city        = request.args.get("city")

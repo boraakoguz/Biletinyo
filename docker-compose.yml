@@ -4,7 +4,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     ports:
-      - "5173:5173" 
+      - "5173:5173"
     networks:
       - Biletinyo
     depends_on:
@@ -22,7 +22,7 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     ports:
-      - "8080:8080"  
+      - "8080:8080"
     networks:
       - Biletinyo
     depends_on:
@@ -42,7 +42,7 @@ services:
           ignore:
             - bin
             - obj
-    
+
   postgres:
     image: postgres:15
     container_name: postgres
@@ -61,7 +61,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U user -d postgres"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
     volumes:
       - ./backend/schema.sql:/docker-entrypoint-initdb.d/schema.sql
     networks:
