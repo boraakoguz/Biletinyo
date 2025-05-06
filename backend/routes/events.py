@@ -25,8 +25,12 @@ def get_events():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-@bp.route("/<string:category>/<string:event_date>/<string:city>", methods=["GET"])
-def get_events_by_filtering(category, event_date, city):
+# FIX THE API, NEED TO GIVE ALL PARAMS
+@bp.route("/", methods=["GET"])
+def get_events_by_filtering():
+    category = request.args.get("category")
+    event_date = request.args.get("date")
+    city = request.args.get("city")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -50,15 +54,16 @@ def get_events_by_filtering(category, event_date, city):
         if conn:
             db_pool.putconn(conn)    
     
-@bp.route("/<int:event_id>", methods=["GET"])
-def get_event_by_id(event_id):
+@bp.route("/", methods=["GET"])
+def get_event_by_id():
+    event_id = request.args.get("event_id")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT 
                     e.event_id, e.event_title, e.description, DATE(e.event_date) AS event_date, 
-    TO_CHAR(e.event_date, 'HH24:MI') AS event_time, e.category, 
+                    TO_CHAR(e.event_date, 'HH24:MI') AS event_time, e.category, 
                     e.revenue, e.regulations, e.organizer_id, e.venue_id,
                     v.venue_name, v.city, v.location
                 FROM event e
@@ -87,8 +92,9 @@ def get_event_by_id(event_id):
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/<int:event_id>", methods=["DELETE"])
-def delete_event_by_id(event_id):
+@bp.route("/", methods=["DELETE"])
+def delete_event_by_id():
+    event_id = request.args.get("event_id")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -101,8 +107,17 @@ def delete_event_by_id(event_id):
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/<string:event_title>/<string:description>/<string:event_date>/<int:category>/<float:revenue>/<string:regulations>/<int:organizer_id>/<int:venue_id>", methods=["POST"])
-def post_event(event_title, description, event_date, category, revenue, regulations, organizer_id, venue_id):
+@bp.route("/", methods=["POST"])
+def post_event():
+    data = request.get_json()
+    event_title = data.get("event_title")
+    description = data.get("description")
+    event_date = data.get("event_date")
+    category = data.get("category")
+    revenue = data.get("revenue", 0.0)
+    regulations = data.get("regulations")
+    organizer_id = data.get("organizer_id")
+    venue_id = data.get("venue_id")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -116,8 +131,18 @@ def post_event(event_title, description, event_date, category, revenue, regulati
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/<int:event_id>/<string:event_title>/<string:description>/<string:event_date>/<int:category>/<float:revenue>/<string:regulations>/<int:organizer_id>/<int:venue_id>", methods=["PUT"])
-def put_event_by_id(event_id, event_title, description, event_date, category, revenue, regulations, organizer_id, venue_id):
+@bp.route("/", methods=["PUT"])
+def put_event_by_id():
+    data = request.get_json()
+    event_id = data.get("event_id")
+    event_title = data.get("event_title")
+    description = data.get("description")
+    event_date = data.get("event_date")
+    category = data.get("category")
+    revenue = data.get("revenue", 0.0)
+    regulations = data.get("regulations")
+    organizer_id = data.get("organizer_id")
+    venue_id = data.get("venue_id")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:

@@ -18,8 +18,9 @@ def get_users():
             db_pool.putconn(conn)
 
     
-@bp.route("/<int:user_id>", methods=["GET"])
-def get_user_by_id(user_id):
+@bp.route("/", methods=["GET"])
+def get_user_by_id():
+    user_id = request.args.get("user_id")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -32,8 +33,9 @@ def get_user_by_id(user_id):
         if conn:
             db_pool.putconn(conn)
     
-@bp.route("/<int:user_id>", methods=["DELETE"])
-def delete_user_by_id(user_id):
+@bp.route("/", methods=["DELETE"])
+def delete_user_by_id():
+    user_id = request.args.get("user_id")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -46,8 +48,14 @@ def delete_user_by_id(user_id):
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/<string:name>/<string:email>/<string:password>/<int:user_type>/<string:phone>", methods=["POST"])
-def post_user_by_id(name, email, password, user_type, phone):
+@bp.route("/", methods=["POST"])
+def post_user():
+    data = request.get_json()
+    name = data.get("name")
+    email = data.get("email")
+    password = data.get("password")
+    user_type = data.get("user_type")
+    phone = data.get("phone")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -61,8 +69,15 @@ def post_user_by_id(name, email, password, user_type, phone):
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/<int:user_id>/<string:name>/<string:email>/<string:password>/<int:user_type>/<string:phone>", methods=["PUT"])
-def put_user_by_id(user_id, name, email, password, user_type, phone):
+@bp.route("/", methods=["PUT"])
+def put_user_by_id():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    name = data.get("name")
+    email = data.get("email")
+    password = data.get("password")
+    user_type = data.get("user_type")
+    phone = data.get("phone")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
