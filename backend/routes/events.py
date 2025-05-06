@@ -32,9 +32,31 @@ def get_event_by_id(event_id):
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute("SELECT event_id, event_title, description, event_date, category, revenue, regulations, organizer_id, venue_id FROM event WHERE event_id=%s;",(event_id,))
+            cur.execute("""
+                SELECT 
+                    e.event_id, e.event_title, e.description, DATE(e.event_date) AS event_date, 
+    TO_CHAR(e.event_date, 'HH24:MI') AS event_time, e.category, 
+                    e.revenue, e.regulations, e.organizer_id, e.venue_id,
+                    v.venue_name, v.city, v.location
+                FROM event e
+                JOIN venue v ON e.venue_id = v.venue_id
+                WHERE e.event_id = %s;
+            """, (event_id,))
             event = cur.fetchone()
-        return jsonify([{"event_id": event[0], "event_title": event[1], "description": event[2], "event_date": event[3], "category": event[4], "revenue": event[5], "regulations": event[6], "organizer_id": event[7], "venue_id": event[8]}])
+        return jsonify({"event_id": event[0],
+            "event_title": event[1],
+            "description": event[2],
+            "event_date": event[3],    
+            "event_time": event[4],      
+            "category": event[5],
+            "revenue": event[6],
+            "regulations": event[7],
+            "organizer_id": event[8],
+            "venue_id": event[9],
+            "venue_name": event[10],
+            "venue_city": event[11],
+            "venue_location": event[12]})
+
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

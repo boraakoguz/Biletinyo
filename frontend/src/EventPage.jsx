@@ -13,44 +13,6 @@ import {
 } from "@mui/material";
 import { useNavigate, useParams, Outlet } from "react-router-dom";
 
-const mockDB = [
-  {
-    id: "1",
-    title: "Duman",
-    location: "CerModern",
-    date: "02 Mayıs 2025",
-    price: "900 TL",
-    image: "https://via.placeholder.com/300x180?text=Duman",
-    time: "20.00",
-  },
-  {
-    id: "2",
-    title: "Ajda Pekkan",
-    location: "Oran Açıkhava",
-    date: "20 Haziran 2025",
-    price: "1100 TL",
-    image: "https://via.placeholder.com/300x180?text=Ajda+Pekkan",
-    time: "19.00",
-  },
-  {
-    id: "3",
-    title: "Yaşar",
-    location: "ODTÜ MD",
-    date: "31 Mayıs 2025",
-    price: "700 TL",
-    image: "https://via.placeholder.com/300x180?text=Yaşar",
-    time: "19.00",
-  },
-];
-
-const fakeFetchEventById = (id) =>
-  new Promise((resolve, reject) => {
-    setTimeout(() => {
-      const found = mockDB.find((ev) => ev.id === id);
-      found ? resolve(found) : reject(new Error("Not found"));
-    }, 500);
-  });
-
 function EventPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -59,18 +21,25 @@ function EventPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  /* fetch when id changes */
   useEffect(() => {
-    setLoading(true);
-    fakeFetchEventById(id)
-      .then((data) => {
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch(`http://localhost:8080/api/events/${id}`);
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        }
+        const data = await res.json();
+        console.log("Fetched event:", data);
         setEvent(data);
-        setError(null);
-      })
-      .catch((err) => {
+      } catch (err) {
+        console.error("Error loading events:", err);
         setError(err.message);
-      })
-      .finally(() => setLoading(false));
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
   }, [id]);
 
   const handleComments = () => navigate(`/event/${id}/comments`);
@@ -211,7 +180,7 @@ function EventPage() {
             <Grid container spacing={3}>
               <Grid item xs={12}>
                 <Typography variant="h5" fontWeight={700} gutterBottom>
-                  {event.title}
+                  {event.event_title}
                 </Typography>
 
                 <Stack
@@ -220,13 +189,15 @@ function EventPage() {
                   divider={<span style={{ opacity: 0.25 }}>•</span>}
                   sx={{ mb: 1, fontWeight: 500 }}
                 >
-                  <Typography>{event.time}</Typography>
-                  <Typography>{event.date}</Typography>
-                  <Typography>{event.location}</Typography>
-                  <Typography>{event.city}</Typography>
+                  <Typography>{event.event_time}</Typography>
+                  <Typography>{event.event_date}</Typography>
+                  <Typography>{event.venue_name}</Typography>
+                  <Typography>{event.venue_city}</Typography>
                 </Stack>
 
-                <Typography variant="body2">{event.description}</Typography>
+                <Typography variant="body2">
+                  {event.venue_description}
+                </Typography>
 
                 <Box sx={{ mt: 2, overflowX: "auto", maxWidth: 520 }}>
                   <Stack
