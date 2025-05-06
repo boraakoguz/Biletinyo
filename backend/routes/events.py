@@ -25,16 +25,40 @@ def get_events():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     
-# API'S DO NOT GET IMAGES, FIX LATER
+# ADD VENUE.CITY
+@bp.route("/<string:category>/<string:event_date>", methods=["GET"])
+def get_events_by_filtering(category, event_date):
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT 
+                  e.event_title, 
+                  e.event_date, 
+                  v.venue_name,
+                  e.event_id
+                FROM event AS e
+                LEFT JOIN venue AS v 
+                  ON e.venue_id = v.venue_id
+                WHERE e.category=%s AND e.event_date=%s
+                ORDER BY e.event_date;
+            """, (category,event_date,))
+            events = cur.fetchall()
+        return jsonify([{"event_title": e[0], "event_date": e[1], "venue_name": e[2], "event_id": e[3]} for e in events])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)    
     
 @bp.route("/<int:event_id>", methods=["GET"])
 def get_event_by_id(event_id):
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute("SELECT event_id, event_title, description, event_date, category, revenue, regulations, organizer_id, venue_id FROM event WHERE event_id=%s;",(event_id,))
+            cur.execute("SELECT event_id, event_title, description, event_date, category, revenue, regulations, organizer_id, venue_id, image_ids FROM event WHERE event_id=%s;",(event_id,))
             event = cur.fetchone()
-        return jsonify([{"event_id": event[0], "event_title": event[1], "description": event[2], "event_date": event[3], "category": event[4], "revenue": event[5], "regulations": event[6], "organizer_id": event[7], "venue_id": event[8]}])
+        return jsonify([{"event_id": event[0], "event_title": event[1], "description": event[2], "event_date": event[3], "category": event[4], "revenue": event[5], "regulations": event[6], "organizer_id": event[7], "venue_id": event[8], "image_ids": event[9]}])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
@@ -56,7 +80,7 @@ def delete_event_by_id(event_id):
             db_pool.putconn(conn)
 
 @bp.route("/<string:event_title>/<string:description>/<string:event_date>/<int:category>/<float:revenue>/<string:regulations>/<int:organizer_id>/<int:venue_id>", methods=["POST"])
-def post_user_by_id(event_title, description, event_date, category, revenue, regulations, organizer_id, venue_id):
+def post_user(event_title, description, event_date, category, revenue, regulations, organizer_id, venue_id):
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
