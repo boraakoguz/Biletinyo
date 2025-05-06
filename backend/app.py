@@ -4,7 +4,7 @@ from flask_cors import CORS
 import psycopg2
 from psycopg2 import pool
 import bcrypt
-from routes import users, events, tickets, comments, images
+from routes import users, events, tickets, comments, images, venues
 
 IMAGE_FOLDER = "images"
 
@@ -18,6 +18,7 @@ app.register_blueprint(events.bp, url_prefix='/api/events')
 app.register_blueprint(tickets.bp, url_prefix='/api/tickets')
 app.register_blueprint(comments.bp, url_prefix='/api/comments')
 app.register_blueprint(images.bp, url_prefix='/api/images')
+app.register_blueprint(venues.bp, url_prefix='/api/venues')
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5000))

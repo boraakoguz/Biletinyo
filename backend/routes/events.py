@@ -26,7 +26,7 @@ def get_events():
         return jsonify({"error": str(e)}), 500
     
 # FIX THE API, NEED TO GIVE ALL PARAMS
-@bp.route("/", methods=["GET"])
+@bp.route("/filter", methods=["GET"])
 def get_events_by_filtering():
     category = request.args.get("category")
     event_date = request.args.get("date")
@@ -54,7 +54,7 @@ def get_events_by_filtering():
         if conn:
             db_pool.putconn(conn)    
     
-@bp.route("/", methods=["GET"])
+@bp.route("/detail", methods=["GET"])
 def get_event_by_id():
     event_id = request.args.get("event_id")
     try:

@@ -24,7 +24,9 @@ function EventPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/events/${id}`);
+        const res = await fetch(
+          `http://localhost:8080/api/events/detail?event_id=${id}`
+        );
         if (!res.ok) {
           throw new Error(`HTTP ${res.status}: ${res.statusText}`);
         }
