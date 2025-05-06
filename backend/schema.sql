@@ -27,6 +27,7 @@ CREATE TABLE venue(
     location			VARCHAR(100) NOT NULL,
     venue_name			VARCHAR(100) NOT NULL,
     venue_description	TEXT,
+    city                VARCHAR(100) NOT NULL,
     row_number			INT NOT NULL,
     column_number		INT NOT NULL
 );
@@ -163,10 +164,10 @@ VALUES
   (1, 'Duman Productions'),
   (2, 'Bora Productions');
 
-INSERT INTO venue (capacity, location, venue_name, venue_description, row_number, column_number)
+INSERT INTO venue (capacity, location, venue_name, venue_description, city,  row_number, column_number)
 VALUES
-  (5000, 'Congresium',   'Main Hall',      'Indoor concert hall', 50, 100),
-  (1000, 'City Park',     'Open-Air Stage', 'Outdoor amphitheater', 20,  30);
+  (5000, 'Congresium',   'Main Hall',      'Indoor concert hall','Ankara',  50, 100),
+  (1000, 'City Park',     'Open-Air Stage', 'Outdoor amphitheater','Istanbul', 20,  30);
 
 INSERT INTO event
   (event_title, description, event_date, category, revenue, regulations, organizer_id, venue_id)
