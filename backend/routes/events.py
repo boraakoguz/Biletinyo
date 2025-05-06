@@ -2,61 +2,60 @@ from flask import Blueprint, jsonify, request
 from database import db_pool
 
 bp = Blueprint("events", __name__)
-
-@bp.route("/", methods=["GET"])
-def get_events():
-    try:
-        conn = db_pool.getconn()
-        with conn.cursor() as cur:
-            cur.execute("""
-                SELECT 
-                  e.event_title, 
-                  e.event_date, 
-                  v.venue_name,
-                  e.event_id
-                FROM event AS e
-                LEFT JOIN venue AS v 
-                  ON e.venue_id = v.venue_id
-                ORDER BY e.event_date;
-            """)
-            events = cur.fetchall()
-        db_pool.putconn(conn)
-        return jsonify([{"event_title": e[0], "event_date": e[1], "venue_name": e[2], "event_id": e[3]} for e in events])
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
     
-# FIX THE API, NEED TO GIVE ALL PARAMS
 @bp.route("/", methods=["GET"])
 def get_events_by_filtering():
-    category = request.args.get("category")
-    event_date = request.args.get("date")
-    city = request.args.get("city")
+    category    = request.args.get("category")
+    event_date  = request.args.get("date")
+    city        = request.args.get("city")
+
+    filters = []
+    params  = []
+
+    if category:
+        filters.append("e.category = %s")
+        params.append(category)
+    if event_date:
+        filters.append("e.event_date = %s")
+        params.append(event_date)
+    if city:
+        filters.append("v.city = %s")
+        params.append(city)
+
+    where = ""
+    if filters:
+        where = "WHERE " + " AND ".join(filters)
+
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute("""
-                SELECT 
-                  e.event_title, 
-                  e.event_date, 
-                  v.venue_name,
-                  e.event_id
-                FROM event AS e
-                LEFT JOIN venue AS v 
-                  ON e.venue_id = v.venue_id
-                WHERE e.category=%s AND e.event_date=%s AND v.city=%s
-                ORDER BY e.event_date;
-            """, (category,event_date,city,))
+            cur.execute(f"""
+            SELECT
+            e.event_title,
+            e.event_date,
+            v.venue_name,
+            e.event_id
+            FROM event AS e
+            LEFT JOIN venue AS v ON v.venue_id = e.venue_id
+            {where}
+            ORDER BY e.event_date;
+            """, params)
             events = cur.fetchall()
-        return jsonify([{"event_title": e[0], "event_date": e[1], "venue_name": e[2], "event_id": e[3]} for e in events])
+            return jsonify([
+            {
+                "event_title": r[0],
+                "event_date" : r[1],
+                "venue_name" : r[2],
+                "event_id"   : r[3],
+            } for r in events]), 200 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         if conn:
-            db_pool.putconn(conn)    
+            db_pool.putconn(conn)   
     
-@bp.route("/", methods=["GET"])
-def get_event_by_id():
-    event_id = request.args.get("event_id")
+@bp.route("/<int:event_id>", methods=["GET"])
+def get_event_by_id(event_id):
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -101,9 +100,8 @@ def get_event_by_id():
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/", methods=["DELETE"])
-def delete_event_by_id():
-    event_id = request.args.get("event_id")
+@bp.route("/<int:event_id>", methods=["DELETE"])
+def delete_event_by_id(event_id):
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -140,10 +138,9 @@ def post_event():
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/", methods=["PUT"])
-def put_event_by_id():
+@bp.route("/<int:event_id>", methods=["PUT"])
+def put_event_by_id(event_id):
     data = request.get_json()
-    event_id = data.get("event_id")
     event_title = data.get("event_title")
     description = data.get("description")
     event_date = data.get("event_date")

@@ -18,9 +18,8 @@ def get_users():
             db_pool.putconn(conn)
 
     
-@bp.route("/", methods=["GET"])
-def get_user_by_id():
-    user_id = request.args.get("user_id")
+@bp.route("/<int:user_id>", methods=["GET"])
+def get_user_by_id(user_id):
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -32,10 +31,10 @@ def get_user_by_id():
     finally:
         if conn:
             db_pool.putconn(conn)
-    
-@bp.route("/", methods=["DELETE"])
-def delete_user_by_id():
-    user_id = request.args.get("user_id")
+
+#TODO DOES NOT WORK BECAUSE OF ATTENDEE, ORGANIZER FIX!
+@bp.route("/<int:user_id>", methods=["DELETE"])
+def delete_user_by_id(user_id):
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -69,10 +68,9 @@ def post_user():
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/", methods=["PUT"])
-def put_user_by_id():
+@bp.route("/<int:user_id>", methods=["PUT"])
+def put_user_by_id(user_id):
     data = request.get_json()
-    user_id = data.get("user_id")
     name = data.get("name")
     email = data.get("email")
     password = data.get("password")
