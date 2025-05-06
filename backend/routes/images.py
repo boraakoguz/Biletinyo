@@ -4,8 +4,9 @@ import os
 
 bp = Blueprint("images", __name__)
 
-@bp.route("/<int:image_id>", methods=["GET"])
-def get_image_by_id(image_id):
+@bp.route("/", methods=["GET"])
+def get_image_by_id():
+    image_id = request.args.get("image_id")
     try:
         image_path = os.path.join(current_app.config["UPLOAD_FOLDER"], f"{image_id}.png")
         
@@ -16,8 +17,11 @@ def get_image_by_id(image_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@bp.route("/upload/<int:event_id>", methods=["POST"])
-def upload_image(event_id):
+#TODO
+@bp.route("/", methods=["POST"])
+def upload_image():
+    data = request.get_json()
+    event_id = data.get("event_id")
     try:
         if "image" not in request.files:
             return jsonify({"error": "No image part in the request"}), 400

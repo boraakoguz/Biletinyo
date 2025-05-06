@@ -17,8 +17,13 @@ def get_comments():
         if conn:
             db_pool.putconn(conn)
     
-@bp.route("/<int:rating>/<string:comment_title>/<string:comment_text>/<string:comment_date>", methods=["POST"])
-def post_comment(rating, comment_title, comment_text, comment_date):
+@bp.route("/", methods=["POST"])
+def post_comment():
+    data = request.get_json()
+    rating = data.get("rating")
+    comment_title = data.get("comment_title")
+    comment_text = data.get("comment_text")
+    comment_date = data.get("comment_date")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:

@@ -5,7 +5,7 @@ from flask_jwt_extended import JWTManager
 import psycopg2
 from psycopg2 import pool
 import bcrypt
-from routes import users, events, tickets, comments, images, login, register
+from routes import users, events, tickets, comments, images, venues, login, register
 
 IMAGE_FOLDER = "images"
 
@@ -23,7 +23,7 @@ app.register_blueprint(comments.bp, url_prefix='/api/comments')
 app.register_blueprint(images.bp, url_prefix='/api/images')
 app.register_blueprint(login.bp, url_prefix='/api/login')
 app.register_blueprint(register.bp, url_prefix='/api/register')
-
+app.register_blueprint(venues.bp, url_prefix='/api/venues')
 
 jwt = JWTManager(app)
 if __name__ == "__main__":
