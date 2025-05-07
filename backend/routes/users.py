@@ -10,7 +10,7 @@ def get_users():
         with conn.cursor() as cur:
             cur.execute("SELECT user_id, name, email, user_type, phone, birth_date FROM users;")
             users = cur.fetchall()
-        return jsonify([{"id": u[0], "name": u[1], "email": u[2], "user_type": u[3], "phone": u[4], "birth_date": u[5].isoformat() if u[5] else None} for u in users])
+        return jsonify([{"id": user[0], "name": user[1], "email": user[2], "user_type": user[3], "phone": user[4], "birth_date": user[5].isoformat() if user[5] else None} for user in users])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
@@ -30,7 +30,7 @@ def get_user_by_id(user_id):
                 FROM users u
                 LEFT JOIN attendee a ON u.user_id = a.user_id
                 LEFT JOIN organizer o ON u.user_id = o.user_id
-                WHERE u.user_id = %s;
+                WHERE u.user_id=%s;
                 """,
                 (user_id,),
             )
@@ -64,9 +64,9 @@ def delete_user_by_id(user_id):
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute("DELETE FROM attendee WHERE user_id = %s;", (user_id,))
-            cur.execute("DELETE FROM organizer WHERE user_id = %s;", (user_id,))
-            cur.execute("DELETE FROM users WHERE user_id = %s;", (user_id,))
+            cur.execute("DELETE FROM attendee WHERE user_id=%s;", (user_id,))
+            cur.execute("DELETE FROM organizer WHERE user_id=%s;", (user_id,))
+            cur.execute("DELETE FROM users WHERE user_id=%s;", (user_id,))
             conn.commit()
         return "Deletion Successful", 200
     except Exception as e:
@@ -77,16 +77,16 @@ def delete_user_by_id(user_id):
 
 @bp.route("/", methods=["POST"])
 def post_user():
-    data = request.get_json()
-    name = data.get("name")
-    email = data.get("email")
-    password = data.get("password")
-    user_type = data.get("user_type")
-    phone = data.get("phone")
-    birth_date = data.get("birth_date")
-    attended_event_number = data.get("attended_event_number")
-    account_balance = data.get("account_balance")
-    organization_name = data.get("organization_name")
+    data=request.get_json()
+    name=data.get("name")
+    email=data.get("email")
+    password=data.get("password")
+    user_type=data.get("user_type")
+    phone=data.get("phone")
+    birth_date=data.get("birth_date")
+    attended_event_number=data.get("attended_event_number")
+    account_balance=data.get("account_balance")
+    organization_name=data.get("organization_name")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -118,16 +118,16 @@ def post_user():
 
 @bp.route("/<int:user_id>", methods=["PUT"])
 def put_user_by_id(user_id):
-    data = request.get_json()
-    name = data.get("name")
-    email = data.get("email")
-    password = data.get("password")
-    user_type = data.get("user_type")
-    phone = data.get("phone")
-    birth_date = data.get("birth_date")
-    attended_event_number = data.get("attended_event_number")
-    account_balance = data.get("account_balance")
-    organization_name = data.get("organization_name")
+    data=request.get_json()
+    name=data.get("name")
+    email=data.get("email")
+    password=data.get("password")
+    user_type=data.get("user_type")
+    phone=data.get("phone")
+    birth_date=data.get("birth_date")
+    attended_event_number=data.get("attended_event_number")
+    account_balance=data.get("account_balance")
+    organization_name=data.get("organization_name")
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -136,8 +136,8 @@ def put_user_by_id(user_id):
                 "WHERE user_id=%s;",
                 (name, email, password, user_type, phone, birth_date, user_id)
             )
-            cur.execute("DELETE FROM attendee WHERE user_id = %s;", (user_id,))
-            cur.execute("DELETE FROM organizer WHERE user_id = %s;", (user_id,))
+            cur.execute("DELETE FROM attendee WHERE user_id=%s;", (user_id,))
+            cur.execute("DELETE FROM organizer WHERE user_id=%s;", (user_id,))
             if user_type == 0 and attended_event_number is not None and account_balance is not None:
                 cur.execute(
                     "INSERT INTO attendee (user_id, attended_event_number, account_balance)"

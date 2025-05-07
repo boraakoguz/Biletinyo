@@ -43,11 +43,11 @@ def get_events():
             events = cur.fetchall()
             return jsonify([
             {
-                "event_title": r[0],
-                "event_date" : r[1],
-                "venue_name" : r[2],
-                "event_id"   : r[3],
-            } for r in events]), 200 
+                "event_title": event[0],
+                "event_date" : event[1],
+                "venue_name" : event[2],
+                "event_id"   : event[3],
+            } for event in events]), 200 
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

@@ -195,7 +195,7 @@ VALUES
 
 INSERT INTO attendee (user_id, attended_event_number, account_balance) VALUES
 (1, 3, 120.00),
-(3, 1, 60.50, '2000-09-30');
+(3, 1, 60.50);
 
 INSERT INTO seat (venue_id, seat_row, seat_column) VALUES
 (1, 1, 1), (1, 1, 2), (1, 2, 1), (1, 2, 2),
