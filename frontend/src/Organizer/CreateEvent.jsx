@@ -1,15 +1,21 @@
+// frontend/src/Organizer/CreateEvent.jsx
+
 import React, { useState, useEffect } from "react";
 import {
-  Box,
-  Button,
-  TextField,
-  MenuItem,
+  AppBar,
+  Toolbar,
   Typography,
+  Box,
+  TextField,
+  Button,
+  MenuItem,
   Stack,
+  Container,
+  Paper,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
-function CreateEvent() {
+export default function CreateEvent() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
@@ -21,23 +27,21 @@ function CreateEvent() {
     organizer_id: "",
     venue_id: "",
   });
-
   const [venues, setVenues] = useState([]);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchVenues = async () => {
+    // Mock yerine gerçek API çağrısı
+    (async () => {
       try {
         const res = await fetch("http://localhost:8080/api/venues");
         const data = await res.json();
         setVenues(data);
       } catch (err) {
         console.error(err);
-        setError("Failed to load venues.");
+        setError("Mekanlar yüklenirken hata oluştu.");
       }
-    };
-
-    fetchVenues();
+    })();
   }, []);
 
   const handleChange = (e) => {
@@ -48,114 +52,189 @@ function CreateEvent() {
     try {
       const payload = {
         ...formData,
-        organizer_id: parseInt(formData.organizer_id),
-        venue_id: parseInt(formData.venue_id),
-        revenue: parseFloat(formData.revenue || 0.0),
+        organizer_id: parseInt(formData.organizer_id, 10),
+        venue_id: parseInt(formData.venue_id, 10),
+        // backend tarih biçimi bekliyorsa ISO string'e çevir:
+        event_date: new Date(formData.event_date).toISOString(),
       };
-
-      console.log("Sending event payload:", payload);
 
       const res = await fetch("http://localhost:8080/api/events/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-
       if (!res.ok) {
         const text = await res.text();
         throw new Error(text);
       }
 
-      alert("Event created successfully!");
-      navigate("/");
+      // başarı mesajı ve listeye yönlendirme
+      alert("Etkinlik başarıyla oluşturuldu!");
+      navigate("/organizer/events");
     } catch (err) {
-      console.error("Create event error:", err);
-      setError("Event creation failed: " + err.message);
+      console.error(err);
+      setError("Etkinlik oluşturma hatası: " + err.message);
     }
   };
 
   return (
-    <Box sx={{ maxWidth: 600, mx: "auto", mt: 5 }}>
-      <Typography variant="h4" gutterBottom>
-        Create New Event
-      </Typography>
+    <>
+      {/* === GLOBAL HEADER === */}
+      <AppBar position="static" color="primary" elevation={4}>
+        <Toolbar sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
+          <Typography
+            variant="h5"
+            sx={{
+              fontStyle: "italic",
+              fontWeight: "bold",
+              textDecoration: "underline",
+              cursor: "pointer",
+            }}
+            onClick={() => navigate("/")}
+          >
+            Biletinyo
+          </Typography>
 
-      <Stack spacing={2}>
-        <TextField
-          label="Event Title"
-          name="event_title"
-          value={formData.event_title}
-          onChange={handleChange}
-          required
-        />
+          <Box sx={{ flexGrow: 1, maxWidth: 400, mx: 2 }}>
+            <TextField
+              fullWidth
+              size="small"
+              placeholder="Etkinlik veya lokasyon ara..."
+              disabled
+              sx={{
+                backgroundColor: "white",
+                borderRadius: 3,
+                "& .MuiOutlinedInput-root fieldset": { border: "none" },
+              }}
+            />
+          </Box>
 
-        <TextField
-          label="Description"
-          name="description"
-          value={formData.description}
-          onChange={handleChange}
-          multiline
-          rows={3}
-        />
+          <Stack direction="row" spacing={1}>
+            <Button
+              color="inherit"
+              onClick={() => navigate("/login")}
+              sx={{ "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" } }}
+            >
+              Üye Girişi
+            </Button>
+            <Button
+              variant="outlined"
+              color="inherit"
+              onClick={() => navigate("/signin")}
+              sx={{
+                borderColor: "white",
+                "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+              }}
+            >
+              Üye Ol
+            </Button>
+          </Stack>
+        </Toolbar>
+      </AppBar>
 
-        <TextField
-          label="Date"
-          name="event_date"
-          type="date"
-          value={formData.event_date}
-          onChange={handleChange}
-          InputLabelProps={{ shrink: true }}
-          required
-        />
+      {/* === FORM CONTENT === */}
+      <Container sx={{ my: 4, mb: 6 }}>
+        <Typography variant="h4" gutterBottom>
+          Yeni Etkinlik Oluştur
+        </Typography>
 
-        <TextField
-          label="Category"
-          name="category"
-          value={formData.category}
-          onChange={handleChange}
-          required
-        />
+        <Paper sx={{ p: 4, maxWidth: 600, mx: "auto" }}>
+          <Stack spacing={3}>
+            <TextField
+              label="Etkinlik Başlığı"
+              name="event_title"
+              value={formData.event_title}
+              onChange={handleChange}
+              required
+              fullWidth
+            />
 
-        <TextField
-          label="Regulations"
-          name="regulations"
-          value={formData.regulations}
-          onChange={handleChange}
-          multiline
-          rows={2}
-        />
+            <TextField
+              label="Açıklama"
+              name="description"
+              value={formData.description}
+              onChange={handleChange}
+              multiline
+              rows={3}
+              fullWidth
+            />
 
-        <TextField
-          label="Organizer ID"
-          name="organizer_id"
-          value={formData.organizer_id}
-          onChange={handleChange}
-          required
-        />
+            <TextField
+              label="Tarih"
+              name="event_date"
+              type="date"
+              value={formData.event_date}
+              onChange={handleChange}
+              InputLabelProps={{ shrink: true }}
+              required
+              fullWidth
+            />
 
-        <TextField
-          select
-          label="Venue"
-          name="venue_id"
-          value={formData.venue_id}
-          onChange={handleChange}
-          required
-        >
-          {venues.map((v) => (
-            <MenuItem key={v.venue_id} value={v.venue_id}>
-              {v.venue_name} - {v.city}
-            </MenuItem>
-          ))}
-        </TextField>
+            <TextField
+              label="Kategori"
+              name="category"
+              value={formData.category}
+              onChange={handleChange}
+              required
+              fullWidth
+            />
 
-        {error && <Typography color="error">{error}</Typography>}
+            <TextField
+              label="Kurallar"
+              name="regulations"
+              value={formData.regulations}
+              onChange={handleChange}
+              multiline
+              rows={2}
+              fullWidth
+            />
 
-        <Button variant="contained" onClick={handleSubmit}>
-          Create Event
-        </Button>
-      </Stack>
-    </Box>
+            <TextField
+              label="Organizatör ID"
+              name="organizer_id"
+              value={formData.organizer_id}
+              onChange={handleChange}
+              required
+              fullWidth
+            />
+
+            <TextField
+              select
+              label="Mekan Seç"
+              name="venue_id"
+              value={formData.venue_id}
+              onChange={handleChange}
+              required
+              fullWidth
+            >
+              {venues.map((v) => (
+                <MenuItem key={v.venue_id} value={v.venue_id}>
+                  {v.venue_name} – {v.city}
+                </MenuItem>
+              ))}
+            </TextField>
+
+            {error && (
+              <Typography color="error" variant="body2">
+                {error}
+              </Typography>
+            )}
+
+            <Box textAlign="right">
+              <Button
+                variant="outlined"
+                sx={{ mr: 2 }}
+                onClick={() => navigate("/organizer/events")}
+              >
+                İptal
+              </Button>
+              <Button variant="contained" onClick={handleSubmit}>
+                Oluştur
+              </Button>
+            </Box>
+          </Stack>
+        </Paper>
+      </Container>
+    </>
   );
 }
-
-export default CreateEvent;

@@ -10,6 +10,13 @@ import Seating from "./Seating";
 import TicketPage from "./TicketPage";
 import PaymentPage from "./PaymentPage";
 import CreateEvent from "./Organizer/CreateEvent";
+import OrganizerDashboard from "./Organizer/OrganizerDashboard";
+import ManageEvents from "./Organizer/ManageEvents";
+import TicketCategoryEdit from "./Organizer/TicketCategoryEdit";
+import VenueManagement from "./Organizer/VenueManagement";
+import AddVenue from "./Organizer/AddVenue";
+import SeatingConfig     from "./Organizer/SeatingConfig";
+import SalesAnalytics from "./Organizer/SalesAnalytics";
 
 function App() {
   // SOME MIGHT CHANGE
@@ -28,6 +35,15 @@ function App() {
         <Route path="/seating" element={<Seating />} />
         <Route path="/payment" element={<PaymentPage />} />
         <Route path="/create" element={<CreateEvent />} />
+        <Route path="/organizer/dashboard" element={<OrganizerDashboard />} />
+        //<Route path="/organizer/events" element={<ManageEvents />} />
+        <Route path="/organizer/events/:id" element={<ManageEvents />} />
+        <Route path="/organizer/events/new" element={<CreateEvent />} />
+        <Route path="/organizer/events/:id/categories" element={<TicketCategoryEdit />} />
+        <Route path="/organizer/venues" element={<VenueManagement />} />
+        <Route path="/organizer/venues/new" element={<AddVenue />} />
+        <Route path="/organizer/venues/:id/seating" element={<SeatingConfig />} />
+        <Route path="/organizer/reports/sales" element={<SalesAnalytics />} />
       </Routes>
     </BrowserRouter>
   );
