@@ -5,22 +5,26 @@ bp = Blueprint("tickets", __name__)
 
 @bp.route("/", methods=["GET"])
 def get_tickets():
-    user_id=request.args.get("user_id")
+    attendee_id=request.args.get("attendee_id")
     event_id=request.args.get("event_id")
-    ticket_no=request.args.get("ticket_no")
+    ticket_state=request.args.get("ticket_state")
+    ticket_class=request.args.get("ticket_class")
     
     clauses=[]
     params=[]
 
-    if user_id:
-        clauses.append("user_id=%s")
-        params.append(user_id)
+    if attendee_id:
+        clauses.append("attendee_id=%s")
+        params.append(attendee_id)
     if event_id:
         clauses.append("event_id=%s")
         params.append(event_id)
-    if ticket_no:
-        clauses.append("ticket_no=%s")
-        params.append(ticket_no)
+    if ticket_state:
+        clauses.append("ticket_state=%s")
+        params.append(ticket_state)
+    if ticket_class:
+        clauses.append("ticket_class=%s")
+        params.append(ticket_class)
     where=""
     if clauses:
         where="WHERE " + " AND ".join(clauses)
@@ -29,43 +33,57 @@ def get_tickets():
         conn=db_pool.getconn()
         with conn.cursor() as cur:
             cur.execute(f"""
-                SELECT user_id, event_id, ticket_no, category_name
+                SELECT ticket_id, 
+                        attendee_id, 
+                        payment_id, 
+                        event_id, 
+                        ticket_state, 
+                        ticket_class, 
+                        price, 
+                        seat_row, 
+                        seat_column
                 FROM ticket
                 {where};
             """, params)
             tickets=cur.fetchall()
 
-            results=[]
-            for u_id, e_id, t_no, cat in tickets:
+            results = []
+            for row in tickets:
+                ticket_id, attendee_id, payment_id, event_id, \
+                ticket_state, ticket_class, price, \
+                seat_row, seat_column = row
                 cur.execute(
-                    "SELECT venue_id, seat_row, seat_column "
-                    "FROM ticket_seats "
-                    "WHERE user_id=%s AND event_id=%s AND ticket_no=%s;",
-                    (u_id, e_id, t_no)
+                    """
+                    SELECT guest_name,
+                           guest_mail,
+                           guest_phone,
+                           guest_birth_date
+                    FROM ticket_guest
+                    WHERE ticket_id = %s;
+                    """,
+                    (ticket_id,)
                 )
-                seat_rows=cur.fetchall()
-
-                cur.execute(
-                    "SELECT guest_no, guest_name, guest_mail, guest_phone, guest_age "
-                    "FROM ticket_guest "
-                    "WHERE user_id=%s AND event_id=%s AND ticket_no=%s;",
-                    (u_id, e_id, t_no)
-                )
-                guest_rows=cur.fetchall()
+                guests = [
+                    {
+                      "guest_name": guest[0],
+                      "guest_mail": guest[1],
+                      "guest_phone": guest[2],
+                      "guest_birth_date": guest[3]
+                    }
+                    for guest in cur.fetchall()
+                ]
 
                 results.append({
-                    "user_id": u_id,
-                    "event_id": e_id,
-                    "ticket_no": t_no,
-                    "category_name": cat,
-                    "seats": [
-                        {"venue_id": venue, "seat_row": row, "seat_column": column}
-                        for venue, row, column in seat_rows
-                    ],
-                    "guests": [
-                        {"guest_no": guest_no, "guest_name": guest_name, "guest_mail": guest_mail, "guest_phone": guest_phone, "guest_age": guest_age}
-                        for guest_no, guest_name, guest_mail, guest_phone, guest_age in guest_rows
-                    ]
+                    "ticket_id": ticket_id,
+                    "attendee_id": attendee_id,
+                    "payment_id": payment_id,
+                    "event_id": event_id,
+                    "ticket_state": ticket_state,
+                    "ticket_class": ticket_class,
+                    "price": price,
+                    "seat_row": seat_row,
+                    "seat_column": seat_column,
+                    "ticket_guest": guests
                 })
         return jsonify(results), 200
     except Exception as e:
@@ -74,14 +92,66 @@ def get_tickets():
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/<int:user_id>/<int:event_id>/<int:ticket_no>", methods=["DELETE"])
-def delete_user_by_id(user_id, event_id, ticket_no):
+@bp.route("/<int:ticket_id>", methods=["GET"])
+def get_ticket_by_id(ticket_id):
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute("DELETE FROM ticket_seats WHERE user_id=%s AND event_id=%s AND ticket_no=%s;", (user_id, event_id, ticket_no,))
-            cur.execute("DELETE FROM ticket_guest WHERE user_id=%s AND event_id=%s AND ticket_no=%s;", (user_id, event_id, ticket_no,))
-            cur.execute("DELETE FROM ticket WHERE user_id=%s AND event_id=%s AND ticket_no=%s;", (user_id, event_id, ticket_no,))
+            cur.execute("""
+                SELECT ticket_id, 
+                        attendee_id, 
+                        payment_id, 
+                        event_id, 
+                        ticket_state, 
+                        ticket_class, 
+                        price, 
+                        seat_row, 
+                        seat_column
+                FROM ticket
+                WHERE ticket_id=%s;
+            """, (ticket_id,))
+            event = cur.fetchone()
+            columns = [
+                "ticket_id", "attendee_id", "payment_id",
+                "event_id", "ticket_state", "ticket_class",
+                "price", "seat_row", "seat_column"
+            ]
+            ticket = dict(zip(columns, event))
+            cur.execute(
+                    """
+                    SELECT guest_name,
+                           guest_mail,
+                           guest_phone,
+                           guest_birth_date
+                    FROM ticket_guest
+                    WHERE ticket_id = %s;
+                    """,
+                    (ticket_id,)
+                )
+            guests = cur.fetchall()
+            ticket["ticket_guest"] = [
+                {
+                    "guest_name": guest[0],
+                    "guest_mail": guest[1],
+                    "guest_phone": guest[2],
+                    "guest_birth_date": guest[3]
+                }
+                for guest in guests
+            ]
+        return jsonify(ticket), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
+@bp.route("/<int:ticket_id>", methods=["DELETE"])
+def delete_user_by_id(ticket_id):
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM ticket_guest WHERE ticket_id=%s;", (ticket_id,))
+            cur.execute("DELETE FROM ticket WHERE ticket_id=%s;", (ticket_id,))
             conn.commit()
         return "Deletion Successful", 200
     except Exception as e:
@@ -93,32 +163,84 @@ def delete_user_by_id(user_id, event_id, ticket_no):
 @bp.route("/", methods=["POST"])
 def post_ticket():
     data=request.get_json()
-    user_id=data.get("user_id")
+    attendee_id=data.get("attendee_id")
+    payment_id=data.get("payment_id")
     event_id=data.get("event_id")
-    ticket_no=data.get("ticket_no")
-    category_name=data.get("category_name")
-    seats=data.get("seats", [])
-    guests=data.get("guests", [])
-
+    ticket_state=data.get("ticket_state")
+    ticket_class=data.get("ticket_class")
+    price=data.get("price")
+    seat_row=data.get("seat_row")
+    seat_column=data.get("seat_column")
+    ticket_guests=data.get("ticket_guest", [])
     try:
         conn=db_pool.getconn()
         with conn.cursor() as cur:
             cur.execute(
-                "INSERT INTO ticket (user_id, event_id, ticket_no, category_name) VALUES (%s, %s, %s, %s);",
-                (user_id, event_id, ticket_no, category_name)
+                "INSERT INTO ticket (attendee_id, payment_id, event_id, ticket_state, ticket_class, price, seat_row, seat_column) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING ticket_id;",
+                (attendee_id, payment_id, event_id, ticket_state, ticket_class, price, seat_row, seat_column)
             )
-            for seat in seats:
+            ticket_id = cur.fetchone()[0]
+            for guest in ticket_guests:
                 cur.execute(
-                    "INSERT INTO ticket_seats (user_id, event_id, ticket_no, venue_id, seat_row, seat_column) VALUES (%s, %s, %s, %s, %s, %s);",
-                    (user_id, event_id, ticket_no, seat["venue_id"], seat["seat_row"], seat["seat_column"])
-                )
-            for guest in guests:
-                cur.execute(
-                    "INSERT INTO ticket_guest (user_id, event_id, ticket_no, guest_no, guest_name, guest_mail, guest_phone, guest_age) VALUES (%s, %s, %s, %s, %s, %s, %s, %s);",
-                    (user_id, event_id, ticket_no, guest["guest_no"], guest.get("guest_name"), guest.get("guest_mail"), guest.get("guest_phone"), guest.get("guest_age"))
+                    "INSERT INTO ticket_guest (ticket_id, guest_name, guest_mail, guest_phone, guest_birth_date) VALUES (%s, %s, %s, %s, %s);",
+                    (ticket_id, guest["guest_name"], guest.get("guest_mail"), guest.get("guest_phone"), guest.get("guest_birth_date"))
                 )
             conn.commit()
         return "Insertion Successful", 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
+@bp.route("/<int:ticket_id>", methods=["PUT"])
+def put_ticket(ticket_id):
+    data = request.get_json()
+    attendee_id   = data.get("attendee_id")
+    payment_id    = data.get("payment_id")
+    event_id      = data.get("event_id")
+    ticket_state  = data.get("ticket_state")
+    ticket_class  = data.get("ticket_class")
+    price         = data.get("price")
+    seat_row      = data.get("seat_row")
+    seat_column   = data.get("seat_column")
+    ticket_guests = data.get("ticket_guest", [])
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute(
+                """UPDATE ticket
+                   SET attendee_id=%s,
+                       payment_id=%s,
+                       event_id=%s,
+                       ticket_state=%s,
+                       ticket_class=%s,
+                       price=%s,
+                       seat_row=%s,
+                       seat_column=%s
+                    WHERE ticket_id=%s;""",
+                (attendee_id, payment_id, event_id,
+                 ticket_state, ticket_class, price,
+                 seat_row, seat_column,
+                 ticket_id,))
+            cur.execute(
+                "DELETE FROM ticket_guest WHERE ticket_id = %s;",
+                (ticket_id,))
+            for guest in ticket_guests:
+                cur.execute(
+                    """INSERT INTO ticket_guest
+                      (ticket_id, guest_name, guest_mail, guest_phone, guest_birth_date)
+                    VALUES (%s, %s, %s, %s, %s);""",
+                    (
+                        ticket_id,
+                        guest.get("guest_name"),
+                        guest.get("guest_mail"),
+                        guest.get("guest_phone"),
+                        guest.get("guest_birth_date"),
+                    )
+                )
+            conn.commit()
+        return "Update Successful", 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

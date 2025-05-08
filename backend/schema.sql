@@ -92,7 +92,7 @@ CREATE TABLE payment(
 
 CREATE TABLE ticket (
     ticket_id       SERIAL PRIMARY KEY,
-    attendee_id     INT NOT NULL,
+    attendee_id     INT,
     payment_id      INT,
     event_id        INT NOT NULL,
 
