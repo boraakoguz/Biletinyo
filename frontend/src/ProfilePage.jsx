@@ -19,6 +19,11 @@ import React, { useState, useEffect } from "react";
 function ProfilePage() {
   const navigate = useNavigate();
   const viewTicket = (ticketId) => navigate(`/ticket/${ticketId}`);
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/"); // or navigate("/login") if you prefer
+  };
   const rows = [
     {
       id: "101",
@@ -109,6 +114,9 @@ function ProfilePage() {
                 Phone
               </Typography>
               <Typography variant="h5">532</Typography>
+              <Button variant="contained" color="error" onClick={handleLogout}>
+                Logout
+              </Button>
             </Box>
           </Paper>
         </Grid>
