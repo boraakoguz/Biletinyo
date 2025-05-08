@@ -4,16 +4,19 @@ from database import db_pool
 bp = Blueprint("venues", __name__)
 
 @bp.route("/", methods=["GET"])
-def get_all_venues():
+def get_venues():
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT 
                     venue_id,
+                    capacity,
+                    location,
                     venue_name,
+                    venue_description,
                     city,
-                    location
+                    seat_map
                 FROM venue
                 ORDER BY venue_name;
             """)
@@ -22,9 +25,12 @@ def get_all_venues():
         return jsonify([
             {
                 "venue_id": v[0],
-                "venue_name": v[1],
-                "city": v[2],
-                "location": v[3]
+                "capacity": v[1],
+                "location": v[2],
+                "venue_name": v[3],
+                "venue_description": v[4],
+                "city": v[5],
+                "seat_map": v[6]
             }
             for v in venues
         ])
