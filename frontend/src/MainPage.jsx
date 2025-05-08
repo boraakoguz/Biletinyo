@@ -23,6 +23,13 @@ function MainPage() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    setIsLoggedIn(!!token);
+  }, []);
+
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -57,6 +64,7 @@ function MainPage() {
   const handleLoginRedirect = () => {
     navigate("/login");
   };
+  const handleProfileRedirect = () => navigate("/profile");
   const openEvent = (event) => {
     navigate(`/event/${event.event_id}`, { state: { event } });
   };
@@ -115,33 +123,53 @@ function MainPage() {
             />
           </Box>
           <Stack direction="row" spacing={1}>
-            <Button
-              color="inherit"
-              onClick={handleLoginRedirect}
-              sx={{
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
-                },
-              }}
-            >
-              Üye Girişi
-            </Button>
-            <Button
-              color="inherit"
-              variant="outlined"
-              onClick={handleSignInRedirect}
-              sx={{
-                borderColor: "white",
-                color: "white",
-                "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.1)",
+            {isLoggedIn ? (
+              <Button
+                color="inherit"
+                variant="outlined"
+                onClick={handleProfileRedirect}
+                sx={{
                   borderColor: "white",
-                },
-              }}
-            >
-              Üye Ol
-            </Button>
+                  color: "white",
+                  "&:hover": {
+                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    borderColor: "white",
+                  },
+                }}
+              >
+                Profile
+              </Button>
+            ) : (
+              <>
+                <Button
+                  color="inherit"
+                  onClick={handleLoginRedirect}
+                  sx={{
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    },
+                  }}
+                >
+                  Üye Girişi
+                </Button>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={handleSignInRedirect}
+                  sx={{
+                    borderColor: "white",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  Üye Ol
+                </Button>
+              </>
+            )}
           </Stack>
         </Box>
       </Box>
