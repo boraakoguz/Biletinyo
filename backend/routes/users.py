@@ -10,7 +10,7 @@ def get_users():
     filters = []
     params  = []
     if user_type:
-        filters.append("u.user_type = %s")
+        filters.append("u.user_type=%s")
         params.append(user_type)
     if search:
         filters.append(
@@ -20,7 +20,7 @@ def get_users():
         params.extend([like, like])
     where = ""
     if filters:
-        where = "WHERE " + " AND ".join(filters)
+        where = "WHERE "+" AND ".join(filters)
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -29,15 +29,15 @@ def get_users():
             result = []
             for u_id, u_name, u_email, u_type, u_phone, u_birth, o_organization in users:
                 json = {
-                    "id":         u_id,
-                    "name":       u_name,
-                    "email":      u_email,
-                    "user_type":  u_type,
-                    "phone":      u_phone,
+                    "id": u_id,
+                    "name": u_name,
+                    "email": u_email,
+                    "user_type": u_type,
+                    "phone": u_phone,
                     "birth_date": u_birth.isoformat() if u_birth else None,
                 }
-                if u_type == 1 and o_organization:
-                    json["organization_name"] = o_organization
+                if o_organization and u_type==1:
+                    json["organization_name"]=o_organization
                 result.append(json)
             return jsonify(result), 200
     except Exception as e:
