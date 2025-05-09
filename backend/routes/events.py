@@ -5,10 +5,10 @@ bp = Blueprint("events", __name__)
     
 @bp.route("/", methods=["GET"])
 def get_events():
-    category    = request.args.get("category")
-    event_date  = request.args.get("event_date")
-    city        = request.args.get("city")
-    event_status= request.args.get("event_status")
+    category=request.args.get("category")
+    event_date=request.args.get("event_date")
+    city=request.args.get("city")
+    event_status=request.args.get("event_status")
 
     filters = []
     params  = []

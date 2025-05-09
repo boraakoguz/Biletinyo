@@ -5,10 +5,19 @@ bp = Blueprint("users", __name__)
 
 @bp.route("/", methods=["GET"])
 def get_users():
+    user_type=request.args.get("user_type")
+    filters = []
+    params  = []
+    if user_type:
+        filters.append("user_type = %s")
+        params.append(user_type)
+    where = ""
+    if filters:
+        where = "WHERE " + " AND ".join(filters)
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute("SELECT user_id, name, email, user_type, phone, birth_date FROM users;")
+            cur.execute(f"""SELECT user_id, name, email, user_type, phone, birth_date FROM users {where};""", params)
             users = cur.fetchall()
         return jsonify([{"id": user[0], "name": user[1], "email": user[2], "user_type": user[3], "phone": user[4], "birth_date": user[5].isoformat() if user[5] else None} for user in users])
     except Exception as e:
