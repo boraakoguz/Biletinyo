@@ -5,21 +5,41 @@ bp = Blueprint("users", __name__)
 
 @bp.route("/", methods=["GET"])
 def get_users():
+    search=request.args.get("search", "").strip()
     user_type=request.args.get("user_type")
     filters = []
     params  = []
     if user_type:
-        filters.append("user_type = %s")
+        filters.append("u.user_type = %s")
         params.append(user_type)
+    if search:
+        filters.append(
+            "(u.name ILIKE %s OR o.organization_name ILIKE %s)"
+        )
+        like = f"%{search}%"
+        params.extend([like, like])
     where = ""
     if filters:
         where = "WHERE " + " AND ".join(filters)
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute(f"""SELECT user_id, name, email, user_type, phone, birth_date FROM users {where};""", params)
+            cur.execute(f"""SELECT u.user_id, u.name, u.email, u.user_type, u.phone, u.birth_date, o.organization_name FROM users u LEFT JOIN organizer o ON u.user_id = o.user_id {where};""", params)
             users = cur.fetchall()
-        return jsonify([{"id": user[0], "name": user[1], "email": user[2], "user_type": user[3], "phone": user[4], "birth_date": user[5].isoformat() if user[5] else None} for user in users])
+            result = []
+            for u_id, u_name, u_email, u_type, u_phone, u_birth, o_organization in users:
+                json = {
+                    "id":         u_id,
+                    "name":       u_name,
+                    "email":      u_email,
+                    "user_type":  u_type,
+                    "phone":      u_phone,
+                    "birth_date": u_birth.isoformat() if u_birth else None,
+                }
+                if u_type == 1 and o_organization:
+                    json["organization_name"] = o_organization
+                result.append(json)
+            return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

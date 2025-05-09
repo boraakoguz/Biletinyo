@@ -5,6 +5,7 @@ bp = Blueprint("events", __name__)
     
 @bp.route("/", methods=["GET"])
 def get_events():
+    search=request.args.get("search", "").strip()
     category=request.args.get("category")
     event_date=request.args.get("event_date")
     city=request.args.get("city")
@@ -13,6 +14,12 @@ def get_events():
     filters = []
     params  = []
 
+    if search:
+        filters.append(
+            "(e.event_title ILIKE %s OR v.venue_name ILIKE %s OR v.city ILIKE %s)"
+        )
+        like = f"%{search}%"
+        params.extend([like, like, like])
     if category:
         filters.append("e.category = %s")
         params.append(category)
