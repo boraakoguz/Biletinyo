@@ -61,7 +61,7 @@ def get_user_by_id(user_id):
                 LEFT JOIN organizer o ON u.user_id = o.user_id
                 WHERE u.user_id=%s;
                 """,
-                (user_id,),
+                (user_id,)
             )
             user = cur.fetchone()
         if not user:
