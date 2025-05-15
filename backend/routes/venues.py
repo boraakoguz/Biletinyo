@@ -24,15 +24,106 @@ def get_venues():
         db_pool.putconn(conn)
         return jsonify([
             {
-                "venue_id": v[0],
-                "capacity": v[1],
-                "location": v[2],
-                "venue_name": v[3],
-                "venue_description": v[4],
-                "city": v[5],
-                "seat_map": v[6]
+                "venue_id": venue[0],
+                "capacity": venue[1],
+                "location": venue[2],
+                "venue_name": venue[3],
+                "venue_description": venue[4],
+                "city": venue[5],
+                "seat_map": venue[6]
             }
-            for v in venues
+            for venue in venues
         ])
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+    
+@bp.route("/<int:venue_id>", methods=["GET"])
+def get_venue_by_id(venue_id):
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT 
+                    venue_id,
+                    capacity,
+                    location,
+                    venue_name,
+                    venue_description,
+                    city,
+                    seat_map
+                FROM venue
+                WHERE venue_id = %s;
+                """, (venue_id,))
+            venue = cur.fetchone()
+        return jsonify({
+            "venue_id": venue[0],
+            "capacity": venue[1],
+            "location": venue[2],
+            "venue_name": venue[3],
+            "venue_description": venue[4],
+            "city": venue[5],
+            "seat_map": venue[6],
+        }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
+#TODO LATER
+#@bp.route("/<int:venue_id>", methods=["DELETE"])
+#def delete_venue_by_id(venue_id):
+#    try:
+#        conn = db_pool.getconn()
+#        with conn.cursor() as cur:
+#            cur.execute("SELECT venue_id FROM venue WHERE venue_id=%s;", (venue_id,))
+#            conn.commit()
+#        return "Deletion Successful", 200
+#    except Exception as e:
+#        return jsonify({"error": str(e)}), 500
+#    finally:
+#        if conn:
+#            db_pool.putconn(conn)
+
+@bp.route("/", methods=["POST"])
+def post_venue():
+    data = request.get_json()
+    capacity = data.get("capacity")
+    location = data.get("location")
+    venue_name = data.get("venue_name")
+    venue_description = data.get("venue_description")
+    city = data.get("city")
+    seat_map = data.get("seat_map")
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""INSERT INTO venue (capacity, location, venue_name, venue_description, city, seat_map)
+                VALUES (%s, %s, %s, %s, %s, %s);""",(capacity, location, venue_name, venue_description, city, seat_map,))
+            conn.commit()
+        return "Insertion Successful", 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
+@bp.route("/<int:venue_id>", methods=["PUT"])
+def put_venue_by_id(venue_id):
+    data = request.get_json()
+    capacity = data.get("capacity")
+    location = data.get("location")
+    venue_name = data.get("venue_name")
+    venue_description = data.get("venue_description")
+    city = data.get("city")
+    seat_map = data.get("seat_map")
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("UPDATE venue SET capacity=%s, location=%s, venue_name=%s, venue_description=%s, city=%s, seat_map=%s WHERE venue_id=%s;",(capacity, location, venue_name, venue_description, city, seat_map, venue_id,))
+            conn.commit()
+        return "Update Successful", 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)

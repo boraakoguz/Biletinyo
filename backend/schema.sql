@@ -26,13 +26,13 @@ CREATE TABLE organizer (
 
 CREATE TABLE venue(
     venue_id			SERIAL PRIMARY KEY,
-
     capacity			INT NOT NULL, 
     location			VARCHAR(100) NOT NULL,
     venue_name			VARCHAR(100) NOT NULL,
     venue_description	TEXT,
     city                VARCHAR(100) NOT NULL,
     seat_map			INT[][] NOT NULL
+    status        INT,
 );
 
 CREATE TABLE event (
