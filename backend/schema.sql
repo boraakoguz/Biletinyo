@@ -32,7 +32,6 @@ CREATE TABLE venue(
     venue_description	TEXT,
     city                VARCHAR(100) NOT NULL,
     seat_map			INT[][] NOT NULL
-    status        INT,
 );
 
 CREATE TABLE event (
