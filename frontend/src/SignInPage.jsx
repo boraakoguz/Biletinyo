@@ -1,56 +1,167 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
   Container,
-  Grid,
   Paper,
-  Radio,
-  RadioGroup,
-  FormControlLabel,
-  InputLabel,
-  Select,
-  FormControl,
   TextField,
   Typography,
   MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  Tabs,
+  Tab,
 } from "@mui/material";
 
 function SignInPage() {
   const [role, setRole] = useState("attendee");
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 80 }, (_, i) => currentYear - i - 18); // 80 years back
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     name: "",
     surname: "",
     email: "",
     password: "",
-    contact: "",
     organization: "",
     birthDate: 0,
   });
+  const [countryCode, setCountryCode] = useState("+90");
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const countryOptions = [
+    { code: "+1", label: "🇺🇸 +1 (USA)" },
+    { code: "+44", label: "🇬🇧 +44 (UK)" },
+    { code: "+90", label: "🇹🇷 +90 (Turkey)" },
+    { code: "+49", label: "🇩🇪 +49 (Germany)" },
+    { code: "+33", label: "🇫🇷 +33 (France)" },
+  ];
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handlePhoneNumberChange = (e) => {
+    setPhoneNumber(e.target.value);
+    validatePhone(countryCode, e.target.value);
+  };
+
+  const handleCountryCodeChange = (e) => {
+    setCountryCode(e.target.value);
+    validatePhone(e.target.value, phoneNumber);
+  };
+
+  // Phone validation: require country code and 6-14 digits
+  const validatePhone = (code, number) => {
+    const phoneRegex = /^\d{6,14}$/;
+    if (!phoneRegex.test(number)) {
+      setPhoneError(
+        "Enter a valid contact number (6-14 digits, no spaces or dashes)"
+      );
+      return false;
+    } else {
+      setPhoneError("");
+      return true;
+    }
+  };
+
+  const handleTabChange = (event, newValue) => {
+    setRole(newValue);
+    // Clear organization name if switching to attendee
+    if (newValue === "attendee") {
+      setFormData((prev) => ({ ...prev, organization: "" }));
+    }
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Registering:", { ...formData, role });
+
+    // Require organization name for organizer
+    if (role === "organizer") {
+      if (!formData.organization || !formData.organization.trim()) {
+        alert("Please enter your organization name.");
+        return;
+      }
+    }
+
+    // Age check for all registrations
+    if (!formData.birthDate) {
+      alert("Please enter your birth date.");
+      return;
+    }
+    const birth = new Date(formData.birthDate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    if (age < 18) {
+      alert("You must be at least 18 years old to register.");
+      return;
+    }
+
+    // Phone validation
+    if (!validatePhone(countryCode, phoneNumber)) {
+      alert(
+        "Please enter a valid contact number (6-14 digits, no spaces or dashes)"
+      );
+      return;
+    }
+
+    // Password match validation
+    if (formData.password !== confirmPassword) {
+      setPasswordError("Passwords do not match");
+      return;
+    } else {
+      setPasswordError("");
+    }
+
+    // Prepare payload based on role
+    const payload = {
+      name: formData.name,
+      email: formData.email,
+      password: formData.password,
+      phone: countryCode + phoneNumber,
+      birth_date: formData.birthDate || undefined,
+      organization_name: role === "organizer" ? formData.organization.trim() : undefined,
+    };
+
+    try {
+      const res = await fetch("http://localhost:8080/api/register/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        alert(data.error || "Registration failed");
+        return;
+      }
+      alert("Registration successful!");
+      navigate("/login");
+    } catch (err) {
+      alert("Network error: " + err.message);
+    }
   };
 
   return (
     <Box
       sx={{
-        height: "100vh",
+        minHeight: "100vh",
+        width: "100vw",
         display: "flex",
         justifyContent: "center",
-        alignItems: "center",
+        alignItems: "flex-start",
         backgroundColor: "#002fa7",
+        py: 6,
       }}
     >
-      <Container maxWidth="md">
-        <Paper elevation={3} sx={{ p: 3 }}>
+      <Container sx={{ width: "40%" }}>
+        <Paper elevation={3} sx={{ p: 4, mt: 2, mb: 2, borderRadius: 3 }}>
           <Box textAlign="center" mb={2}>
             <Typography
               variant="h1"
@@ -69,115 +180,149 @@ function SignInPage() {
             </Typography>
           </Box>
 
-          <Box display="flex" justifyContent="center" mb={3}>
-            <RadioGroup
-              row
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
+          {/* Sliding Tabs for Attendee/Organizer */}
+          <Tabs
+            value={role}
+            onChange={handleTabChange}
+            centered
+            sx={{ mb: 2 }}
+            TabIndicatorProps={{ style: { background: "#002fa7" } }}
+          >
+            <Tab
+              label="Attendee"
+              value="attendee"
+              sx={{
+                fontWeight: role === "attendee" ? 700 : 400,
+                color: role === "attendee" ? "#002fa7" : "#888",
+                fontSize: "1.1rem",
+                textTransform: "none",
+                minWidth: 120,
+              }}
+            />
+            <Tab
+              label="Organizer"
+              value="organizer"
+              sx={{
+                fontWeight: role === "organizer" ? 700 : 400,
+                color: role === "organizer" ? "#002fa7" : "#888",
+                fontSize: "1.1rem",
+                textTransform: "none",
+                minWidth: 120,
+              }}
+            />
+          </Tabs>
+
+          <Box
+            component="form"
+            onSubmit={handleSubmit}
+            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
+          >
+            <TextField
+              label="Name"
+              variant="outlined"
+              name="name"
+              required
+              onChange={handleChange}
+              value={formData.name}
+            />
+            <TextField
+              label="Surname"
+              variant="outlined"
+              name="surname"
+              required
+              onChange={handleChange}
+              value={formData.surname}
+            />
+            <TextField
+              label="E‑Mail"
+              variant="outlined"
+              name="email"
+              type="email"
+              required
+              onChange={handleChange}
+              value={formData.email}
+            />
+            <Box sx={{ display: "flex", gap: 1 }}>
+              <FormControl sx={{ minWidth: 110, flexShrink: 0 }} required>
+                <InputLabel id="country-code-label">Country</InputLabel>
+                <Select
+                  labelId="country-code-label"
+                  id="country-code"
+                  value={countryCode}
+                  label="Country"
+                  onChange={handleCountryCodeChange}
+                >
+                  {countryOptions.map((option) => (
+                    <MenuItem key={option.code} value={option.code}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <TextField
+                fullWidth
+                label="Contact Number"
+                name="phoneNumber"
+                value={phoneNumber}
+                onChange={handlePhoneNumberChange}
+                required
+                placeholder="5551234567"
+                error={!!phoneError}
+                helperText={phoneError}
+                variant="outlined"
+              />
+            </Box>
+            <TextField
+              fullWidth
+              type="date"
+              id="birth-date"
+              name="birthDate"
+              label="Birth Date"
+              InputLabelProps={{ shrink: true }}
+              value={formData.birthDate}
+              onChange={handleChange}
+              required
+              variant="outlined"
+            />
+            {role === "organizer" && (
+              <TextField
+                label="Organization Name"
+                variant="outlined"
+                name="organization"
+                required
+                onChange={handleChange}
+                value={formData.organization}
+              />
+            )}
+            <TextField
+              label="Password"
+              variant="outlined"
+              name="password"
+              type="password"
+              required
+              onChange={handleChange}
+              value={formData.password}
+            />
+            <TextField
+              label="Confirm Password"
+              variant="outlined"
+              name="confirmPassword"
+              type="password"
+              required
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              value={confirmPassword}
+              error={!!passwordError}
+              helperText={passwordError}
+            />
+            <Button
+              type="submit"
+              variant="contained"
+              color="primary"
+              fullWidth
+              sx={{ mt: 1 }}
             >
-              <FormControlLabel
-                value="attendee"
-                control={<Radio />}
-                label="Attendee"
-              />
-              <FormControlLabel
-                value="organizer"
-                control={<Radio />}
-                label="Organizer"
-              />
-            </RadioGroup>
-          </Box>
-
-          <Box component="form" onSubmit={handleSubmit}>
-            <Grid container spacing={2}>
-              <Grid item size={6}>
-                <TextField
-                  fullWidth
-                  label="Name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-              <Grid item size={6}>
-                <TextField
-                  fullWidth
-                  label="Surname"
-                  name="surname"
-                  value={formData.surname}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-              <Grid item size={6}>
-                <TextField
-                  fullWidth
-                  label="E‑Mail"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-
-              <Grid item size={6}>
-                <TextField
-                  fullWidth
-                  label="Contact Number"
-                  name="contact"
-                  value={formData.contact}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-
-              {role === "attendee" && (
-                <Grid item xs={6}>
-                  <TextField
-                    fullWidth
-                    type="date"
-                    id="birth-date"
-                    name="birthDate"
-                    label="Birth Date"
-                    InputLabelProps={{ shrink: true }}
-                    value={formData.birthDate}
-                    onChange={handleChange}
-                    required
-                  />
-                </Grid>
-              )}
-
-              {role === "organizer" && (
-                <Grid item size={6}>
-                  <TextField
-                    fullWidth
-                    label="Organization Name"
-                    name="organization"
-                    value={formData.organization}
-                    onChange={handleChange}
-                    required
-                  />
-                </Grid>
-              )}
-              <Grid item size={6}>
-                <TextField
-                  fullWidth
-                  label="Password"
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-            </Grid>
-            <Grid item size={12} sx={{ mt: 2 }}>
-              <Button fullWidth type="submit" variant="contained">
-                REGISTER
-              </Button>
-            </Grid>
+              REGISTER
+            </Button>
           </Box>
         </Paper>
       </Container>
