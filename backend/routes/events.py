@@ -5,67 +5,93 @@ bp = Blueprint("events", __name__)
     
 @bp.route("/", methods=["GET"])
 def get_events():
-    search=request.args.get("search", "").strip()
-    category=request.args.get("category")
-    event_date=request.args.get("event_date")
-    city=request.args.get("city")
-    event_status=request.args.get("event_status")
+    # --- Parse query parameters ---
+    search = request.args.get("search", "").strip()
+    category = request.args.get("category")
+    event_date = request.args.get("event_date")
+    city = request.args.get("city")
+    event_status = request.args.get("event_status")
 
-    filters = []
-    params  = []
+    # --- Build dynamic WHERE clause and parameters ---
+    where_clauses = []
+    sql_params = []
 
     if search:
-        filters.append(
+        where_clauses.append(
             "(e.event_title ILIKE %s OR v.venue_name ILIKE %s OR v.city ILIKE %s)"
         )
         like = f"%{search}%"
-        params.extend([like, like, like])
+        sql_params.extend([like, like, like])
     if category:
-        filters.append("e.category = %s")
-        params.append(category)
+        where_clauses.append("e.category = %s")
+        sql_params.append(category)
     if event_date:
-        filters.append("e.event_date = %s")
-        params.append(event_date)
+        where_clauses.append("e.event_date = %s")
+        sql_params.append(event_date)
     if city:
-        filters.append("v.city = %s")
-        params.append(city)
+        where_clauses.append("v.city = %s")
+        sql_params.append(city)
     if event_status:
-        filters.append("e.event_status = %s")
-        params.append(event_status)
+        where_clauses.append("e.event_status = %s")
+        sql_params.append(event_status)
 
-    where = ""
-    if filters:
-        where = "WHERE " + " AND ".join(filters)
+    where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
 
+    # --- Query database ---
+    query = f"""
+        SELECT
+            e.event_id,
+            e.organizer_id,
+            e.venue_id,
+            e.event_title,
+            e.event_status,
+            e.description,
+            e.event_date,
+            e.category,
+            e.revenue,
+            e.regulations,
+            e.category_name,
+            e.image_ids,
+            v.venue_name,
+            v.city,
+            v.location
+        FROM event AS e
+        LEFT JOIN venue AS v ON v.venue_id = e.venue_id
+        {where_sql}
+        ORDER BY e.event_date;
+    """
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute(f"""
-            SELECT
-            e.event_title,
-            e.event_date,
-            v.venue_name,
-            e.event_id,
-            e.image_ids
-            FROM event AS e
-            LEFT JOIN venue AS v ON v.venue_id = e.venue_id
-            {where}
-            ORDER BY e.event_date;
-            """, params)
+            cur.execute(query, sql_params)
             events = cur.fetchall()
-            return jsonify([
-            {
-                "event_title": event[0],
-                "event_date" : event[1],
-                "venue_name" : event[2],
-                "event_id"   : event[3],
-                "image_ids"   : event[4],
-            } for event in events]), 200 
+            # --- Build response ---
+            result = [
+                {
+                    "event_id": row[0],
+                    "organizer_id": row[1],
+                    "venue_id": row[2],
+                    "event_title": row[3],
+                    "event_status": row[4],
+                    "description": row[5],
+                    "event_date": row[6],
+                    "category": row[7],
+                    "revenue": row[8],
+                    "regulations": row[9],
+                    "category_name": row[10],
+                    "image_ids": row[11],
+                    "venue_name": row[12],
+                    "city": row[13],
+                    "location": row[14],
+                }
+                for row in events
+            ]
+            return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
         if conn:
-            db_pool.putconn(conn)   
+            db_pool.putconn(conn)
     
 @bp.route("/<int:event_id>", methods=["GET"])
 def get_event_by_id(event_id):
