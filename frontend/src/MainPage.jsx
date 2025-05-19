@@ -27,8 +27,16 @@ function MainPage() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    const user = localStorage.getItem("user");
+    setIsLoggedIn(!!token && !!user);
   }, []);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && user.user_type === 1) {
+      navigate("/organizer/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -65,6 +73,11 @@ function MainPage() {
     navigate("/login");
   };
   const handleProfileRedirect = () => navigate("/profile");
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
   const openEvent = (event) => {
     navigate(`/event/${event.event_id}`, { state: { event } });
   };
@@ -124,21 +137,38 @@ function MainPage() {
           </Box>
           <Stack direction="row" spacing={1}>
             {isLoggedIn ? (
-              <Button
-                color="inherit"
-                variant="outlined"
-                onClick={handleProfileRedirect}
-                sx={{
-                  borderColor: "white",
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+              <>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={handleProfileRedirect}
+                  sx={{
                     borderColor: "white",
-                  },
-                }}
-              >
-                Profile
-              </Button>
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  Profile
+                </Button>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={handleLogout}
+                  sx={{
+                    borderColor: "white",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
             ) : (
               <>
                 <Button

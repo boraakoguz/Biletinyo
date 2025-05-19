@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Box,
@@ -39,6 +39,14 @@ function SignInPage() {
     { code: "+49", label: "🇩🇪 +49 (Germany)" },
     { code: "+33", label: "🇫🇷 +33 (France)" },
   ];
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+    if (token && user) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -322,6 +330,16 @@ function SignInPage() {
               sx={{ mt: 1 }}
             >
               REGISTER
+            </Button>
+            <Button
+              type="button"
+              variant="outlined"
+              color="primary"
+              fullWidth
+              sx={{ mt: 1 }}
+              onClick={() => navigate("/")}
+            >
+              Back
             </Button>
           </Box>
         </Paper>

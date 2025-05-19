@@ -114,6 +114,14 @@ function ProfilePage() {
                 Phone
               </Typography>
               <Typography variant="h5">532</Typography>
+              <Button
+                variant="outlined"
+                color="primary"
+                sx={{ mt: 2, mb: 1 }}
+                onClick={() => navigate("/")}
+              >
+                Back
+              </Button>
               <Button variant="contained" color="error" onClick={handleLogout}>
                 Logout
               </Button>

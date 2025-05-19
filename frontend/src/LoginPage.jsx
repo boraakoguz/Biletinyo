@@ -6,7 +6,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
@@ -14,6 +14,14 @@ function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+    if (token && user) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -39,7 +47,11 @@ function LoginPage() {
 
       console.log("Logged in user:", data.user);
       console.log("Logged in user:", data.access_token);
-      navigate("/");
+      if (data.user.user_type === 1) {
+        navigate("/organizer/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Login error:", error.message);
       alert(error.message);
@@ -110,6 +122,16 @@ function LoginPage() {
             </Button>
             <Button type="button" variant="text" color="zort">
               Forgot Password?
+            </Button>
+            <Button
+              type="button"
+              variant="outlined"
+              color="primary"
+              fullWidth
+              sx={{ mt: 1 }}
+              onClick={() => navigate("/")}
+            >
+              Back
             </Button>
           </Box>
         </Paper>
