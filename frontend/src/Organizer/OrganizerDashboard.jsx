@@ -21,6 +21,27 @@ const OrganizerDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!token || !user || user.user_type !== 1) {
+      navigate("/", { replace: true });
+    }
+  }, [navigate]);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+    setIsLoggedIn(!!token && !!user);
+  }, []);
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    navigate("/");
+  };
 
   // --- Mock data for development ---
   useEffect(() => {
@@ -163,24 +184,49 @@ const OrganizerDashboard = () => {
             />
           </Box>
           <Stack direction="row" spacing={1}>
-            <Button
-              color="inherit"
-              onClick={() => navigate("/login")}
-              sx={{ "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" } }}
-            >
-              Üye Girişi
-            </Button>
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={() => navigate("/signin")}
-              sx={{
-                borderColor: "white",
-                "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
-              }}
-            >
-              Üye Ol
-            </Button>
+            {isLoggedIn ? (
+              <>
+                <Button
+                  color="inherit"
+                  onClick={() => navigate("/profile")}
+                  sx={{ "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" } }}
+                >
+                  Profile
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  onClick={handleLogout}
+                  sx={{
+                    borderColor: "white",
+                    "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  color="inherit"
+                  onClick={() => navigate("/login")}
+                  sx={{ "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" } }}
+                >
+                  Üye Girişi
+                </Button>
+                <Button
+                  variant="outlined"
+                  color="inherit"
+                  onClick={() => navigate("/signin")}
+                  sx={{
+                    borderColor: "white",
+                    "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+                  }}
+                >
+                  Üye Ol
+                </Button>
+              </>
+            )}
           </Stack>
         </Toolbar>
       </AppBar>

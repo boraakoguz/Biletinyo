@@ -24,11 +24,23 @@ function MainPage() {
   const [loading, setLoading] = useState(true);
   const [events, setEvents] = useState([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [searchText, setSearchText] = useState("");
+  const [category, setCategory] = useState("");
+  const [dateFilter, setDateFilter] = useState("");
+  const [city, setCity] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    const user = localStorage.getItem("user");
+    setIsLoggedIn(!!token && !!user);
   }, []);
+
+  useEffect(() => {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (user && user.user_type === 1) {
+      navigate("/organizer/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -65,9 +77,46 @@ function MainPage() {
     navigate("/login");
   };
   const handleProfileRedirect = () => navigate("/profile");
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
   const openEvent = (event) => {
     navigate(`/event/${event.event_id}`, { state: { event } });
   };
+
+  const filteredEvents = events.filter(event => {
+    // Search text
+    const matchesSearch =
+      event.event_title.toLowerCase().includes(searchText.toLowerCase()) ||
+      (event.venue_name && event.venue_name.toLowerCase().includes(searchText.toLowerCase())) ||
+      (event.artist && event.artist.toLowerCase().includes(searchText.toLowerCase()));
+
+    // Category
+    const matchesCategory = !category || (event.category && event.category.toLowerCase() === category);
+
+    // City
+    const matchesCity = !city || ( event.city && event.city.toLowerCase() === city);
+
+    // Date filter
+    let matchesDate = true;
+    if (dateFilter) {
+      const eventDate = new Date(event.event_date);
+      const now = new Date();
+      if (dateFilter === "this-week") {
+        const weekFromNow = new Date();
+        weekFromNow.setDate(now.getDate() + 7);
+        matchesDate = eventDate >= now && eventDate <= weekFromNow;
+      } else if (dateFilter === "this-month") {
+        matchesDate = eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
+      } else if (dateFilter === "future") {
+        matchesDate = eventDate.getFullYear() === now.getFullYear();
+      }
+    }
+
+    return matchesSearch && matchesCategory && matchesCity && matchesDate;
+  });
 
   return (
     <>
@@ -111,6 +160,8 @@ function MainPage() {
               placeholder="Etkinlik, mekan ya da sanatçı arayın..."
               size="small"
               fullWidth
+              value={searchText}
+              onChange={e => setSearchText(e.target.value)}
               sx={{
                 backgroundColor: "white",
                 borderRadius: 3,
@@ -124,21 +175,38 @@ function MainPage() {
           </Box>
           <Stack direction="row" spacing={1}>
             {isLoggedIn ? (
-              <Button
-                color="inherit"
-                variant="outlined"
-                onClick={handleProfileRedirect}
-                sx={{
-                  borderColor: "white",
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.1)",
+              <>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={handleProfileRedirect}
+                  sx={{
                     borderColor: "white",
-                  },
-                }}
-              >
-                Profile
-              </Button>
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  Profile
+                </Button>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={handleLogout}
+                  sx={{
+                    borderColor: "white",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
             ) : (
               <>
                 <Button
@@ -199,12 +267,14 @@ function MainPage() {
             }}
           >
             <InputLabel>Kategori</InputLabel>
-            <Select label="Kategori" defaultValue="">
+            <Select label="Kategori" value={category} onChange={e => setCategory(e.target.value)}>
               <MenuItem value="">Tümü</MenuItem>
               <MenuItem value="konser">Konser</MenuItem>
               <MenuItem value="tiyatro">Tiyatro</MenuItem>
               <MenuItem value="festival">Festival</MenuItem>
               <MenuItem value="sinema">Sinema</MenuItem>
+              <MenuItem value="music">Music</MenuItem>
+              <MenuItem value="technology">Technology</MenuItem>
             </Select>
           </FormControl>
 
@@ -226,7 +296,7 @@ function MainPage() {
             }}
           >
             <InputLabel>Tarih</InputLabel>
-            <Select label="Tarih" defaultValue="">
+            <Select label="Tarih" value={dateFilter} onChange={e => setDateFilter(e.target.value)}>
               <MenuItem value="">Tümü</MenuItem>
               <MenuItem value="this-week">Bu Hafta</MenuItem>
               <MenuItem value="this-month">Bu Ay</MenuItem>
@@ -251,7 +321,7 @@ function MainPage() {
             }}
           >
             <InputLabel>Şehir</InputLabel>
-            <Select label="Şehir" defaultValue="">
+            <Select label="Şehir" value={city} onChange={e => setCity(e.target.value)}>
               <MenuItem value="">Tümü</MenuItem>
               <MenuItem value="ankara">Ankara</MenuItem>
               <MenuItem value="istanbul">İstanbul</MenuItem>
@@ -259,12 +329,13 @@ function MainPage() {
               <MenuItem value="bursa">Bursa</MenuItem>
               <MenuItem value="antalya">Antalya</MenuItem>
               <MenuItem value="adana">Adana</MenuItem>
+              <MenuItem value="konya">Konya</MenuItem>
             </Select>
           </FormControl>
         </Stack>
 
         <Grid container spacing={3} justifyContent="left" mb={3}>
-          {events.map((event, i) => (
+          {filteredEvents.map((event, i) => (
             <Grid item key={i}>
               <Card
                 sx={{
