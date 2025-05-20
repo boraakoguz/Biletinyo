@@ -31,7 +31,8 @@ CREATE TABLE venue(
     venue_name			VARCHAR(100) NOT NULL,
     venue_description	TEXT,
     city                VARCHAR(100) NOT NULL,
-    seat_map			INT[][] NOT NULL
+    seat_map			INT[][] NOT NULL,
+    available     INT NOT NULL
 );
 
 CREATE TABLE event (
@@ -123,12 +124,12 @@ INSERT INTO users (name, email, password, user_type, phone, birth_date) VALUES
 ('Organizer Smith', 'org@org.com', '$2b$12$mGapQFzDalequVp3S7GZpOp8NZbghmNmlMsD4wusmo76lKQQjI4CG', 1, '555-5678', '2000-06-15'),
 ('Ege Babs', 'ege@gmail.com', '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-8765', '2015-06-15');
 
-INSERT INTO venue (capacity, location, venue_name, venue_description, city, seat_map)
+INSERT INTO venue (capacity, location, venue_name, venue_description, city, seat_map, available)
 VALUES
   (100, 'Atakule, Ankara', 'Atakule Hall', 'Central conference hall', 'Ankara',
-   '{{1,1,1},{1,1,1},{1,1,1}}'),
+   '{{1,1,1},{1,1,1},{1,1,1}}', 1),
   (200, 'Konya Road, Konya', 'Fairgrounds', 'Open-air fairgrounds', 'Konya',
-   '{{1,1},{1,1}}');
+   '{{1,1},{1,1}}', 1);
 
 INSERT INTO organizer (user_id, organization_name)
 VALUES
