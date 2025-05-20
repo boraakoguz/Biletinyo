@@ -29,6 +29,7 @@ function MainPage() {
   const [category, setCategory] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [city, setCity] = useState("");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -46,8 +47,41 @@ function MainPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
+        const params = new URLSearchParams();
+
+        if (searchText) params.append("search", searchText);
+        if (category) params.append("category", category);
+        if (city) params.append("city", city);
+        if (
+          dateFilter === "this-week" ||
+          dateFilter === "this-month" ||
+          dateFilter === "future"
+        ) {
+          const now = new Date();
+          let startDate = null;
+          let endDate = null;
+
+          if (dateFilter === "this-week") {
+            startDate = now.toISOString().split("T")[0];
+            const weekFromNow = new Date(now);
+            weekFromNow.setDate(now.getDate() + 7);
+            endDate = weekFromNow.toISOString().split("T")[0];
+          } else if (dateFilter === "this-month") {
+            startDate = now.toISOString().split("T")[0];
+            const in30Days = new Date();
+            in30Days.setDate(now.getDate() + 30);
+            endDate = in30Days.toISOString().split("T")[0];
+          } else if (dateFilter === "future") {
+            startDate = now.toISOString().split("T")[0];
+          }
+
+          if (startDate) params.append("start_date", startDate);
+          if (endDate) params.append("end_date", endDate);
+        }
+
         const data = await apiService.getEvents();
         console.log("Fetched events:", data);
+        console.log("Fetching with:", params.toString());
         setEvents(data);
       } catch (err) {
         console.error("Error loading events:", err);
@@ -58,7 +92,7 @@ function MainPage() {
     };
 
     fetchEvents();
-  }, []);
+  }, [searchText, category, city, dateFilter]);
 
   if (loading) {
     return (
@@ -82,38 +116,6 @@ function MainPage() {
   const openEvent = (event) => {
     navigate(`/event/${event.event_id}`, { state: { event } });
   };
-
-  const filteredEvents = events.filter(event => {
-    // Search text
-    const matchesSearch =
-      event.event_title.toLowerCase().includes(searchText.toLowerCase()) ||
-      (event.venue_name && event.venue_name.toLowerCase().includes(searchText.toLowerCase())) ||
-      (event.artist && event.artist.toLowerCase().includes(searchText.toLowerCase()));
-
-    // Category
-    const matchesCategory = !category || (event.category && event.category.toLowerCase() === category);
-
-    // City
-    const matchesCity = !city || ( event.city && event.city.toLowerCase() === city);
-
-    // Date filter
-    let matchesDate = true;
-    if (dateFilter) {
-      const eventDate = new Date(event.event_date);
-      const now = new Date();
-      if (dateFilter === "this-week") {
-        const weekFromNow = new Date();
-        weekFromNow.setDate(now.getDate() + 7);
-        matchesDate = eventDate >= now && eventDate <= weekFromNow;
-      } else if (dateFilter === "this-month") {
-        matchesDate = eventDate.getMonth() === now.getMonth() && eventDate.getFullYear() === now.getFullYear();
-      } else if (dateFilter === "future") {
-        matchesDate = eventDate.getFullYear() === now.getFullYear();
-      }
-    }
-
-    return matchesSearch && matchesCategory && matchesCity && matchesDate;
-  });
 
   return (
     <>
@@ -158,7 +160,7 @@ function MainPage() {
               size="small"
               fullWidth
               value={searchText}
-              onChange={e => setSearchText(e.target.value)}
+              onChange={(e) => setSearchText(e.target.value)}
               sx={{
                 backgroundColor: "white",
                 borderRadius: 3,
@@ -216,7 +218,7 @@ function MainPage() {
                     },
                   }}
                 >
-                  Üye Girişi
+                  Login
                 </Button>
                 <Button
                   color="inherit"
@@ -231,7 +233,7 @@ function MainPage() {
                     },
                   }}
                 >
-                  Üye Ol
+                  Sign In
                 </Button>
               </>
             )}
@@ -263,15 +265,19 @@ function MainPage() {
               },
             }}
           >
-            <InputLabel>Kategori</InputLabel>
-            <Select label="Kategori" value={category} onChange={e => setCategory(e.target.value)}>
-              <MenuItem value="">Tümü</MenuItem>
-              <MenuItem value="konser">Konser</MenuItem>
-              <MenuItem value="tiyatro">Tiyatro</MenuItem>
-              <MenuItem value="festival">Festival</MenuItem>
-              <MenuItem value="sinema">Sinema</MenuItem>
-              <MenuItem value="music">Music</MenuItem>
-              <MenuItem value="technology">Technology</MenuItem>
+            <InputLabel>Category</InputLabel>
+            <Select
+              label="Kategori"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+            >
+              <MenuItem value="">All</MenuItem>
+              <MenuItem value="Concert">Concert</MenuItem>
+              <MenuItem value="Theatre">Theatre</MenuItem>
+              <MenuItem value="Festival">Festival</MenuItem>
+              <MenuItem value="Cinema">Cinema</MenuItem>
+              <MenuItem value="Music">Music</MenuItem>
+              <MenuItem value="Technology">Technology</MenuItem>
             </Select>
           </FormControl>
 
@@ -292,12 +298,16 @@ function MainPage() {
               },
             }}
           >
-            <InputLabel>Tarih</InputLabel>
-            <Select label="Tarih" value={dateFilter} onChange={e => setDateFilter(e.target.value)}>
-              <MenuItem value="">Tümü</MenuItem>
-              <MenuItem value="this-week">Bu Hafta</MenuItem>
-              <MenuItem value="this-month">Bu Ay</MenuItem>
-              <MenuItem value="future">Bu Yıl</MenuItem>
+            <InputLabel>Date</InputLabel>
+            <Select
+              label="Tarih"
+              value={dateFilter}
+              onChange={(e) => setDateFilter(e.target.value)}
+            >
+              <MenuItem value="">All</MenuItem>
+              <MenuItem value="this-week">This week</MenuItem>
+              <MenuItem value="this-month">This Month</MenuItem>
+              <MenuItem value="future">This Year</MenuItem>
             </Select>
           </FormControl>
           <FormControl
@@ -317,22 +327,26 @@ function MainPage() {
               },
             }}
           >
-            <InputLabel>Şehir</InputLabel>
-            <Select label="Şehir" value={city} onChange={e => setCity(e.target.value)}>
-              <MenuItem value="">Tümü</MenuItem>
-              <MenuItem value="ankara">Ankara</MenuItem>
-              <MenuItem value="istanbul">İstanbul</MenuItem>
-              <MenuItem value="izmir">İzmir</MenuItem>
-              <MenuItem value="bursa">Bursa</MenuItem>
-              <MenuItem value="antalya">Antalya</MenuItem>
-              <MenuItem value="adana">Adana</MenuItem>
-              <MenuItem value="konya">Konya</MenuItem>
+            <InputLabel>City</InputLabel>
+            <Select
+              label="Şehir"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+            >
+              <MenuItem value="">All</MenuItem>
+              <MenuItem value="Ankara">Ankara</MenuItem>
+              <MenuItem value="Istanbul">İstanbul</MenuItem>
+              <MenuItem value="Izmir">İzmir</MenuItem>
+              <MenuItem value="Bursa">Bursa</MenuItem>
+              <MenuItem value="Antalya">Antalya</MenuItem>
+              <MenuItem value="Adana">Adana</MenuItem>
+              <MenuItem value="Konya">Konya</MenuItem>
             </Select>
           </FormControl>
         </Stack>
 
         <Grid container spacing={3} justifyContent="left" mb={3}>
-          {filteredEvents.map((event, i) => (
+          {events.map((event, i) => (
             <Grid item key={i}>
               <Card
                 sx={{
@@ -359,7 +373,23 @@ function MainPage() {
                       {event.venue_name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {event.event_date}
+                      {new Date(event.event_date).toLocaleDateString(
+                        undefined,
+                        {
+                          weekday: "short",
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}
+                      {" • "}
+                      {new Date(
+                        `${event.event_date}T${event.event_time}`
+                      ).toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}
                     </Typography>
                   </CardContent>
                 </CardActionArea>

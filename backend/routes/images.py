@@ -16,7 +16,7 @@ def get_image_by_id(image_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-#TODO
+
 @bp.route("/<int:event_id>", methods=["POST"])
 def upload_image(event_id):
     try:

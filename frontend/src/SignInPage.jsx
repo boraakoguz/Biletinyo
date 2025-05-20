@@ -94,7 +94,7 @@ function SignInPage() {
     e.preventDefault();
     setLoading(true);
 
-    if (password !== confirmPassword) {
+    if (formData.password !== confirmPassword) {
       setPasswordError("Passwords do not match");
       setLoading(false);
       return;

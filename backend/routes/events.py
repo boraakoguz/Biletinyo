@@ -12,6 +12,8 @@ def get_events():
     event_date = request.args.get("event_date")
     city = request.args.get("city")
     event_status = request.args.get("event_status")
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
 
     # --- Build dynamic WHERE clause and parameters ---
     where_clauses = []
@@ -26,9 +28,12 @@ def get_events():
     if category:
         where_clauses.append("e.category = %s")
         sql_params.append(category)
-    if event_date:
-        where_clauses.append("e.event_date = %s")
-        sql_params.append(event_date)
+    if start_date:
+        where_clauses.append("e.event_date >= %s")
+        sql_params.append(start_date)
+    if end_date:
+        where_clauses.append("e.event_date <= %s")
+        sql_params.append(end_date)
     if city:
         where_clauses.append("v.city = %s")
         sql_params.append(city)
@@ -55,7 +60,8 @@ def get_events():
             e.image_ids,
             v.venue_name,
             v.city,
-            v.location
+            v.location,
+            e.event_time
         FROM event AS e
         LEFT JOIN venue AS v ON v.venue_id = e.venue_id
         {where_sql}
@@ -67,26 +73,26 @@ def get_events():
             cur.execute(query, sql_params)
             events = cur.fetchall()
             # --- Build response ---
-            result = [
-                {
-                    "event_id": row[0],
-                    "organizer_id": row[1],
-                    "venue_id": row[2],
-                    "event_title": row[3],
-                    "event_status": row[4],
-                    "description": row[5],
-                    "event_date": row[6],
-                    "category": row[7],
-                    "revenue": row[8],
-                    "regulations": row[9],
+            result = []
+            for row in events:
+                result.append({
+                    "event_id":      row[0],
+                    "organizer_id":  row[1],
+                    "venue_id":      row[2],
+                    "event_title":   row[3],
+                    "event_status":  row[4],
+                    "description":   row[5],
+                    "event_date":    row[6].isoformat(),           
+                    "category":      row[7],
+                    "revenue":       float(row[8]),                 
+                    "regulations":   row[9],
                     "category_name": row[10],
-                    "image_ids": row[11],
-                    "venue_name": row[12],
-                    "city": row[13],
-                    "location": row[14],
-                }
-                for row in events
-            ]
+                    "image_ids":     row[11],                       
+                    "venue_name":    row[12],
+                    "city":          row[13],
+                    "location":      row[14],
+                    "event_time":    row[15].strftime("%H:%M:%S"),
+                })
             return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

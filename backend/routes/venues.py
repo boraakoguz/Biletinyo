@@ -112,19 +112,46 @@ def post_venue():
 @bp.route("/<int:venue_id>", methods=["PUT"])
 @jwt_required()
 def put_venue_by_id(venue_id):
-    data = request.get_json()
-    capacity = data.get("capacity")
-    location = data.get("location")
-    venue_name = data.get("venue_name")
-    venue_description = data.get("venue_description")
-    city = data.get("city")
-    seat_map = data.get("seat_map")
+    data = request.get_json(force=True) or {}
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute("UPDATE venue SET capacity=%s, location=%s, venue_name=%s, venue_description=%s, city=%s, seat_map=%s WHERE venue_id=%s;",(capacity, location, venue_name, venue_description, city, seat_map, venue_id,))
+            cur.execute("""
+                SELECT capacity, location, venue_name, venue_description,
+                       city, seat_map, available
+                FROM venue
+                WHERE venue_id = %s
+                FOR UPDATE
+            """, (venue_id,))
+            venue = cur.fetchone()
+            (
+                capacity, location, venue_name, venue_description,
+                city, seat_map, available
+            ) = (
+                data.get("capacity", venue[0]),
+                data.get("location", venue[1]),
+                data.get("venue_name", venue[2]),
+                data.get("venue_description", venue[3]),
+                data.get("city", venue[4]),
+                data.get("seat_map", venue[5]),
+                data.get("available", venue[6]),
+            )
+            cur.execute("""
+                UPDATE venue
+                   SET capacity=%s,
+                       location=%s,
+                       venue_name=%s,
+                       venue_description=%s,
+                       city=%s,
+                       seat_map=%s,
+                       available=%s
+                 WHERE venue_id=%s;
+            """, (
+                capacity, location, venue_name, venue_description,
+                city, seat_map, available, venue_id
+            ))
             conn.commit()
-        return "Update Successful", 200
+        return "Update successful", 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
