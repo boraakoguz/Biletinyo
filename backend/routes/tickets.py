@@ -1,5 +1,17 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, send_file
 from database import db_pool
+import qrcode
+from io import BytesIO
+from reportlab.pdfgen import canvas
+from reportlab.lib.pagesizes import A4
+from reportlab.lib.units import mm
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import (
+    SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
+)
+from reportlab.lib.utils import ImageReader
+
 
 bp = Blueprint("tickets", __name__)
 
@@ -92,8 +104,7 @@ def get_tickets():
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/<int:ticket_id>", methods=["GET"])
-def get_ticket_by_id(ticket_id):
+def get_ticket(ticket_id):
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -120,9 +131,9 @@ def get_ticket_by_id(ticket_id):
             cur.execute(
                     """
                     SELECT guest_name,
-                           guest_mail,
-                           guest_phone,
-                           guest_birth_date
+                            guest_mail,
+                            guest_phone,
+                            guest_birth_date
                     FROM ticket_guest
                     WHERE ticket_id = %s;
                     """,
@@ -138,12 +149,22 @@ def get_ticket_by_id(ticket_id):
                 }
                 for guest in guests
             ]
-        return jsonify(ticket), 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+            return ticket
+    except:
+        return None
     finally:
         if conn:
             db_pool.putconn(conn)
+
+@bp.route("/<int:ticket_id>", methods=["GET"])
+def get_ticket_by_id(ticket_id):
+    try:
+        ticket = get_ticket(ticket_id)
+        if not ticket:
+            return jsonify({"error": "Ticket not found"}), 404
+        return jsonify(ticket), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @bp.route("/<int:ticket_id>", methods=["DELETE"])
 def delete_user_by_id(ticket_id):
@@ -246,3 +267,123 @@ def put_ticket(ticket_id):
     finally:
         if conn:
             db_pool.putconn(conn)
+        
+def make_qr_from_str(data):
+    qr = qrcode.make(data)
+    buffer = BytesIO()
+    qr.save(buffer, format='PNG')
+    buffer.seek(0)
+    return buffer
+
+def fetch_event(event_id):
+    conn = db_pool.getconn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT 
+                    e.event_title,
+                    e.event_date::date,
+                    TO_CHAR(e.event_date, 'HH24:MI') AS event_time,
+                    v.venue_name,
+                    v.city,
+                    v.location
+                FROM event e
+                JOIN venue v ON v.venue_id = e.venue_id
+                WHERE e.event_id = %s;
+            """, (event_id,))
+            row = cur.fetchone()
+            if not row:
+                return None
+            keys = ['event_title','event_date','event_time','venue_name','city','location']
+            return dict(zip(keys, row))
+    finally:
+        db_pool.putconn(conn)
+
+@bp.route("/<int:ticket_id>/pdf", methods=["GET"])
+def pdf_ticket(ticket_id):
+    ticket = get_ticket(ticket_id)
+    if not ticket:
+        return jsonify({"error": "Ticket not found"}), 404
+
+    event = fetch_event(ticket['event_id'])
+    if not event:
+        return jsonify({"error": "Event not found"}), 404
+
+    buffer = BytesIO()
+    doc = SimpleDocTemplate(
+        buffer,
+        pagesize=A4,
+        rightMargin=20*mm, leftMargin=20*mm,
+        topMargin=20*mm, bottomMargin=20*mm
+    )
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'Title', parent=styles['Heading1'],
+        fontSize=20, alignment=1,
+        textColor=colors.HexColor('#333333')
+    )
+    label_style = ParagraphStyle(
+        'Label', parent=styles['Normal'],
+        fontSize=12, textColor=colors.HexColor('#555555'),
+        spaceAfter=4
+    )
+
+    flowables = []
+
+    flowables.append(Paragraph(f"{event['event_title']}", title_style))
+    flowables.append(Spacer(1, 4*mm))
+
+    flowables.append(Paragraph(
+        f"<b>Date:</b> {event['event_date'].strftime('%Y-%m-%d')} &nbsp;&nbsp; "
+        f"<b>Time:</b> {event['event_time']}",
+        label_style
+    ))
+    flowables.append(Paragraph(
+        f"<b>Venue:</b> {event['venue_name']} — {event['city']}, {event['location']}",
+        label_style
+    ))
+    flowables.append(Spacer(1, 8*mm))
+
+    flowables.append(Paragraph(f"Ticket #{ticket['ticket_id']}", styles['Heading2']))
+    flowables.append(Spacer(1, 4*mm))
+    flowables.append(Paragraph(
+        f"<b>Class:</b> {ticket['ticket_class']} &nbsp;&nbsp; "
+        f"<b>Price:</b> ${ticket['price']} &nbsp;&nbsp; "
+        f"<b>Seat:</b> Row {ticket['seat_row']}, Col {ticket['seat_column']}",
+        label_style
+    ))
+    flowables.append(Spacer(1, 6*mm))
+
+    data = [['Name','Email','Phone','Birth Date']]
+    for g in ticket['ticket_guest']:
+        data.append([
+            g['guest_name'],
+            g['guest_mail'],
+            g['guest_phone'],
+            g['guest_birth_date'].strftime('%Y-%m-%d')
+        ])
+    tbl = Table(data, colWidths=[50*mm,60*mm,40*mm,30*mm])
+    tbl.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,0),colors.HexColor('#f5f5f5')),
+        ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
+        ('ALIGN',(0,0),(-1,-1),'LEFT'),
+        ('GRID',(0,0),(-1,-1),0.5,colors.HexColor('#dddddd')),
+    ]))
+    flowables.append(tbl)
+    flowables.append(Spacer(1,12*mm))
+
+    qr_buf = make_qr_from_str(f"https://localhost:8080/api/tickets/{ticket_id}")
+    qr_buf.seek(0)
+    qr = Image(qr_buf, 35*mm, 35*mm)
+    qr.hAlign = 'RIGHT'
+    flowables.append(qr)
+
+    doc.build(flowables)
+    buffer.seek(0)
+    return send_file(
+        buffer,
+        mimetype='application/pdf',
+        as_attachment=True,
+        download_name=f"ticket_{ticket_id}.pdf"
+    )
