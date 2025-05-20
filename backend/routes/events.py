@@ -11,6 +11,8 @@ def get_events():
     event_date = request.args.get("event_date")
     city = request.args.get("city")
     event_status = request.args.get("event_status")
+    start_date = request.args.get("start_date")
+    end_date = request.args.get("end_date")
 
     # --- Build dynamic WHERE clause and parameters ---
     where_clauses = []
@@ -25,9 +27,12 @@ def get_events():
     if category:
         where_clauses.append("e.category = %s")
         sql_params.append(category)
-    if event_date:
-        where_clauses.append("e.event_date = %s")
-        sql_params.append(event_date)
+    if start_date:
+        where_clauses.append("e.event_date >= %s")
+        sql_params.append(start_date)
+    if end_date:
+        where_clauses.append("e.event_date <= %s")
+        sql_params.append(end_date)
     if city:
         where_clauses.append("v.city = %s")
         sql_params.append(city)
