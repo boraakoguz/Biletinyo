@@ -14,6 +14,7 @@ CREATE TABLE attendee (
     
     attended_event_count    INT NOT NULL,
     account_balance         DECIMAL(10,2),
+
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
@@ -22,6 +23,14 @@ CREATE TABLE organizer (
 
     organization_name   VARCHAR(100) NOT NULL,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+
+CREATE TABLE follow (
+    user_id             INT PRIMARY KEY,
+    organizer_id        INT NOT NULL,
+
+    FOREIGN KEY (user_id) REFERENCES users(user_id),
+    FOREIGN KEY (organizer_id) REFERENCES organizer(user_id)
 );
 
 CREATE TABLE venue(
