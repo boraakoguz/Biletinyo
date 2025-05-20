@@ -13,7 +13,12 @@ import {
   FormControl,
   Tabs,
   Tab,
+  FormControlLabel,
+  Grid,
+  Radio,
+  RadioGroup,
 } from "@mui/material";
+import apiService from "./apiService";
 
 function SignInPage() {
   const [role, setRole] = useState("attendee");
@@ -31,6 +36,7 @@ function SignInPage() {
   const [phoneError, setPhoneError] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const countryOptions = [
     { code: "+1", label: "🇺🇸 +1 (USA)" },
@@ -86,73 +92,37 @@ function SignInPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    // Require organization name for organizer
-    if (role === "organizer") {
-      if (!formData.organization || !formData.organization.trim()) {
-        alert("Please enter your organization name.");
-        return;
-      }
-    }
-
-    // Age check for all registrations
-    if (!formData.birthDate) {
-      alert("Please enter your birth date.");
-      return;
-    }
-    const birth = new Date(formData.birthDate);
-    const today = new Date();
-    let age = today.getFullYear() - birth.getFullYear();
-    const m = today.getMonth() - birth.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
-      age--;
-    }
-    if (age < 18) {
-      alert("You must be at least 18 years old to register.");
-      return;
-    }
-
-    // Phone validation
-    if (!validatePhone(countryCode, phoneNumber)) {
-      alert(
-        "Please enter a valid contact number (6-14 digits, no spaces or dashes)"
-      );
-      return;
-    }
-
-    // Password match validation
-    if (formData.password !== confirmPassword) {
+    if (password !== confirmPassword) {
       setPasswordError("Passwords do not match");
+      setLoading(false);
       return;
-    } else {
-      setPasswordError("");
     }
 
-    // Prepare payload based on role
-    const payload = {
+    const userData = {
       name: formData.name,
       email: formData.email,
       password: formData.password,
+      user_type: role === "organizer" ? 1 : 0,
       phone: countryCode + phoneNumber,
-      birth_date: formData.birthDate || undefined,
-      organization_name: role === "organizer" ? formData.organization.trim() : undefined,
+      birth_date: formData.birthDate,
+      organization_name: role === "organizer" ? formData.organization : null,
     };
 
     try {
-      const res = await fetch("http://localhost:8080/api/register/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.error || "Registration failed");
-        return;
+      const data = await apiService.register(userData);
+
+      if (data.error) {
+        throw new Error(data.error);
       }
+
       alert("Registration successful!");
       navigate("/login");
     } catch (err) {
       alert("Network error: " + err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -328,6 +298,7 @@ function SignInPage() {
               color="primary"
               fullWidth
               sx={{ mt: 1 }}
+              disabled={loading}
             >
               REGISTER
             </Button>

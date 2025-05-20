@@ -12,6 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useNavigate, useParams, Outlet } from "react-router-dom";
+import apiService from "./apiService";
 
 function EventPage() {
   const { id } = useParams();
@@ -24,16 +25,14 @@ function EventPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/events/${id}`);
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        const data = await res.json();
-        console.log("Fetched event:", data);
+        setLoading(true);
+        const data = await apiService.getEventById(id);
         setEvent(data);
-      } catch (err) {
-        console.error("Error loading events:", err);
-        setError(err.message);
+        setError(null);
+        console.log("Fetched event:", data);
+      } catch (error) {
+        console.error("Error fetching event:", error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }

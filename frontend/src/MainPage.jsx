@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import apiService from "./apiService";
 import {
   Typography,
   Container,
@@ -45,11 +46,7 @@ function MainPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/events/");
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        const data = await res.json();
+        const data = await apiService.getEvents();
         console.log("Fetched events:", data);
         setEvents(data);
       } catch (err) {

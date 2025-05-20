@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from database import db_pool
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 bp = Blueprint("events", __name__)
     
@@ -146,6 +147,7 @@ def get_event_by_id(event_id):
             db_pool.putconn(conn)
 
 @bp.route("/<int:event_id>", methods=["DELETE"])
+@jwt_required()
 def delete_event_by_id(event_id):
     try:
         conn = db_pool.getconn()
@@ -160,6 +162,7 @@ def delete_event_by_id(event_id):
             db_pool.putconn(conn)
 
 @bp.route("/", methods=["POST"])
+@jwt_required()
 def post_event():
     data = request.get_json()
     organizer_id = data.get("organizer_id")
@@ -188,6 +191,7 @@ def post_event():
             db_pool.putconn(conn)
 
 @bp.route("/<int:event_id>", methods=["PUT"])
+@jwt_required()
 def put_event_by_id(event_id):
     data = request.get_json()
     organizer_id = data.get("organizer_id")

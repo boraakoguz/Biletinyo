@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import apiService from "./apiService";
 
 function LoginPage() {
   const navigate = useNavigate();
@@ -28,17 +29,9 @@ function LoginPage() {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8080/api/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const data = await apiService.login({ email, password });
 
-      const data = await res.json();
-
-      if (!res.ok) {
+      if (!data.access_token) {
         throw new Error(data.error || "Login failed");
       }
 
