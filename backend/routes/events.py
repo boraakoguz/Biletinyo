@@ -59,7 +59,8 @@ def get_events():
             e.image_ids,
             v.venue_name,
             v.city,
-            v.location
+            v.location,
+            e.event_time
         FROM event AS e
         LEFT JOIN venue AS v ON v.venue_id = e.venue_id
         {where_sql}
@@ -71,26 +72,26 @@ def get_events():
             cur.execute(query, sql_params)
             events = cur.fetchall()
             # --- Build response ---
-            result = [
-                {
-                    "event_id": row[0],
-                    "organizer_id": row[1],
-                    "venue_id": row[2],
-                    "event_title": row[3],
-                    "event_status": row[4],
-                    "description": row[5],
-                    "event_date": row[6],
-                    "category": row[7],
-                    "revenue": row[8],
-                    "regulations": row[9],
+            result = []
+            for row in events:
+                result.append({
+                    "event_id":      row[0],
+                    "organizer_id":  row[1],
+                    "venue_id":      row[2],
+                    "event_title":   row[3],
+                    "event_status":  row[4],
+                    "description":   row[5],
+                    "event_date":    row[6].isoformat(),           
+                    "category":      row[7],
+                    "revenue":       float(row[8]),                 
+                    "regulations":   row[9],
                     "category_name": row[10],
-                    "image_ids": row[11],
-                    "venue_name": row[12],
-                    "city": row[13],
-                    "location": row[14],
-                }
-                for row in events
-            ]
+                    "image_ids":     row[11],                       
+                    "venue_name":    row[12],
+                    "city":          row[13],
+                    "location":      row[14],
+                    "event_time":    row[15].strftime("%H:%M:%S"),
+                })
             return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500

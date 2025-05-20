@@ -220,7 +220,7 @@ function MainPage() {
                     },
                   }}
                 >
-                  Üye Girişi
+                  Login
                 </Button>
                 <Button
                   color="inherit"
@@ -235,7 +235,7 @@ function MainPage() {
                     },
                   }}
                 >
-                  Üye Ol
+                  Sign In
                 </Button>
               </>
             )}
@@ -267,17 +267,17 @@ function MainPage() {
               },
             }}
           >
-            <InputLabel>Kategori</InputLabel>
+            <InputLabel>Category</InputLabel>
             <Select
               label="Kategori"
               value={category}
               onChange={(e) => setCategory(e.target.value)}
             >
-              <MenuItem value="">Tümü</MenuItem>
-              <MenuItem value="konser">Konser</MenuItem>
-              <MenuItem value="tiyatro">Tiyatro</MenuItem>
-              <MenuItem value="festival">Festival</MenuItem>
-              <MenuItem value="sinema">Sinema</MenuItem>
+              <MenuItem value="">All</MenuItem>
+              <MenuItem value="Concert">Concert</MenuItem>
+              <MenuItem value="Theatre">Theatre</MenuItem>
+              <MenuItem value="Festival">Festival</MenuItem>
+              <MenuItem value="Cinema">Cinema</MenuItem>
               <MenuItem value="Music">Music</MenuItem>
               <MenuItem value="Technology">Technology</MenuItem>
             </Select>
@@ -300,16 +300,16 @@ function MainPage() {
               },
             }}
           >
-            <InputLabel>Tarih</InputLabel>
+            <InputLabel>Date</InputLabel>
             <Select
               label="Tarih"
               value={dateFilter}
               onChange={(e) => setDateFilter(e.target.value)}
             >
-              <MenuItem value="">Tümü</MenuItem>
-              <MenuItem value="this-week">Bu Hafta</MenuItem>
-              <MenuItem value="this-month">Bu Ay</MenuItem>
-              <MenuItem value="future">Bu Yıl</MenuItem>
+              <MenuItem value="">All</MenuItem>
+              <MenuItem value="this-week">This week</MenuItem>
+              <MenuItem value="this-month">This Month</MenuItem>
+              <MenuItem value="future">This Year</MenuItem>
             </Select>
           </FormControl>
           <FormControl
@@ -329,19 +329,19 @@ function MainPage() {
               },
             }}
           >
-            <InputLabel>Şehir</InputLabel>
+            <InputLabel>City</InputLabel>
             <Select
               label="Şehir"
               value={city}
               onChange={(e) => setCity(e.target.value)}
             >
-              <MenuItem value="">Tümü</MenuItem>
+              <MenuItem value="">All</MenuItem>
               <MenuItem value="Ankara">Ankara</MenuItem>
-              <MenuItem value="istanbul">İstanbul</MenuItem>
-              <MenuItem value="izmir">İzmir</MenuItem>
-              <MenuItem value="bursa">Bursa</MenuItem>
-              <MenuItem value="antalya">Antalya</MenuItem>
-              <MenuItem value="adana">Adana</MenuItem>
+              <MenuItem value="Istanbul">İstanbul</MenuItem>
+              <MenuItem value="Izmir">İzmir</MenuItem>
+              <MenuItem value="Bursa">Bursa</MenuItem>
+              <MenuItem value="Antalya">Antalya</MenuItem>
+              <MenuItem value="Adana">Adana</MenuItem>
               <MenuItem value="Konya">Konya</MenuItem>
             </Select>
           </FormControl>
@@ -375,7 +375,23 @@ function MainPage() {
                       {event.venue_name}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
-                      {event.event_date}
+                      {new Date(event.event_date).toLocaleDateString(
+                        undefined,
+                        {
+                          weekday: "short",
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        }
+                      )}
+                      {" • "}
+                      {new Date(
+                        `${event.event_date}T${event.event_time}`
+                      ).toLocaleTimeString(undefined, {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                        hour12: false,
+                      })}
                     </Typography>
                   </CardContent>
                 </CardActionArea>

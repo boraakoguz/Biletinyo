@@ -50,6 +50,7 @@ CREATE TABLE event (
     venue_id        INT NOT NULL,
 
     event_title	    VARCHAR(100) NOT NULL UNIQUE,
+    event_time      TIME NOT NULL DEFAULT '00:00:00',
     event_status    INT NOT NULL,
     description	    TEXT,
     event_date	    DATE NOT NULL,
@@ -143,16 +144,12 @@ VALUES
 INSERT INTO organizer (user_id, organization_name)
 VALUES
   (2, 'Smith Corp.');
-  
 INSERT INTO event (
-  organizer_id, venue_id, event_title, event_status, description,
-  event_date, category, revenue, regulations, category_name, image_ids
+organizer_id, venue_id, event_title, event_time, event_status, description,
+event_date, category, revenue, regulations, category_name, image_ids
 ) VALUES
-  (2, 1, 'Spring Music Festival',    1, 'A festival featuring local bands.',
-   '2025-04-20', 'Music', 15000.00, 'No outside food allowed.',       1, '{101,102}'),
-  (2, 2, 'Tech Expo 2025',            0, 'Annual technology expo showcasing startups.',
-   '2025-06-15', 'Technology',    0.00,   'Tickets non-refundable.',    2, '{201,202,203}');
-
+(2, 1, 'Spring Music Festival', '18:30:00', 1, 'A music fest.', '2025-04-20', 'Music', 15000.00, 'None', 1, '{101}'),
+(2, 2, 'Tech Expo 2025', '09:00:00', 1, 'A tech expo.', '2025-06-15', 'Tech', 10000.00, 'None', 2, '{102}');
 INSERT INTO attendee (user_id, attended_event_count, account_balance)
 VALUES
   (1, 1, 100.50),  
@@ -223,15 +220,26 @@ INSERT INTO venue (capacity, location, venue_name, venue_description, city, seat
   (120, 'Alsancak, İzmir',       'Harbor Arena',     'Waterfront open-air arena.',              'Izmir',   '{{1,1,1,1,1},{1,1,1,1,1}}',        1),
   ( 50, 'Odunpazarı, Eskişehir', 'Pavilion A',       'Small intimate performance space.',      'Eskişehir','{{1,1,1},{1,1,1}}',             1);
 
-INSERT INTO event (organizer_id, venue_id, event_title, event_status, description, event_date, category, revenue, regulations, category_name, image_ids) VALUES
-  ( 8,  3, 'Startup Pitch Night',      1, 'Early-stage startups pitch ideas.',              '2025-05-25', 'Business',   5000.00, 'ID badge required.', 3, '{301,302}'),
-  ( 9,  1, 'Indie Rock Concert',       1, 'Live indie bands from Turkey.',                   '2025-05-28', 'Music',      8000.00, 'No cameras.',         1, '{303,304,305}'),
-  (10,  2, 'Gourmet Food Festival',    1, 'Taste dishes from around the world.',            '2025-06-05', 'Food',       12000.00,'No outside drinks.', 4, '{306,307}'),
-  (11,  4, 'Contemporary Art Expo',    1, 'Showcase of emerging visual artists.',           '2025-06-12', 'Art',        7000.00, 'No flash photography.',5,'{308,309,310}'),
-  (14,  5, 'eSports Championship',     0, 'Top teams battle for the title.',                '2025-07-03', 'Gaming',     25000.00,'No cheating.',        6, '{311,312}'),
-  (15,  6, 'Wellness Retreat',         1, 'Yoga, meditation and health workshops.',         '2025-07-20', 'Health',     9000.00, 'Bring your own mat.', 7, '{313}'),
-  ( 8,  2, 'Cloud Computing Summit',   1, 'Industry experts share cloud strategies.',       '2025-08-10', 'Business',   15000.00,'Registration required.',3,'{314,315}'),
-  ( 9,  3, 'Jazz Evening',             1, 'Smooth jazz by lakeside.',                       '2025-09-01', 'Music',      6000.00, 'Formal attire.',      1, '{316,317}');
+ INSERT INTO event (
+  organizer_id, venue_id, event_title, event_time, event_status, description,
+  event_date, category, revenue, regulations, category_name, image_ids
+) VALUES
+  (8, 3, 'Startup Pitch Night',  '19:00:00', 1, 'Early-stage startups pitch ideas.',
+   '2025-05-25', 'Business',   5000.00,  'ID badge required.',           3, '{301,302}'),
+  (9, 1, 'Indie Rock Concert',   '20:30:00', 1, 'Live indie bands from Turkey.',
+   '2025-05-28', 'Music',      8000.00,  'No cameras.',                  1, '{303,304,305}'),
+  (10,2, 'Gourmet Food Festival','12:00:00', 1, 'Taste dishes from around the world.',
+   '2025-06-05', 'Food',      12000.00, 'No outside drinks.',           4, '{306,307}'),
+  (11,4, 'Contemporary Art Expo','10:00:00', 1, 'Showcase of emerging visual artists.',
+   '2025-06-12', 'Art',        7000.00, 'No flash photography.',        5, '{308,309,310}'),
+  (14,5, 'eSports Championship', '14:00:00', 0, 'Top teams battle for the title.',
+   '2025-07-03', 'Gaming',    25000.00, 'No cheating.',                 6, '{311,312}'),
+  (15,6, 'Wellness Retreat',     '08:30:00', 1, 'Yoga, meditation and health workshops.',
+   '2025-07-20', 'Health',     9000.00, 'Bring your own mat.',          7, '{313}'),
+  (8, 2, 'Cloud Computing Summit','09:30:00',1, 'Industry experts share cloud strategies.',
+   '2025-08-10', 'Business',   15000.00,'Registration required.',       3, '{314,315}'),
+  (9, 3, 'Jazz Evening',         '21:00:00', 1, 'Smooth jazz by lakeside.',
+   '2025-09-01', 'Music',      6000.00,  'Formal attire.',               1, '{316,317}');
 
 INSERT INTO payment (attendee_id, payment_amount, payment_method, payment_status, payment_date) VALUES
   (4,  120.00, 'Credit Card', 'Completed', '2025-05-23'),
