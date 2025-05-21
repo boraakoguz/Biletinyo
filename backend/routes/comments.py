@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from database import db_pool
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 bp = Blueprint("comments", __name__)
 
@@ -17,7 +18,23 @@ def get_comments():
         if conn:
             db_pool.putconn(conn)
     
+@bp.route("/<int:comment_id>", methods=["DELETE"])
+@jwt_required()
+def delete_comment_by_id(comment_id):
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("DELETE FROM comments WHERE comment_id=%s;", (comment_id,))
+            conn.commit()
+        return "Deletion Successful", 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
 @bp.route("/", methods=["POST"])
+@jwt_required()
 def post_comment():
     data = request.get_json()
     event_id = data.get("event_id")

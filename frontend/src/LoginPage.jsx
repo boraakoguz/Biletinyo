@@ -5,49 +5,53 @@ import {
   Paper,
   TextField,
   Typography,
+  Alert,
 } from "@mui/material";
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import apiService from "./apiService";
 
 function LoginPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
+    
+    // Check for redirect message
+    const redirectState = location.state;
+    if (redirectState?.message) {
+      setMessage(redirectState.message);
+    }
+    
     if (token && user) {
       navigate("/", { replace: true });
     }
-  }, [navigate]);
+  }, [navigate, location]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:8080/api/login/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email, password }),
-      });
+      const data = await apiService.login({ email, password });
 
-      const data = await res.json();
-
-      if (!res.ok) {
+      if (!data.access_token) {
         throw new Error(data.error || "Login failed");
       }
 
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      console.log("Logged in user:", data.user);
-      console.log("Logged in user:", data.access_token);
-      if (data.user.user_type === 1) {
+      // Redirect to the page user was trying to access, or default based on user type
+      if (location.state?.from) {
+        navigate(location.state.from);
+      } else if (data.user.user_type === 1) {
         navigate("/organizer/dashboard");
       } else {
         navigate("/");
@@ -89,6 +93,12 @@ function LoginPage() {
               Login
             </Typography>
           </Box>
+
+          {message && (
+            <Alert severity="info" sx={{ mb: 2 }}>
+              {message}
+            </Alert>
+          )}
 
           <Box
             component="form"

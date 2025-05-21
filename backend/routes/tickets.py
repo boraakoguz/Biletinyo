@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request, send_file
 from database import db_pool
+from flask_jwt_extended import jwt_required, get_jwt_identity
 import qrcode
 from io import BytesIO
 from reportlab.pdfgen import canvas
@@ -16,6 +17,7 @@ from reportlab.lib.utils import ImageReader
 bp = Blueprint("tickets", __name__)
 
 @bp.route("/", methods=["GET"])
+@jwt_required()
 def get_tickets():
     attendee_id=request.args.get("attendee_id")
     event_id=request.args.get("event_id")
@@ -157,6 +159,7 @@ def get_ticket(ticket_id):
             db_pool.putconn(conn)
 
 @bp.route("/<int:ticket_id>", methods=["GET"])
+@jwt_required()
 def get_ticket_by_id(ticket_id):
     try:
         ticket = get_ticket(ticket_id)
@@ -167,6 +170,7 @@ def get_ticket_by_id(ticket_id):
         return jsonify({"error": str(e)}), 500
 
 @bp.route("/<int:ticket_id>", methods=["DELETE"])
+@jwt_required()
 def delete_user_by_id(ticket_id):
     try:
         conn = db_pool.getconn()
@@ -182,6 +186,7 @@ def delete_user_by_id(ticket_id):
             db_pool.putconn(conn)
 
 @bp.route("/", methods=["POST"])
+@jwt_required()
 def post_ticket():
     data=request.get_json()
     attendee_id=data.get("attendee_id")
@@ -215,6 +220,7 @@ def post_ticket():
             db_pool.putconn(conn)
 
 @bp.route("/<int:ticket_id>", methods=["PUT"])
+@jwt_required()
 def put_ticket(ticket_id):
     data = request.get_json()
     attendee_id   = data.get("attendee_id")

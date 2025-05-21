@@ -12,6 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useNavigate, useParams, Outlet } from "react-router-dom";
+import apiService from "./apiService";
 
 function EventPage() {
   const { id } = useParams();
@@ -20,20 +21,25 @@ function EventPage() {
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const user = localStorage.getItem("user");
+    setIsLoggedIn(!!token && !!user);
+  }, []);
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(`http://localhost:8080/api/events/${id}`);
-        if (!res.ok) {
-          throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        }
-        const data = await res.json();
-        console.log("Fetched event:", data);
+        setLoading(true);
+        const data = await apiService.getEventById(id);
         setEvent(data);
-      } catch (err) {
-        console.error("Error loading events:", err);
-        setError(err.message);
+        setError(null);
+        console.log("Fetched event:", data);
+      } catch (error) {
+        console.error("Error fetching event:", error);
+        setError(error.message);
       } finally {
         setLoading(false);
       }
@@ -45,6 +51,12 @@ function EventPage() {
   const handleComments = () => navigate(`/event/${id}/comments`);
   const handleLoginRedirect = () => navigate("/login");
   const handleSignInRedirect = () => navigate("/signin");
+  const handleProfileRedirect = () => navigate("/profile");
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
 
   const [selectedTicket, setSelectedTicket] = useState(null);
   const ticketOptions = [
@@ -86,7 +98,6 @@ function EventPage() {
           boxShadow: 10,
           bgcolor: "#002fa7",
           color: "white",
-
           flexWrap: "wrap",
         }}
       >
@@ -124,31 +135,68 @@ function EventPage() {
             />
           </Box>
           <Stack direction="row" spacing={1}>
-            <Button
-              color="inherit"
-              onClick={handleLoginRedirect}
-              sx={{
-                color: "white",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.1)" },
-              }}
-            >
-              Üye Girişi
-            </Button>
-            <Button
-              color="inherit"
-              variant="outlined"
-              onClick={handleSignInRedirect}
-              sx={{
-                borderColor: "white",
-                color: "white",
-                "&:hover": {
-                  bgcolor: "rgba(255,255,255,0.1)",
-                  borderColor: "white",
-                },
-              }}
-            >
-              Üye Ol
-            </Button>
+            {isLoggedIn ? (
+              <>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={handleProfileRedirect}
+                  sx={{
+                    borderColor: "white",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  Profile
+                </Button>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={handleLogout}
+                  sx={{
+                    borderColor: "white",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  color="inherit"
+                  onClick={handleLoginRedirect}
+                  sx={{
+                    color: "white",
+                    "&:hover": { bgcolor: "rgba(255,255,255,0.1)" },
+                  }}
+                >
+                  Login
+                </Button>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={handleSignInRedirect}
+                  sx={{
+                    borderColor: "white",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  Sign In
+                </Button>
+              </>
+            )}
           </Stack>
         </Box>
       </Box>
@@ -266,7 +314,16 @@ function EventPage() {
                 sx={{ width: 200 }}
                 disabled={!selectedTicket}
                 onClick={() => {
-                  /* purchase */
+                  if (!isLoggedIn) {
+                    navigate("/login", { 
+                      state: { 
+                        from: `/event/${id}`,
+                        message: "Please login to purchase tickets" 
+                      }
+                    });
+                  } else {
+                    navigate(`/event/${id}/seating`);
+                  }
                 }}
               >
                 Purchase Ticket

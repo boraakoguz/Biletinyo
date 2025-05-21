@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import apiService from "./apiService";
 import {
   Typography,
   Container,
@@ -28,6 +29,7 @@ function MainPage() {
   const [category, setCategory] = useState("");
   const [dateFilter, setDateFilter] = useState("");
   const [city, setCity] = useState("");
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -77,11 +79,7 @@ function MainPage() {
           if (endDate) params.append("end_date", endDate);
         }
 
-        const res = await fetch(
-          `http://localhost:8080/api/events/?${params.toString()}`
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
-        const data = await res.json();
+        const data = await apiService.getEvents();
         console.log("Fetched events:", data);
         console.log("Fetching with:", params.toString());
         setEvents(data);

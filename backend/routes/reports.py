@@ -1,9 +1,11 @@
 from flask import Blueprint, jsonify, request
 from database import db_pool
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 bp = Blueprint("reports", __name__)
 
 @bp.route("/", methods=["GET"])
+@jwt_required()
 def get_reports():
     try:
         conn = db_pool.getconn()
@@ -18,6 +20,7 @@ def get_reports():
             db_pool.putconn(conn)
 
 @bp.route("/<int:report_id>", methods=["GET"])
+@jwt_required()
 def get_reports_by_id(report_id):
     try:
         conn = db_pool.getconn()
@@ -31,5 +34,33 @@ def get_reports_by_id(report_id):
         if conn:
             db_pool.putconn(conn)
 
+@bp.route("/sales/<int:organizer_id>", methods=["GET"])
+@jwt_required()
+def get_sales_report(organizer_id):
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT e.event_id, e.event_title, COUNT(t.ticket_id) as tickets_sold, SUM(t.price) as total_revenue
+                FROM event e
+                JOIN venue v ON e.venue_id = v.venue_id
+                LEFT JOIN ticket t ON e.event_id = t.event_id
+                WHERE v.organizer_id = %s
+                GROUP BY e.event_id, e.event_title
+                ORDER BY total_revenue DESC
+            """, (organizer_id,))
+            sales_data = cur.fetchall()
+            
+        return jsonify([{
+            "event_id": row[0],
+            "event_title": row[1],
+            "tickets_sold": row[2],
+            "total_revenue": float(row[3]) if row[3] else 0
+        } for row in sales_data])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
 
 # TODO TO BE CONTINUED
