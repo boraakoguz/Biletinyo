@@ -1,6 +1,7 @@
 from flask import Blueprint, jsonify, request
 from database import db_pool
 from flask_jwt_extended import jwt_required, get_jwt_identity
+from psycopg2.extras import RealDictCursor
 
 bp = Blueprint("users", __name__)
 
@@ -57,7 +58,7 @@ def get_user_by_id(user_id):
             cur.execute(
                 """
                 SELECT u.user_id, u.name, u.email, u.user_type, u.phone, u.birth_date,
-                       a.attended_event_number, a.account_balance,
+                       a.attended_event_count, a.account_balance,
                        o.organization_name
                 FROM users u
                 LEFT JOIN attendee a ON u.user_id = a.user_id
@@ -79,7 +80,7 @@ def get_user_by_id(user_id):
         }
         if user[6] is not None:
             result["attendee"] = {
-                "attended_event_number": user[6],
+                "attended_event_count": user[6],
                 "account_balance": float(user[7]) if user[7] is not None else None,
             }
         if user[8] is not None:
@@ -117,7 +118,7 @@ def post_user():
     user_type=data.get("user_type")
     phone=data.get("phone")
     birth_date=data.get("birth_date")
-    attended_event_number=data.get("attended_event_number")
+    attended_event_count=data.get("attended_event_count")
     account_balance=data.get("account_balance")
     organization_name=data.get("organization_name")
     try:
@@ -129,11 +130,11 @@ def post_user():
                 (name, email, password, user_type, phone, birth_date)
             )
             user_id = cur.fetchone()[0]
-            if user_type == 0 and attended_event_number is not None and account_balance is not None:
+            if user_type == 0 and attended_event_count is not None and account_balance is not None:
                 cur.execute(
-                    "INSERT INTO attendee (user_id, attended_event_number, account_balance)"
+                    "INSERT INTO attendee (user_id, attended_event_count, account_balance)"
                     "VALUES (%s, %s, %s);",
-                    (user_id, attended_event_number, account_balance)
+                    (user_id, attended_event_count, account_balance)
                 )
             elif user_type == 1 and organization_name:
                 cur.execute(
@@ -150,40 +151,92 @@ def post_user():
             db_pool.putconn(conn)
 
 @bp.route("/<int:user_id>", methods=["PUT"])
-#@jwt_required()
 def put_user_by_id(user_id):
-    data=request.get_json()
-    name=data.get("name")
-    email=data.get("email")
-    password=data.get("password")
-    user_type=data.get("user_type")
-    phone=data.get("phone")
-    birth_date=data.get("birth_date")
-    attended_event_number=data.get("attended_event_number")
-    account_balance=data.get("account_balance")
-    organization_name=data.get("organization_name")
+    data=request.get_json() or {}
+    name_in=data.get("name")
+    email_in=data.get("email")
+    password_in=data.get("password")
+    user_type_in=data.get("user_type")
+    phone_in=data.get("phone")
+    birth_date_in=data.get("birth_date")
+    attended_event_count_in=data.get("attended_event_count")
+    account_balance_in=data.get("account_balance")
+    organization_name_in=data.get("organization_name")
+    conn = None
     try:
         conn = db_pool.getconn()
-        with conn.cursor() as cur:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
             cur.execute(
-                "UPDATE users SET name=%s, email=%s, password=%s, user_type=%s, phone=%s, birth_date=%s"
-                "WHERE user_id=%s;",
+                "SELECT name, email, password, user_type, phone, birth_date "
+                "FROM users WHERE user_id=%s",
+                (user_id,)
+            )
+            user = cur.fetchone()
+            cur.execute(
+                "SELECT attended_event_count, account_balance "
+                "FROM attendee WHERE user_id=%s",
+                (user_id,)
+            )
+            attendee = cur.fetchone() or {"attended_event_count": None, "account_balance": None}
+            cur.execute(
+                "SELECT organization_name "
+                "FROM organizer WHERE user_id=%s",
+                (user_id,)
+            )
+            organizer = cur.fetchone() or {"organization_name": None}
+
+            name=name_in if name_in is not None else user["name"]
+            email=email_in if email_in is not None else user["email"]
+            password=password_in if password_in  is not None else user["password"]
+            user_type=user_type_in if user_type_in  is not None else user["user_type"]
+            phone=phone_in if phone_in is not None else user["phone"]
+            birth_date=birth_date_in if birth_date_in is not None else user["birth_date"]
+            attended_event_count=attended_event_count_in if attended_event_count_in is not None else attendee["attended_event_count"]
+            account_balance=account_balance_in if account_balance_in is not None else attendee["account_balance"]
+            organization_name=organization_name_in if organization_name_in is not None else organizer["organization_name"]
+
+            cur.execute(
+                """
+                UPDATE users
+                   SET name=%s,
+                       email=%s,
+                       password=%s,
+                       user_type=%s,
+                       phone=%s,
+                       birth_date=%s
+                 WHERE user_id=%s
+                """,
                 (name, email, password, user_type, phone, birth_date, user_id)
             )
-            cur.execute("DELETE FROM attendee WHERE user_id=%s;", (user_id,))
-            cur.execute("DELETE FROM organizer WHERE user_id=%s;", (user_id,))
-            if user_type == 0 and attended_event_number is not None and account_balance is not None:
+
+            if user_type == 0:
+                cur.execute("DELETE FROM organizer WHERE user_id = %s", (user_id,))
                 cur.execute(
-                    "INSERT INTO attendee (user_id, attended_event_number, account_balance)"
-                    "VALUES (%s, %s, %s);",
-                    (user_id, attended_event_number, account_balance)
+                    """
+                    INSERT INTO attendee (user_id, attended_event_count, account_balance)
+                    VALUES (%s, %s, %s)
+                    ON CONFLICT (user_id)
+                    DO UPDATE SET
+                        attended_event_count=EXCLUDED.attended_event_count,
+                        account_balance=EXCLUDED.account_balance
+                    """,
+                    (user_id, attended_event_count, account_balance)
                 )
-            elif user_type == 1 and organization_name:
+            elif user_type == 1:
+                cur.execute("DELETE FROM attendee WHERE user_id = %s", (user_id,))
                 cur.execute(
-                    "INSERT INTO organizer (user_id, organization_name)"
-                    "VALUES (%s, %s);",
+                    """
+                    INSERT INTO organizer (user_id, organization_name)
+                    VALUES (%s, %s)
+                    ON CONFLICT (user_id)
+                    DO UPDATE SET
+                        organization_name=EXCLUDED.organization_name
+                    """,
                     (user_id, organization_name)
                 )
+            else:
+                cur.execute("DELETE FROM attendee  WHERE user_id=%s", (user_id,))
+                cur.execute("DELETE FROM organizer WHERE user_id=%s", (user_id,))
             conn.commit()
         return "Update Successful", 200
     except Exception as e:
