@@ -63,4 +63,23 @@ def get_sales_report(organizer_id):
         if conn:
             db_pool.putconn(conn)
 
-# TODO TO BE CONTINUED
+@bp.route("/", methods=["POST"])
+#@jwt_required()
+def post_report():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    most_popular_event_id = data.get("most_popular_event_id")
+    report_date = data.get("report_date")
+    revenue_trend_data = data.get("revenue_trend_data")
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""INSERT INTO report (user_id, most_popular_event_id, report_date, revenue_trend_data)
+                VALUES (%s, %s, %s, %s);""",(user_id, most_popular_event_id, report_date, revenue_trend_data,))
+            conn.commit()
+        return "Insertion Successful", 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
