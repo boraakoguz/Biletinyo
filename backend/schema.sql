@@ -15,7 +15,7 @@ CREATE TABLE attendee (
     attended_event_count    INT NOT NULL,
     account_balance         DECIMAL(10,2),
 
-    FOREIGN KEY (user_id) REFERENCES users(user_id)
+    FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE
 );
 
 CREATE TABLE organizer (
@@ -49,7 +49,7 @@ CREATE TABLE event (
     organizer_id    INT NOT NULL,
     venue_id        INT NOT NULL,
 
-    event_title	    VARCHAR(100) NOT NULL UNIQUE,
+    event_title	    VARCHAR(100) NOT NULL,
     event_time      TIME NOT NULL DEFAULT '00:00:00',
     event_status    INT NOT NULL,
     description	    TEXT,
@@ -57,13 +57,15 @@ CREATE TABLE event (
     category 	    VARCHAR(50) NOT NULL,
     revenue	        DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     regulations	    TEXT,
-    category_name   INT NOT NULL,
     image_ids       INT[],
+    seat_type_map   INT[][] NOT NULL,
+    default_ticket_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    vip_ticket_price     DECIMAL(10,2) NOT NULL DEFAULT 0.00,
+    premium_ticket_price DECIMAL(10,2) NOT NULL DEFAULT 0.00,
     
     FOREIGN KEY (organizer_id) REFERENCES organizer(user_id),
     FOREIGN KEY (venue_id) REFERENCES venue(venue_id)
 );
-
 
 CREATE TABLE report (
     report_id               SERIAL PRIMARY KEY,
@@ -96,7 +98,6 @@ CREATE TABLE payment(
 
     payment_amount		DECIMAL(10,2) NOT NULL, 
     payment_method		VARCHAR(50),
-    payment_status		VARCHAR(50) NOT NULL,
     payment_date		DATE,
     FOREIGN KEY (attendee_id) REFERENCES attendee(user_id)
 );
@@ -110,8 +111,10 @@ CREATE TABLE ticket (
     ticket_state    INT NOT NULL,
     ticket_class    INT NOT NULL,
     price           INT NOT NULL,
-    seat_row             INT NOT NULL,
-    seat_column         INT NOT NULL,
+    seat_row        INT NOT NULL,
+    seat_column     INT NOT NULL,
+
+    UNIQUE (event_id, seat_row, seat_column),
 
     FOREIGN KEY (attendee_id) REFERENCES attendee(user_id),
     FOREIGN KEY (event_id) REFERENCES event(event_id),
@@ -130,84 +133,41 @@ CREATE TABLE ticket_guest (
     FOREIGN KEY (ticket_id) REFERENCES ticket(ticket_id)
 );
 
+CREATE OR REPLACE FUNCTION auto_create_attendee()
+RETURNS TRIGGER AS $$
+BEGIN
+  IF NEW.user_type = 0 THEN
+    INSERT INTO attendee(user_id, attended_event_count, account_balance)
+    VALUES (NEW.user_id, 0, 0.00);
+  END IF;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER auto_create_attendee_trigger
+AFTER INSERT ON users
+FOR EACH ROW
+EXECUTE FUNCTION auto_create_attendee();
+
 INSERT INTO users (name, email, password, user_type, phone, birth_date) VALUES
 ('User johnson', 'user@user.com', '$2b$12$KKprei.9FfMVomfUWlYYAu8icc7TS58KesyN11GQpI.2eYteMWUXC', 0, '555-1234', '1995-06-15'),
 ('Organizer Smith', 'org@org.com', '$2b$12$Srau6Ny7nGQQQ1tHeiBfUOsuinZZOdyplF2c831mVqlUgFqcetwmq', 1, '555-5678', '2000-06-15'),
-('Ege Babs', 'ege@gmail.com', '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-8765', '2015-06-15');
-
-INSERT INTO venue (capacity, location, venue_name, venue_description, city, seat_map, available)
-VALUES
-  (100, 'Atakule, Ankara', 'Atakule Hall', 'Central conference hall', 'Ankara',
-   '{{1,1,1},{1,1,1},{1,1,1}}', 1),
-  (200, 'Konya Road, Konya', 'Fairgrounds', 'Open-air fairgrounds', 'Konya',
-   '{{1,1},{1,1}}', 1);
-
-INSERT INTO organizer (user_id, organization_name)
-VALUES
-  (2, 'Smith Corp.');
-INSERT INTO event (
-organizer_id, venue_id, event_title, event_time, event_status, description,
-event_date, category, revenue, regulations, category_name, image_ids
-) VALUES
-(2, 1, 'Spring Music Festival', '18:30:00', 1, 'A music fest.', '2025-04-20', 'Music', 15000.00, 'None', 1, '{101}'),
-(2, 2, 'Tech Expo 2025', '09:00:00', 1, 'A tech expo.', '2025-06-15', 'Tech', 10000.00, 'None', 2, '{102}');
-INSERT INTO attendee (user_id, attended_event_count, account_balance)
-VALUES
-  (1, 1, 100.50),  
-  (3, 0,  50.00); 
-
-INSERT INTO payment (attendee_id, payment_amount, payment_method, payment_status, payment_date)
-VALUES
-  (1, 150.00, 'Credit Card', 'Completed', '2025-04-18'),
-  (3,  75.00, 'PayPal',      'Completed', '2025-06-14');
-
-INSERT INTO ticket (
-  attendee_id, payment_id, event_id,
-  ticket_state, ticket_class, price, seat_row, seat_column
-) VALUES
-  (1, 1, 1, 1, 2, 150, 5, 10),
-  (3, 2, 2, 0, 1,  75, 1,  1);
-
-INSERT INTO comment (
-  event_id, attendee_id, rating, comment_title, comment_text, comment_date
-) VALUES
-  (1, 1, 5, 'Amazing show',    'Loved every performance!', '2025-04-21'),
-  (2, 3, 4, 'Great exhibits',  'Really enjoyed the demos.', '2025-06-16');
-
-INSERT INTO ticket_guest (
-  ticket_id, guest_name, guest_mail, guest_phone, guest_birth_date
-) VALUES
-  (1, 'Guest One', 'guest1@example.com', '555-0001', '1990-01-01'),
-  (2, 'Friend A',  'friendA@example.com','555-0011', '1998-03-03');
-
-INSERT INTO report (
-  user_id, most_popular_event_id, report_date, revenue_trend_data
-) VALUES
-  (2, 1, '2025-04-30', '{1000,2000,1500,3000}');
-
-INSERT INTO users (name, email, password, user_type, phone, birth_date) VALUES
-  ('Alice Johnson',    'alice.j@example.com',   '$2b$12$examplehashA', 0, '555-1001', '1992-02-10'),
-  ('Bob Martinez',     'bob.m@example.com',     '$2b$12$examplehashB', 0, '555-1002', '1988-07-22'),
-  ('Carol Singh',      'carol.s@example.com',   '$2b$12$examplehashC', 0, '555-1003', '1995-11-05'),
-  ('David Lee',        'david.l@example.com',   '$2b$12$examplehashD', 0, '555-1004', '1990-03-30'),
-  ('Eva González',     'eva.g@example.com',     '$2b$12$examplehashE', 0, '555-1005', '1993-08-15'),
-  ('Frank Zhang',      'frank.z@example.com',   '$2b$12$examplehashF', 1, '555-1006', '1985-12-01'),
-  ('Grace Kim',        'grace.k@example.com',   '$2b$12$examplehashG', 1, '555-1007', '1987-04-18'),
-  ('Henry ONeill',   'henry.o@example.com',   '$2b$12$examplehashH', 1, '555-1008', '1991-09-09'),
-  ('Isabel Rossi',     'isabel.r@example.com',  '$2b$12$examplehashI', 1, '555-1009', '1989-06-25'),
-  ('Jack Thompson',    'jack.t@example.com',    '$2b$12$examplehashJ', 1, '555-1010', '1994-01-12'),
-  ('Karen Patel',      'karen.p@example.com',   '$2b$12$examplehashK', 0, '555-1011', '1996-10-02'),
-  ('Leo Müller',       'leo.m@example.com',     '$2b$12$examplehashL', 0, '555-1012', '1992-05-20');
-
-INSERT INTO attendee (user_id, attended_event_count, account_balance) VALUES
-  (4,  3, 120.00),
-  (5,  0,  80.50),
-  (6,  5, 200.75),
-  (7,  2,  34.25),
-  (12, 1,  15.00),
-  (13, 0,  60.00);
+('Ege Babs', 'ege@gmail.com', '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-8765', '2015-06-15'),
+('Attendee Four',     'four@ex.com',    '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-0004', '1990-01-04'),
+('Attendee Five',     'five@ex.com',    '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-0005', '1990-01-05'),
+('Attendee Six',      'six@ex.com',     '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-0006', '1990-01-06'),
+('Attendee Seven',    'seven@ex.com',   '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-0007', '1990-01-07'),
+('Organizer Eight',   'org8@ex.com',    '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 1, '555-0008', '1985-08-08'),
+('Organizer Nine',    'org9@ex.com',    '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 1, '555-0009', '1985-08-09'),
+('Organizer Ten',     'org10@ex.com',   '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 1, '555-0010', '1985-08-10'),
+('Organizer Eleven',  'org11@ex.com',   '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 1, '555-0011', '1985-08-11'),
+('Attendee Twelve',   'twelve@ex.com',  '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-0012', '1990-01-12'),
+('Attendee Thirteen', 'thirteen@ex.com','$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-0013', '1990-01-13'),
+('Organizer Fourteen', 'org14@ex.com',  '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 1, '555-0014', '1985-08-14'),
+('Organizer Fifteen', 'org15@ex.com',  '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 1, '555-0015', '1980-01-15');
 
 INSERT INTO organizer (user_id, organization_name) VALUES
+  (2,  'Smith Corp.'),
   (8,  'Techify Inc.'),
   (9,  'MusicLive LLC'),
   (10, 'FoodFest Co.'),
@@ -216,47 +176,53 @@ INSERT INTO organizer (user_id, organization_name) VALUES
   (15, 'HealthSummit AG');
 
 INSERT INTO venue (capacity, location, venue_name, venue_description, city, seat_map, available) VALUES
-  ( 80, 'Kızılay, Ankara',       'City Theater',     'Indoor theater with tiered seating.',      'Ankara', '{{1,1,1,1},{1,1,1,1},{1,1,1,1}}', 1),
-  (300, 'Nişantaşı, İstanbul',   'Grand Expo Hall',  'Spacious hall for expos & trade fairs.',  'Istanbul','{{1,1},{1,1},{1,1},{1,1},{1,1}}', 1),
-  (120, 'Alsancak, İzmir',       'Harbor Arena',     'Waterfront open-air arena.',              'Izmir',   '{{1,1,1,1,1},{1,1,1,1,1}}',        1),
-  ( 50, 'Odunpazarı, Eskişehir', 'Pavilion A',       'Small intimate performance space.',      'Eskişehir','{{1,1,1},{1,1,1}}',             1);
+  (100, 'Atakule, Ankara',      'Atakule Hall',      'Central conference hall',             'Ankara',
+   '{{0,1,1},{1,0,1},{1,1,1}}',                                      1),
+  (200, 'Konya Road, Konya',     'Fairgrounds',       'Open-air fairgrounds',                'Konya',
+   '{{1,1},{1,1}}',                                                  1),
+  (80,  'Kızılay, Ankara',       'City Theater',      'Indoor theater with tiered seating.', 'Ankara',
+   '{{1,1,1,1},{1,1,1,1},{1,1,1,1}}',                                1),
+  (300, 'Nişantaşı, İstanbul',   'Grand Expo Hall',   'Spacious hall for expos & trade fairs.','Istanbul',
+   '{{1,1},{1,1},{1,1},{1,1},{1,1}}',                                1),
+  (120, 'Alsancak, İzmir',       'Harbor Arena',      'Waterfront open-air arena.',           'Izmir',
+   '{{1,1,1,1,1},{1,1,1,1,1}}',                                      1),
+  (50,  'Odunpazarı, Eskişehir', 'Pavilion A',        'Small intimate performance space.',    'Eskişehir',
+   '{{1,1,1},{1,1,1}}',                                              1);
 
- INSERT INTO event (
-  organizer_id, venue_id, event_title, event_time, event_status, description,
-  event_date, category, revenue, regulations, category_name, image_ids
+INSERT INTO event (
+  organizer_id, venue_id, event_title, event_time, event_status,
+  description, event_date, category, revenue, regulations, image_ids, seat_type_map
 ) VALUES
-  (8, 3, 'Startup Pitch Night',  '19:00:00', 1, 'Early-stage startups pitch ideas.',
-   '2025-05-25', 'Business',   5000.00,  'ID badge required.',           3, '{301,302}'),
-  (9, 1, 'Indie Rock Concert',   '20:30:00', 1, 'Live indie bands from Turkey.',
-   '2025-05-28', 'Music',      8000.00,  'No cameras.',                  1, '{303,304,305}'),
-  (10,2, 'Gourmet Food Festival','12:00:00', 1, 'Taste dishes from around the world.',
-   '2025-06-05', 'Food',      12000.00, 'No outside drinks.',           4, '{306,307}'),
-  (11,4, 'Contemporary Art Expo','10:00:00', 1, 'Showcase of emerging visual artists.',
-   '2025-06-12', 'Art',        7000.00, 'No flash photography.',        5, '{308,309,310}'),
-  (14,5, 'eSports Championship', '14:00:00', 0, 'Top teams battle for the title.',
-   '2025-07-03', 'Gaming',    25000.00, 'No cheating.',                 6, '{311,312}'),
-  (15,6, 'Wellness Retreat',     '08:30:00', 1, 'Yoga, meditation and health workshops.',
-   '2025-07-20', 'Health',     9000.00, 'Bring your own mat.',          7, '{313}'),
-  (8, 2, 'Cloud Computing Summit','09:30:00',1, 'Industry experts share cloud strategies.',
-   '2025-08-10', 'Business',   15000.00,'Registration required.',       3, '{314,315}'),
-  (9, 3, 'Jazz Evening',         '21:00:00', 1, 'Smooth jazz by lakeside.',
-   '2025-09-01', 'Music',      6000.00,  'Formal attire.',               1, '{316,317}');
+  (2,  1, 'Spring Music Festival',      '18:30:00', 1, 'A music fest.',                         '2025-04-20', 'Music',    15000.00, 'None',               '{101}',            '{{0,1,1},{3,0,3},{3,1,1}}'),
+  (2,  2, 'Tech Expo 2025',             '09:00:00', 1, 'A tech expo.',                         '2025-06-15', 'Tech',     10000.00, 'None',               '{102}',            '{{1,1},{1,1}}'),
+  (8,  3, 'Startup Pitch Night',        '19:00:00', 1, 'Early-stage startups pitch ideas.',    '2025-05-25', 'Business',  5000.00, 'ID badge required.', '{301,302}',         '{{2,2,4,1},{1,2,3,4},{1,1,1,1}}'),
+  (9,  1, 'Indie Rock Concert',         '20:30:00', 1, 'Live indie bands from Turkey.',        '2025-05-28', 'Music',     8000.00, 'No cameras.',         '{303,304,305}',     '{{0,1,3},{1,0,1},{1,1,1}}'),
+  (10, 2, 'Gourmet Food Festival',      '12:00:00', 1, 'Taste dishes from around the world.',  '2025-06-05', 'Food',     12000.00, 'No outside drinks.',  '{306,307}',         '{{1,1,4,4,4},{3,3,3,3,3}}'),
+  (11, 4, 'Contemporary Art Expo',      '10:00:00', 1, 'Showcase of emerging visual artists.', '2025-06-12', 'Art',       7000.00, 'No flash photography.', '{308,309,310}',     '{{1,1},{2,1},{1,1},{1,1},{1,1}}'),
+  (14, 5, 'eSports Championship',       '14:00:00', 0, 'Top teams battle for the title.',      '2025-07-03', 'Gaming',   25000.00, 'No cheating.',        '{311,312}',         '{{1,1,1},{1,1,1}}'),
+  (15, 6, 'Wellness Retreat',           '08:30:00', 1, 'Yoga, meditation and health workshops.','2025-07-20', 'Health',    9000.00, 'Bring your own mat.', '{313}',             '{{1,1},{1,1}}'),
+  (8,  2, 'Cloud Computing Summit',     '09:30:00', 1, 'Industry experts share cloud strategies.','2025-08-10','Business', 15000.00,'Registration required.', '{314,315}',        '{{1,1}}'),
+  (9,  3, 'Jazz Evening',               '21:00:00', 1, 'Smooth jazz by lakeside.',             '2025-09-01', 'Music',     6000.00, 'Formal attire.',       '{316,317}',         '{{1,1,1,1}}');
 
-INSERT INTO payment (attendee_id, payment_amount, payment_method, payment_status, payment_date) VALUES
-  (4,  120.00, 'Credit Card', 'Completed', '2025-05-23'),
-  (5,   80.50, 'PayPal',      'Completed', '2025-05-22'),
-  (6,  200.75, 'Credit Card', 'Completed', '2025-05-24'),
-  (7,   34.25, 'Cash',        'Completed', '2025-05-25'),
-  (12,  15.00, 'Credit Card', 'Pending',   '2025-05-26'),
-  (13,  60.00, 'PayPal',      'Completed', '2025-06-01');
+INSERT INTO payment (attendee_id, payment_amount, payment_method, payment_date) VALUES
+  (1, 150.00, 0, '2025-04-18'),
+  (3,  75.00, 1, '2025-06-14'),
+  (4, 120.00, 0, '2025-05-23'),
+  (5,  80.50, 1, '2025-05-22'),
+  (6, 200.75, 0, '2025-05-24'),
+  (7,  34.25, 1, '2025-05-25'),
+  (12,  15.00, 0, '2025-05-26'),
+  (13,  60.00, 1, '2025-06-01');
 
 INSERT INTO ticket (attendee_id, payment_id, event_id, ticket_state, ticket_class, price, seat_row, seat_column) VALUES
-  (4,  1, 1, 1, 2, 120,  3, 2),
-  (5,  2, 2, 1, 1,  80,  2, 1),
-  (6,  3, 3, 1, 2, 200,  1, 5),
-  (7,  4, 4, 1, 3,  34,  2, 3),
-  (12, 5, 1, 0, 1,  15,  1, 1),
-  (13, 6, 5, 1, 2,  60,  4, 4);
+  (1,  1, 1, 1, 2, 150, 5, 10),
+  (3,  2, 2, 0, 1,  75, 1,  1),
+  (4,  1, 1, 1, 2, 120, 3,  2),
+  (5,  2, 2, 1, 1,  80, 2,  1),
+  (6,  3, 3, 1, 2, 200, 1,  5),
+  (7,  4, 4, 1, 3,  34, 2,  3),
+  (12, 5, 1, 0, 1,  15, 1,  1),
+  (13, 6, 5, 1, 2,  60, 4,  4);
 
 INSERT INTO ticket_guest (ticket_id, guest_name, guest_mail, guest_phone, guest_birth_date) VALUES
   (1, 'Mark Twain',  'mark.twain@example.com',   '555-2001', '1975-06-15'),
@@ -264,12 +230,15 @@ INSERT INTO ticket_guest (ticket_id, guest_name, guest_mail, guest_phone, guest_
   (3, 'Sam Rivers',  'sam.rivers@example.com',  '555-2003', '1992-12-12');
 
 INSERT INTO comment (event_id, attendee_id, rating, comment_title, comment_text, comment_date) VALUES
-  (1, 4,  4, 'Great night',          'Really enjoyed the pitches!',  '2025-05-26'),
-  (2, 5,  5, 'Rocked!',              'The bands were awesome.',      '2025-05-29'),
-  (3, 6,  3, 'Good food',            'Tasty but a bit crowded.',     '2025-06-06'),
-  (4, 7,  5, 'Art was stunning',     'Loved the installations.',     '2025-06-13');
+  (1, 1, 5, 'Amazing show',    'Loved every performance!', '2025-04-21'),
+  (2, 3, 4, 'Great exhibits',  'Really enjoyed the demos.', '2025-06-16'),
+  (1, 4, 4, 'Great night',     'Really enjoyed the pitches!', '2025-05-26'),
+  (2, 5, 5, 'Rocked!',         'The bands were awesome.',      '2025-05-29'),
+  (3, 6, 3, 'Good food',       'Tasty but a bit crowded.',     '2025-06-06'),
+  (4, 7, 5, 'Art was stunning','Loved the installations.',     '2025-06-13');
 
 INSERT INTO report (user_id, most_popular_event_id, report_date, revenue_trend_data) VALUES
+  (2,  1, '2025-04-30', '{1000,2000,1500,3000}'),
   (8,  2, '2025-05-31', '{500,1200,900,1500}'),
   (9,  1, '2025-06-10', '{800,600,1400,1000}'),
   (10, 3, '2025-06-20', '{1200,1300,1100,900}');

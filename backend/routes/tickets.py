@@ -12,12 +12,13 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image
 )
 from reportlab.lib.utils import ImageReader
+import definitions
+import datetime
 
 
 bp = Blueprint("tickets", __name__)
 
 @bp.route("/", methods=["GET"])
-#jwt_required()
 def get_tickets():
     attendee_id=request.args.get("attendee_id")
     event_id=request.args.get("event_id")
@@ -159,7 +160,6 @@ def get_ticket(ticket_id):
             db_pool.putconn(conn)
 
 @bp.route("/<int:ticket_id>", methods=["GET"])
-#@jwt_required()
 def get_ticket_by_id(ticket_id):
     try:
         ticket = get_ticket(ticket_id)
@@ -169,103 +169,38 @@ def get_ticket_by_id(ticket_id):
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-@bp.route("/<int:ticket_id>", methods=["DELETE"])
-#@jwt_required()
-def delete_user_by_id(ticket_id):
-    try:
-        conn = db_pool.getconn()
-        with conn.cursor() as cur:
-            cur.execute("DELETE FROM ticket_guest WHERE ticket_id=%s;", (ticket_id,))
-            cur.execute("DELETE FROM ticket WHERE ticket_id=%s;", (ticket_id,))
-            conn.commit()
-        return "Deletion Successful", 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        if conn:
-            db_pool.putconn(conn)
-
-@bp.route("/", methods=["POST"])
-#@jwt_required()
-def post_ticket():
-    data=request.get_json()
-    attendee_id=data.get("attendee_id")
-    payment_id=data.get("payment_id")
-    event_id=data.get("event_id")
-    ticket_state=data.get("ticket_state")
-    ticket_class=data.get("ticket_class")
-    price=data.get("price")
-    seat_row=data.get("seat_row")
-    seat_column=data.get("seat_column")
-    ticket_guests=data.get("ticket_guest", [])
-    try:
-        conn=db_pool.getconn()
-        with conn.cursor() as cur:
-            cur.execute(
-                "INSERT INTO ticket (attendee_id, payment_id, event_id, ticket_state, ticket_class, price, seat_row, seat_column) VALUES (%s, %s, %s, %s, %s, %s, %s, %s) RETURNING ticket_id;",
-                (attendee_id, payment_id, event_id, ticket_state, ticket_class, price, seat_row, seat_column)
-            )
-            ticket_id = cur.fetchone()[0]
-            for guest in ticket_guests:
-                cur.execute(
-                    "INSERT INTO ticket_guest (ticket_id, guest_name, guest_mail, guest_phone, guest_birth_date) VALUES (%s, %s, %s, %s, %s);",
-                    (ticket_id, guest["guest_name"], guest.get("guest_mail"), guest.get("guest_phone"), guest.get("guest_birth_date"))
-                )
-            conn.commit()
-        return "Insertion Successful", 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        if conn:
-            db_pool.putconn(conn)
-
 @bp.route("/<int:ticket_id>", methods=["PUT"])
-#@jwt_required()
 def put_ticket(ticket_id):
     data = request.get_json()
-    attendee_id   = data.get("attendee_id")
-    payment_id    = data.get("payment_id")
-    event_id      = data.get("event_id")
-    ticket_state  = data.get("ticket_state")
-    ticket_class  = data.get("ticket_class")
-    price         = data.get("price")
-    seat_row      = data.get("seat_row")
-    seat_column   = data.get("seat_column")
-    ticket_guests = data.get("ticket_guest", [])
+    conn = None
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
+            cur.execute("""
+                        SELECT ticket_state, ticket_class, price
+                        FROM ticket
+                        WHERE ticket_id = %s
+                        """,(ticket_id,)
+                        )
+
+            old_ticket = cur.fetchone()
+
+            (ticket_state, ticket_class, price) = old_ticket
+
+            ticket_state  = data.get("ticket_state", ticket_state)
+            ticket_class  = data.get("ticket_class", ticket_class)
+            price         = data.get("price", price)
+
             cur.execute(
                 """UPDATE ticket
-                   SET attendee_id=%s,
-                       payment_id=%s,
-                       event_id=%s,
+                   SET 
                        ticket_state=%s,
                        ticket_class=%s,
-                       price=%s,
-                       seat_row=%s,
-                       seat_column=%s
+                       price=%s
                     WHERE ticket_id=%s;""",
-                (attendee_id, payment_id, event_id,
-                 ticket_state, ticket_class, price,
-                 seat_row, seat_column,
-                 ticket_id,))
-            cur.execute(
-                "DELETE FROM ticket_guest WHERE ticket_id = %s;",
-                (ticket_id,))
-            for guest in ticket_guests:
-                cur.execute(
-                    """INSERT INTO ticket_guest
-                      (ticket_id, guest_name, guest_mail, guest_phone, guest_birth_date)
-                    VALUES (%s, %s, %s, %s, %s);""",
-                    (
-                        ticket_id,
-                        guest.get("guest_name"),
-                        guest.get("guest_mail"),
-                        guest.get("guest_phone"),
-                        guest.get("guest_birth_date"),
-                    )
+                (ticket_state, ticket_class, price, ticket_id)
                 )
+            
             conn.commit()
         return "Update Successful", 200
     except Exception as e:
@@ -274,6 +209,160 @@ def put_ticket(ticket_id):
         if conn:
             db_pool.putconn(conn)
         
+
+@bp.route("/<int:ticket_id>/sell", methods=["POST"])
+def sell_ticket(ticket_id):
+    data = request.get_json(force=True)
+
+    required = ["user_id", "payment_method", "guest_info"]
+    for field in required:
+        if field not in data or data[field] is None:
+            return jsonify({
+                "error": "Missing required field(s)",
+                "fields": field
+            }), 400
+
+    guest_required = ["guest_name", "guest_mail", "guest_phone", "guest_birth_date"]
+    guest_info = data["guest_info"]
+    for field in guest_required:
+        if field not in guest_info or guest_info[field] is None:
+            return jsonify({
+                "error": "Missing required field(s)",
+                "fields": field
+            }), 400
+    
+    payment_method = data.get("payment_method")
+    user_id = data.get("user_id")
+    guest_name = guest_info.get("guest_name")
+    guest_mail = guest_info.get("guest_mail")
+    guest_phone = guest_info.get("guest_phone")
+    guest_birth_date = guest_info.get("guest_birth_date")
+
+    current_date = datetime.date.today()
+
+    if payment_method not in (definitions.PAYMENT_CREDIT_CARD, definitions.PAYMENT_WALLET):
+        return jsonify({"error": "Wrong payment method"}), 400
+    
+    conn = None
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                        SELECT account_balance, attended_event_count
+                        FROM attendee
+                        WHERE user_id = %s
+                        """, (user_id, ))
+
+            attendee = cur.fetchone()
+
+            if not attendee:
+                return jsonify({"error": "Wrong attendee_id"}), 400
+
+            account_balance, attended_event_count = attendee
+
+            cur.execute("""
+                        SELECT ticket_state, price, event_id, seat_row, seat_column
+                        FROM ticket
+                        WHERE ticket_id = %s
+                        """,(ticket_id,)
+                        )
+            
+            ticket = cur.fetchone()
+            if not ticket:
+                return jsonify({"error": "No matching ticket"}), 500
+            
+            ticket_state, price, event_id, seat_row, seat_column = ticket
+
+            if ticket_state == definitions.TICKET_STATE_SOLD:
+                return jsonify({"error": "Ticket already sold"}), 500
+            
+            cur.execute("""
+                        SELECT seat_type_map, revenue
+                        FROM event
+                        WHERE event_id = %s
+                        """,(event_id, ))
+            
+            event = cur.fetchone()
+
+            if not event:
+                return jsonify({"error": "No matching event"}), 500
+            
+            seat_type_map, revenue = event
+
+            if payment_method == definitions.PAYMENT_WALLET:
+                if price > account_balance:
+                    return jsonify({"error": "Insufficient credit in Wallet"}), 400
+                account_balance -= price
+
+            attended_event_count += 1
+            revenue += price
+            cur.execute("""
+                        UPDATE attendee
+                        SET account_balance = %s, attended_event_count = %s
+                        WHERE user_id = %s;
+                        """,
+                    (account_balance, attended_event_count, user_id)
+                )
+
+            cur.execute("""
+                        INSERT INTO payment (
+                            attendee_id,
+                            payment_amount,
+                            payment_method,
+                            payment_date
+                        )
+                        VALUES (%s, %s, %s, %s)
+                        RETURNING payment_id;
+                        """,
+                        (user_id, price, payment_method, current_date)
+                        )
+            
+            new_payment_id = cur.fetchone()[0]
+
+            cur.execute("""
+                        UPDATE ticket
+                        SET payment_id   = %s,
+                            ticket_state = %s,
+                            attendee_id  = %s
+                        WHERE ticket_id  = %s;""",
+                        (new_payment_id, user_id, definitions.TICKET_STATE_SOLD, ticket_id)
+                        )
+
+            cur.execute("""
+                        INSERT INTO ticket_guest (
+                            ticket_id,
+                            guest_name,
+                            guest_mail,
+                            guest_phone,
+                            guest_birth_date
+                        )
+                        VALUES (%s, %s, %s, %s, %s);
+                        """,
+                        (ticket_id, guest_name, guest_mail, guest_phone, guest_birth_date)
+                        )
+
+            seat_type_map[seat_row][seat_column] = definitions.OCCUPIED_SEAT
+
+            cur.execute(
+                "UPDATE event SET seat_type_map = %s WHERE event_id = %s;",
+                (seat_type_map, event_id)
+            )
+            cur.execute(
+                "UPDATE event SET revenue = %s WHERE event_id = %s;",
+                (revenue, event_id)
+            )
+
+            conn.commit()     
+        return jsonify({
+                "ticket_id": ticket_id,
+                "payment_id": new_payment_id
+                }), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
 def make_qr_from_str(data):
     qr = qrcode.make(data)
     buffer = BytesIO()

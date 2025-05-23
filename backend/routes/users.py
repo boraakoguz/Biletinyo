@@ -6,7 +6,6 @@ from psycopg2.extras import RealDictCursor
 bp = Blueprint("users", __name__)
 
 @bp.route("/", methods=["GET"])
-#@jwt_required()
 def get_users():
     search=request.args.get("search", "").strip()
     user_type=request.args.get("user_type")
@@ -50,7 +49,6 @@ def get_users():
             db_pool.putconn(conn)
 
 @bp.route("/<int:user_id>", methods=["GET"])
-#@jwt_required()
 def get_user_by_id(user_id):
     try:
         conn = db_pool.getconn()
@@ -239,6 +237,31 @@ def put_user_by_id(user_id):
                 cur.execute("DELETE FROM organizer WHERE user_id=%s", (user_id,))
             conn.commit()
         return "Update Successful", 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+    
+
+@bp.route("/attendee", methods=["GET"])
+def get_attendees():
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT user_id, attended_event_count, account_balance
+                FROM attendee
+            """)
+            rows = cur.fetchall()
+            results = []
+            for row in rows:
+                results.append({
+                    "user_id": row[0],
+                    "attended_event_count": row[1],
+                    "account_balance": float(row[2])
+                })
+            return jsonify(results), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
