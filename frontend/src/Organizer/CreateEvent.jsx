@@ -12,6 +12,7 @@ import {
   Stack,
   Container,
   Paper,
+  InputLabel,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 
@@ -26,9 +27,11 @@ export default function CreateEvent() {
     regulations: "",
     organizer_id: "",
     venue_id: "",
+    image: null,
   });
   const [venues, setVenues] = useState([]);
   const [error, setError] = useState(null);
+  const [imgName, setImgName] = useState("");
 
   useEffect(() => {
     const raw = localStorage.getItem("user");
@@ -36,7 +39,6 @@ export default function CreateEvent() {
     if (user && user.user_type === 1) {
       setFormData((prev) => ({ ...prev, organizer_id: user.id }));
     }
-
     (async () => {
       try {
         const res = await fetch("http://localhost:8080/api/venues");
@@ -49,51 +51,57 @@ export default function CreateEvent() {
     })();
   }, []);
 
-  useEffect(() => {
-    const raw = localStorage.getItem("user");
-    const user = raw ? JSON.parse(raw) : null;
-    if (user && user.user_type === 1) {
-      setFormData((prev) => ({ ...prev, organizer_id: user.id }));
-    }
-
-    (async () => {
-      try {
-        const res = await fetch("http://localhost:8080/api/venues");
-        const data = await res.json();
-        setVenues(data);
-      } catch (err) {
-        console.error(err);
-        setError("Mekanlar yüklenirken hata oluştu.");
-      }
-    })();
-  }, []);
-
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+
+  const handleFileChange = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== "image/png") {
+        setError("Sadece PNG formatı kabul edilir.");
+        return;
+      }
+      setFormData((p) => ({ ...p, image: file }));
+      setImgName(file.name);
+      setError(null);
+    }
   };
 
   const handleSubmit = async () => {
     try {
-      const payload = {
-        ...formData,
-        event_status: 1,
-        organizer_id: parseInt(formData.organizer_id, 10),
-        venue_id: parseInt(formData.venue_id, 10),
-        // backend tarih biçimi bekliyorsa ISO string'e çevir:
-        event_date: new Date(formData.event_date).toISOString(),
-      };
+      const payload = new FormData();
+      payload.append("event_title", formData.event_title);
+      payload.append("description", formData.description);
+      payload.append("event_date", new Date(formData.event_date).toISOString());
+      payload.append("category", formData.category);
+      payload.append("regulations", formData.regulations);
+      payload.append("event_status", 1);
+      payload.append("organizer_id", parseInt(formData.organizer_id, 10));
+      payload.append("venue_id", parseInt(formData.venue_id, 10));
+      if (formData.image) payload.append("image", formData.image);
 
       const res = await fetch("http://localhost:8080/api/events/", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: payload,
       });
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text);
+      if (!res.ok) throw new Error(await res.text());
+
+      // Test if it works, cant test now
+      const { event_id } = await createRes.json();
+      if (formData.image) {
+        const imgPayload = new FormData();
+        imgPayload.append("image", formData.image);
+
+        const imgRes = await fetch(
+          `http://localhost:8080/api/events/${event_id}`,
+          {
+            method: "POST",
+            body: imgPayload,
+          }
+        );
+        if (!imgRes.ok) throw new Error(await imgRes.text());
       }
 
-      // başarı mesajı ve listeye yönlendirme
       alert("Etkinlik başarıyla oluşturuldu!");
       navigate("/organizer/events");
     } catch (err) {
@@ -104,7 +112,6 @@ export default function CreateEvent() {
 
   return (
     <>
-      {/* === GLOBAL HEADER === */}
       <AppBar position="static" color="primary" elevation={4}>
         <Toolbar sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
           <Typography
@@ -119,7 +126,6 @@ export default function CreateEvent() {
           >
             Biletinyo
           </Typography>
-
           <Box sx={{ flexGrow: 1, maxWidth: 400, mx: 2 }}>
             <TextField
               fullWidth
@@ -133,7 +139,6 @@ export default function CreateEvent() {
               }}
             />
           </Box>
-
           <Stack direction="row" spacing={1}>
             <Button
               color="inherit"
@@ -157,7 +162,6 @@ export default function CreateEvent() {
         </Toolbar>
       </AppBar>
 
-      {/* === FORM CONTENT === */}
       <Container sx={{ my: 4, mb: 6 }}>
         <Typography variant="h4" gutterBottom align="center">
           Yeni Etkinlik Oluştur
@@ -172,7 +176,6 @@ export default function CreateEvent() {
               required
               fullWidth
             />
-
             <TextField
               label="Açıklama"
               name="description"
@@ -182,7 +185,6 @@ export default function CreateEvent() {
               rows={3}
               fullWidth
             />
-
             <TextField
               label="Tarih"
               name="event_date"
@@ -193,7 +195,6 @@ export default function CreateEvent() {
               required
               fullWidth
             />
-
             <TextField
               label="Kategori"
               name="category"
@@ -202,7 +203,6 @@ export default function CreateEvent() {
               required
               fullWidth
             />
-
             <TextField
               label="Kurallar"
               name="regulations"
@@ -212,7 +212,6 @@ export default function CreateEvent() {
               rows={2}
               fullWidth
             />
-
             <TextField
               select
               label="Mekan Seç"
@@ -228,13 +227,28 @@ export default function CreateEvent() {
                 </MenuItem>
               ))}
             </TextField>
-
+            <Box>
+              <InputLabel sx={{ mb: 1 }}>Tanıtım Görseli (PNG)</InputLabel>
+              <Button
+                variant="outlined"
+                component="label"
+                fullWidth
+                sx={{ justifyContent: "flex-start" }}
+              >
+                {imgName || "Dosya seç"}
+                <input
+                  hidden
+                  type="file"
+                  accept="image/png"
+                  onChange={handleFileChange}
+                />
+              </Button>
+            </Box>
             {error && (
               <Typography color="error" variant="body2">
                 {error}
               </Typography>
             )}
-
             <Box textAlign="right">
               <Button
                 variant="outlined"
