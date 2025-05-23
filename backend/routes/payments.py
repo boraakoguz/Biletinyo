@@ -1,9 +1,11 @@
 from flask import Blueprint, jsonify, request
 from database import db_pool
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 bp = Blueprint("payments", __name__)
 
 @bp.route("/<int:user_id>", methods=["GET"])
+@jwt_required()
 def get_payments_by_user_id(user_id):
     try:
         conn = db_pool.getconn()
@@ -18,6 +20,7 @@ def get_payments_by_user_id(user_id):
             db_pool.putconn(conn)
 
 @bp.route("/", methods=["POST"])
+@jwt_required()
 def post_payment():
     data = request.get_json()
     attendee_id = data.get("attendee_id")

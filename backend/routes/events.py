@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, request
 from database import db_pool
+from flask_jwt_extended import jwt_required, get_jwt_identity
 
 bp = Blueprint("events", __name__)
     
@@ -112,8 +113,8 @@ def get_event_by_id(event_id):
                     e.event_title,
                     e.event_status,
                     e.description,
-                    e.event_date::date AS event_date,
-                    TO_CHAR(e.event_date, 'HH24:MI') AS event_time,
+                    e.event_date,
+                    e.event_time,
                     e.category,
                     e.revenue,
                     e.regulations,
@@ -134,8 +135,8 @@ def get_event_by_id(event_id):
             "event_title": event[3],
             "event_status": event[4],
             "description": event[5],
-            "event_date": event[6],
-            "event_time": event[7],
+            "event_date": event[6].isoformat(),
+            "event_time": event[7].strftime("%H:%M"),
             "category": event[8],
             "revenue": event[9],
             "regulations": event[10],
@@ -152,6 +153,7 @@ def get_event_by_id(event_id):
             db_pool.putconn(conn)
 
 @bp.route("/<int:event_id>", methods=["DELETE"])
+@jwt_required()
 def delete_event_by_id(event_id):
     try:
         conn = db_pool.getconn()
@@ -166,6 +168,7 @@ def delete_event_by_id(event_id):
             db_pool.putconn(conn)
 
 @bp.route("/", methods=["POST"])
+@jwt_required()
 def post_event():
     data = request.get_json()
     organizer_id = data.get("organizer_id")
@@ -194,6 +197,7 @@ def post_event():
             db_pool.putconn(conn)
 
 @bp.route("/<int:event_id>", methods=["PUT"])
+@jwt_required()
 def put_event_by_id(event_id):
     data = request.get_json()
     organizer_id = data.get("organizer_id")

@@ -15,35 +15,104 @@ import ManageEvents from "./Organizer/ManageEvents";
 import TicketCategoryEdit from "./Organizer/TicketCategoryEdit";
 import VenueManagement from "./Organizer/VenueManagement";
 import AddVenue from "./Organizer/AddVenue";
-import SeatingConfig     from "./Organizer/SeatingConfig";
+import SeatingConfig from "./Organizer/SeatingConfig";
 import SalesAnalytics from "./Organizer/SalesAnalytics";
+import AuthRoute from "./AuthRoute";
 
 function App() {
-  // SOME MIGHT CHANGE
   return (
     <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
         <Route path="/" element={<MainPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signin" element={<SignInPage />} />
-        <Route path="/profile" element={<ProfilePage />} />
         <Route path="/event/:id" element={<EventPage />} />
         <Route path="/event/:id/comments" element={<CommentPage />} />
-        <Route path="/event/:id/seating" element={<Seating />} />
-        <Route path="/guest" element={<GuestPage />} />
-        <Route path="/ticket/:id" element={<TicketPage />} />
-        <Route path="/seating" element={<Seating />} />
-        <Route path="/payment" element={<PaymentPage />} />
-        <Route path="/create" element={<CreateEvent />} />
-        <Route path="/organizer/dashboard" element={<OrganizerDashboard />} />
-        //<Route path="/organizer/events" element={<ManageEvents />} />
-        <Route path="/organizer/events/:id" element={<ManageEvents />} />
-        <Route path="/organizer/events/new" element={<CreateEvent />} />
-        <Route path="/organizer/events/:id/categories" element={<TicketCategoryEdit />} />
-        <Route path="/organizer/venues" element={<VenueManagement />} />
-        <Route path="/organizer/venues/new" element={<AddVenue />} />
-        <Route path="/organizer/venues/:id/seating" element={<SeatingConfig />} />
-        <Route path="/organizer/reports/sales" element={<SalesAnalytics />} />
+        
+        {/* Protected Routes - Require Authentication */}
+        <Route path="/profile" element={
+          <AuthRoute>
+            <ProfilePage />
+          </AuthRoute>
+        } />
+        <Route path="/event/:id/seating" element={
+          <AuthRoute>
+            <Seating />
+          </AuthRoute>
+        } />
+        <Route path="/guest" element={
+          <AuthRoute>
+            <GuestPage />
+          </AuthRoute>
+        } />
+        <Route path="/ticket/:id" element={
+          <AuthRoute>
+            <TicketPage />
+          </AuthRoute>
+        } />
+        <Route path="/seating" element={
+          <AuthRoute>
+            <Seating />
+          </AuthRoute>
+        } />
+        <Route path="/payment" element={
+          <AuthRoute>
+            <PaymentPage />
+          </AuthRoute>
+        } />
+        
+        {/* Organizer Routes - Require Organizer Role */}
+        <Route path="/create" element={
+          <AuthRoute requireOrganizer={true}>
+            <CreateEvent />
+          </AuthRoute>
+        } />
+        <Route path="/organizer/dashboard" element={
+          <AuthRoute requireOrganizer={true}>
+            <OrganizerDashboard />
+          </AuthRoute>
+        } />
+        <Route path="/organizer/events" element={
+          <AuthRoute requireOrganizer={true}>
+            <ManageEvents />
+          </AuthRoute>
+        } />
+        <Route path="/organizer/events/:id" element={
+          <AuthRoute requireOrganizer={true}>
+            <ManageEvents />
+          </AuthRoute>
+        } />
+        <Route path="/organizer/events/new" element={
+          <AuthRoute requireOrganizer={true}>
+            <CreateEvent />
+          </AuthRoute>
+        } />
+        <Route path="/organizer/events/:id/categories" element={
+          <AuthRoute requireOrganizer={true}>
+            <TicketCategoryEdit />
+          </AuthRoute>
+        } />
+        <Route path="/organizer/venues" element={
+          <AuthRoute requireOrganizer={true}>
+            <VenueManagement />
+          </AuthRoute>
+        } />
+        <Route path="/organizer/venues/new" element={
+          <AuthRoute requireOrganizer={true}>
+            <AddVenue />
+          </AuthRoute>
+        } />
+        <Route path="/organizer/venues/:id/seating" element={
+          <AuthRoute requireOrganizer={true}>
+            <SeatingConfig />
+          </AuthRoute>
+        } />
+        <Route path="/organizer/reports/sales" element={
+          <AuthRoute requireOrganizer={true}>
+            <SalesAnalytics />
+          </AuthRoute>
+        } />
       </Routes>
     </BrowserRouter>
   );
