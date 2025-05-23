@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 bp = Blueprint("reports", __name__)
 
 @bp.route("/", methods=["GET"])
-@jwt_required()
+#@jwt_required()
 def get_reports():
     try:
         conn = db_pool.getconn()
@@ -20,7 +20,7 @@ def get_reports():
             db_pool.putconn(conn)
 
 @bp.route("/<int:report_id>", methods=["GET"])
-@jwt_required()
+#@jwt_required()
 def get_reports_by_id(report_id):
     try:
         conn = db_pool.getconn()
@@ -35,7 +35,7 @@ def get_reports_by_id(report_id):
             db_pool.putconn(conn)
 
 @bp.route("/sales/<int:organizer_id>", methods=["GET"])
-@jwt_required()
+#@jwt_required()
 def get_sales_report(organizer_id):
     try:
         conn = db_pool.getconn()

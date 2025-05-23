@@ -19,7 +19,7 @@ def get_comments():
             db_pool.putconn(conn)
     
 @bp.route("/<int:comment_id>", methods=["DELETE"])
-@jwt_required()
+#@jwt_required()
 def delete_comment_by_id(comment_id):
     try:
         conn = db_pool.getconn()
@@ -34,7 +34,7 @@ def delete_comment_by_id(comment_id):
             db_pool.putconn(conn)
 
 @bp.route("/", methods=["POST"])
-@jwt_required()
+#@jwt_required()
 def post_comment():
     data = request.get_json()
     event_id = data.get("event_id")

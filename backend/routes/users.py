@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 bp = Blueprint("users", __name__)
 
 @bp.route("/", methods=["GET"])
-@jwt_required()
+#@jwt_required()
 def get_users():
     search=request.args.get("search", "").strip()
     user_type=request.args.get("user_type")
@@ -49,7 +49,7 @@ def get_users():
             db_pool.putconn(conn)
 
 @bp.route("/<int:user_id>", methods=["GET"])
-@jwt_required()
+#@jwt_required()
 def get_user_by_id(user_id):
     try:
         conn = db_pool.getconn()
@@ -92,7 +92,7 @@ def get_user_by_id(user_id):
             db_pool.putconn(conn)
 
 @bp.route("/<int:user_id>", methods=["DELETE"])
-@jwt_required()
+#@jwt_required()
 def delete_user_by_id(user_id):
     try:
         conn = db_pool.getconn()
@@ -150,7 +150,7 @@ def post_user():
             db_pool.putconn(conn)
 
 @bp.route("/<int:user_id>", methods=["PUT"])
-@jwt_required()
+#@jwt_required()
 def put_user_by_id(user_id):
     data=request.get_json()
     name=data.get("name")

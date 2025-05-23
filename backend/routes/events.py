@@ -153,7 +153,7 @@ def get_event_by_id(event_id):
             db_pool.putconn(conn)
 
 @bp.route("/<int:event_id>", methods=["DELETE"])
-@jwt_required()
+#@jwt_required()
 def delete_event_by_id(event_id):
     try:
         conn = db_pool.getconn()
@@ -168,7 +168,7 @@ def delete_event_by_id(event_id):
             db_pool.putconn(conn)
 
 @bp.route("/", methods=["POST"])
-@jwt_required()
+#@jwt_required()
 def post_event():
     data = request.get_json()
     organizer_id = data.get("organizer_id")
@@ -197,7 +197,7 @@ def post_event():
             db_pool.putconn(conn)
 
 @bp.route("/<int:event_id>", methods=["PUT"])
-@jwt_required()
+#@jwt_required()
 def put_event_by_id(event_id):
     data = request.get_json()
     organizer_id = data.get("organizer_id")
