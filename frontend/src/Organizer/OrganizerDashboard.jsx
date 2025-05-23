@@ -14,7 +14,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-
+import apiService from "../apiService";
 const OrganizerDashboard = () => {
   const [events, setEvents] = useState([]);
   const [summary, setSummary] = useState({ totalSales: 0, totalRevenue: 0 });
@@ -22,6 +22,7 @@ const OrganizerDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const now = new Date();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -42,46 +43,23 @@ const OrganizerDashboard = () => {
     localStorage.removeItem("user");
     navigate("/");
   };
+  const raw = localStorage.getItem("user");
+  const user = raw ? JSON.parse(raw) : null;
+  const userId = user ? Number(user.id) : null;
 
-  // --- Mock data for development ---
   useEffect(() => {
-    // Mock summary
-    setSummary({ totalSales: 42, totalRevenue: 12500 });
-
-    // Mock events list
-    const mockEvents = [
-      {
-        event_id: 1,
-        event_title: "Rock Concert – Duman",
-        event_date: "2025-06-15T20:00",
-        venue_name: "Main Hall",
-        location: "Ankara",
-      },
-      {
-        event_id: 2,
-        event_title: "Jazz Night",
-        event_date: "2025-05-05T19:30",
-        venue_name: "City Jazz Club",
-        location: "Istanbul",
-      },
-      {
-        event_id: 3,
-        event_title: "Tech Meetup",
-        event_date: "2025-04-10T18:00",
-        venue_name: "Convention Center",
-        location: "Izmir",
-      },
-      {
-        event_id: 4,
-        event_title: "Art Exhibition",
-        event_date: "2025-03-20T17:00",
-        venue_name: "Gallery 21",
-        location: "Ankara",
-      },
-    ];
-    setEvents(mockEvents);
-    setLoading(false);
-  }, []);
+    (async () => {
+      try {
+        const evs = await apiService.getEventsByOrganizer(userId);
+        setEvents(evs);
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [userId]);
+  // --- Mock data for development ---
 
   if (loading) {
     return (
@@ -92,18 +70,14 @@ const OrganizerDashboard = () => {
   }
 
   // Bugün başlangıcı
-  const today = new Date().setHours(0, 0, 0, 0);
 
   // Arama ve tarih filtreleri
   const filtered = events.filter((e) =>
     e.event_title.toLowerCase().includes(searchTerm.toLowerCase())
   );
-  const upcoming = filtered.filter(
-    (e) => new Date(e.event_date).setHours(0, 0, 0, 0) >= today
-  );
-  const past = filtered.filter(
-    (e) => new Date(e.event_date).setHours(0, 0, 0, 0) < today
-  );
+
+  const upcoming = filtered.filter((e) => new Date(e.event_date) >= now);
+  const past = filtered.filter((e) => new Date(e.event_date) < now);
 
   const renderEventCard = (evt) => (
     <Grid item xs={12} sm={6} md={4} key={evt.event_id}>
@@ -152,9 +126,7 @@ const OrganizerDashboard = () => {
     <>
       {/* Global Header */}
       <AppBar position="static" color="primary" elevation={4}>
-        <Toolbar
-          sx={{ justifyContent: "space-between", flexWrap: "wrap" }}
-        >
+        <Toolbar sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
           <Typography
             variant="h5"
             sx={{
@@ -189,7 +161,9 @@ const OrganizerDashboard = () => {
                 <Button
                   color="inherit"
                   onClick={() => navigate("/profile")}
-                  sx={{ "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" } }}
+                  sx={{
+                    "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+                  }}
                 >
                   Profile
                 </Button>
@@ -210,7 +184,9 @@ const OrganizerDashboard = () => {
                 <Button
                   color="inherit"
                   onClick={() => navigate("/login")}
-                  sx={{ "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" } }}
+                  sx={{
+                    "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+                  }}
                 >
                   Üye Girişi
                 </Button>
@@ -237,31 +213,29 @@ const OrganizerDashboard = () => {
           Organizatör Panosu
         </Typography>
 
-        <Stack
-          direction={{ xs: "column", sm: "row" }}
-          spacing={2}
-          mb={4}
-        >
+        <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={4}>
           <Card sx={{ flex: 1, minWidth: 150 }}>
             <CardContent>
               <Typography variant="subtitle1">Toplam Satış</Typography>
-              <Typography variant="h5">
-                {summary.totalSales}
-              </Typography>
+              <Typography variant="h5">{summary.totalSales}</Typography>
             </CardContent>
           </Card>
           <Card sx={{ flex: 1, minWidth: 150 }}>
             <CardContent>
-              <Typography variant="subtitle1">
-                Toplam Gelir
-              </Typography>
-              <Typography variant="h5">
-                {summary.totalRevenue} TL
-              </Typography>
+              <Typography variant="subtitle1">Toplam Gelir</Typography>
+              <Typography variant="h5">{summary.totalRevenue} TL</Typography>
             </CardContent>
           </Card>
         </Stack>
-
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/organizer/create")}
+          >
+            Yeni Etkinlik Oluştur
+          </Button>
+        </Box>
         <Typography variant="h5" gutterBottom>
           Yaklaşan Etkinlikler
         </Typography>
@@ -283,9 +257,7 @@ const OrganizerDashboard = () => {
             {past.map(renderEventCard)}
           </Grid>
         ) : (
-          <Typography color="text.secondary">
-            Geçmiş etkinlik yok.
-          </Typography>
+          <Typography color="text.secondary">Geçmiş etkinlik yok.</Typography>
         )}
       </Container>
     </>

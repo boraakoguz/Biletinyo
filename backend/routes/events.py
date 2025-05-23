@@ -13,6 +13,7 @@ def get_events():
     event_status = request.args.get("event_status")
     start_date = request.args.get("start_date")
     end_date = request.args.get("end_date")
+    organizer_id  = request.args.get("organizer_id") 
 
     where_clauses = []
     sql_params = []
@@ -38,6 +39,9 @@ def get_events():
     if event_status:
         where_clauses.append("e.event_status = %s")
         sql_params.append(event_status)
+    if organizer_id:
+        where_clauses.append("e.organizer_id = %s")
+        sql_params.append(organizer_id)
 
     where_sql = f"WHERE {' AND '.join(where_clauses)}" if where_clauses else ""
 

@@ -55,9 +55,23 @@ export const apiService = {
   },
   
   // Events
-  getEvents: async () => {
-    const res = await fetch(`${API_BASE_URL}/events/`);
-    return res.json();
+  getEvents: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = `${API_BASE_URL}/events/${queryString ? `?${queryString}` : ""}`;
+    
+    const token = localStorage.getItem("token");
+    const res = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  
+    if (!res.ok) {
+      throw new Error("Failed to fetch events");
+    }
+  
+    return await res.json();
   },
   
   getEventById: async (id) => {
@@ -88,12 +102,25 @@ export const apiService = {
     return res.json();
   },
   
-  // User
-  getUserProfile: async (id) => {
-    const res = await fetchWithAuth(`/users/${id}`);
+  getUserById: async (userId) => {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}`);
+    if (!res.ok) throw new Error("Failed to fetch user");
     return res.json();
   },
-  
+  getUsers: async (params = {}) => {
+    // params = { user_type: 1, search: "abc" }
+    const qs = new URLSearchParams(params).toString();  // user_type=1&search=abc
+    const res = await fetch(`${API_BASE_URL}/users/?${qs}`);
+    if (!res.ok) throw new Error("Failed to fetch users");
+    return res.json();
+  },
+
+  getEventsByOrganizer: async (organizerId) => {
+    const res = await fetch(`${API_BASE_URL}/events/?organizer_id=${organizerId}`);
+    if (!res.ok) throw new Error("Failed to load organizer events");
+    return res.json();
+  },
+
   updateUserProfile: async (id, userData) => {
     const res = await fetchWithAuth(`/users/${id}`, {
       method: 'PUT',
@@ -136,15 +163,25 @@ export const apiService = {
     const res = await fetch(`${API_BASE_URL}/comments/?event_id=${eventId}`);
     return res.json();
   },
-  
   addComment: async (commentData) => {
-    const res = await fetchWithAuth('/comments/', {
-      method: 'POST',
+    const token = localStorage.getItem("token");
+  
+    const res = await fetch("http://localhost:8080/api/comments/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify(commentData),
     });
-    return res.json();
-  },
   
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData?.error || "Failed to post comment");
+    }
+  
+    return res.json(); 
+  },
   // Venues
   getVenues: async () => {
     const res = await fetch(`${API_BASE_URL}/venues/`);
@@ -177,6 +214,51 @@ export const apiService = {
     const res = await fetchWithAuth(`/reports/sales/${organizerId}`);
     return res.json();
   },
-};
+
+  getUserFollows: async (userId, organizerId = null) => {
+    const url = organizerId
+      ? `${API_BASE_URL}/follows/${userId}?organizer_id=${organizerId}`
+      : `${API_BASE_URL}/follows/${userId}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Failed to fetch follows");
+    return res.json();
+  },
+  
+  isFollowing: async (userId, organizerId) => {
+    const data = await apiService.getUserFollows(userId, organizerId);
+    return data !== null;
+  },
+  
+  getEventsByOrganizer: async (organizerId) => {
+    const res = await fetch(`${API_BASE_URL}/events/?organizer_id=${organizerId}`);
+    if (!res.ok) throw new Error("Failed to fetch events");
+    return res.json();
+  },
+  
+  followOrganizer: async (userId, organizerId) => {
+    const res = await fetchWithAuth('/follows/', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, organizer_id: organizerId }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.error || 'Failed to follow organizer');
+    }
+    return res.text();
+  },
+
+  unfollowOrganizer: async (userId, organizerId) => {
+    const res = await fetchWithAuth(`/follows/${userId}/${organizerId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.error || 'Failed to unfollow organizer');
+    }
+    return res.text();
+  },
+
+}; 
+
 
 export default apiService; 
