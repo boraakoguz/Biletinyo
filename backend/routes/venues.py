@@ -17,7 +17,8 @@ def get_venues():
                     venue_name,
                     venue_description,
                     city,
-                    seat_map
+                    seat_map,
+                    available
                 FROM venue
                 ORDER BY venue_name;
             """)
@@ -31,7 +32,8 @@ def get_venues():
                 "venue_name": venue[3],
                 "venue_description": venue[4],
                 "city": venue[5],
-                "seat_map": venue[6]
+                "seat_map": venue[6],
+                "available": venue[7]
             }
             for venue in venues
         ])
@@ -51,7 +53,8 @@ def get_venue_by_id(venue_id):
                     venue_name,
                     venue_description,
                     city,
-                    seat_map
+                    seat_map,
+                    available
                 FROM venue
                 WHERE venue_id = %s;
                 """, (venue_id,))
@@ -64,6 +67,7 @@ def get_venue_by_id(venue_id):
             "venue_description": venue[4],
             "city": venue[5],
             "seat_map": venue[6],
+            "available": venue[7]
         }), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -71,23 +75,7 @@ def get_venue_by_id(venue_id):
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/<int:venue_id>", methods=["DELETE"])
-@jwt_required()
-def delete_venue_by_id(venue_id):
-    try:
-        conn = db_pool.getconn()
-        with conn.cursor() as cur:
-            cur.execute("SELECT venue_id FROM venue WHERE venue_id=%s;", (venue_id,))
-            conn.commit()
-        return "Deletion Successful", 200
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
-    finally:
-        if conn:
-            db_pool.putconn(conn)
-
 @bp.route("/", methods=["POST"])
-@jwt_required()
 def post_venue():
     data = request.get_json()
     capacity = data.get("capacity")
@@ -96,11 +84,12 @@ def post_venue():
     venue_description = data.get("venue_description")
     city = data.get("city")
     seat_map = data.get("seat_map")
+    available = 1
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            cur.execute("""INSERT INTO venue (capacity, location, venue_name, venue_description, city, seat_map)
-                VALUES (%s, %s, %s, %s, %s, %s);""",(capacity, location, venue_name, venue_description, city, seat_map,))
+            cur.execute("""INSERT INTO venue (capacity, location, venue_name, venue_description, city, seat_map, available)
+                VALUES (%s, %s, %s, %s, %s, %s, %s);""",(capacity, location, venue_name, venue_description, city, seat_map, available))
             conn.commit()
         return "Insertion Successful", 200
     except Exception as e:
@@ -110,7 +99,6 @@ def post_venue():
             db_pool.putconn(conn)
 
 @bp.route("/<int:venue_id>", methods=["PUT"])
-@jwt_required()
 def put_venue_by_id(venue_id):
     data = request.get_json(force=True) or {}
     try:
@@ -118,7 +106,7 @@ def put_venue_by_id(venue_id):
         with conn.cursor() as cur:
             cur.execute("""
                 SELECT capacity, location, venue_name, venue_description,
-                       city, seat_map, available
+                       city, available
                 FROM venue
                 WHERE venue_id = %s
                 FOR UPDATE
@@ -126,14 +114,13 @@ def put_venue_by_id(venue_id):
             venue = cur.fetchone()
             (
                 capacity, location, venue_name, venue_description,
-                city, seat_map, available
+                city, available
             ) = (
                 data.get("capacity", venue[0]),
                 data.get("location", venue[1]),
                 data.get("venue_name", venue[2]),
                 data.get("venue_description", venue[3]),
                 data.get("city", venue[4]),
-                data.get("seat_map", venue[5]),
                 data.get("available", venue[6]),
             )
             cur.execute("""
@@ -143,12 +130,11 @@ def put_venue_by_id(venue_id):
                        venue_name=%s,
                        venue_description=%s,
                        city=%s,
-                       seat_map=%s,
                        available=%s
                  WHERE venue_id=%s;
             """, (
                 capacity, location, venue_name, venue_description,
-                city, seat_map, available, venue_id
+                city, available, venue_id
             ))
             conn.commit()
         return "Update successful", 200
