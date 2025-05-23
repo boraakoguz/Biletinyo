@@ -214,6 +214,51 @@ export const apiService = {
     const res = await fetchWithAuth(`/reports/sales/${organizerId}`);
     return res.json();
   },
-};
+
+  getUserFollows: async (userId, organizerId = null) => {
+    const url = organizerId
+      ? `${API_BASE_URL}/follows/${userId}?organizer_id=${organizerId}`
+      : `${API_BASE_URL}/follows/${userId}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error("Failed to fetch follows");
+    return res.json();
+  },
+  
+  isFollowing: async (userId, organizerId) => {
+    const data = await apiService.getUserFollows(userId, organizerId);
+    return data !== null;
+  },
+  
+  getEventsByOrganizer: async (organizerId) => {
+    const res = await fetch(`${API_BASE_URL}/events/?organizer_id=${organizerId}`);
+    if (!res.ok) throw new Error("Failed to fetch events");
+    return res.json();
+  },
+  
+  followOrganizer: async (userId, organizerId) => {
+    const res = await fetchWithAuth('/follows/', {
+      method: 'POST',
+      body: JSON.stringify({ user_id: userId, organizer_id: organizerId }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.error || 'Failed to follow organizer');
+    }
+    return res.text();
+  },
+
+  unfollowOrganizer: async (userId, organizerId) => {
+    const res = await fetchWithAuth(`/follows/${userId}/${organizerId}`, {
+      method: 'DELETE',
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.error || 'Failed to unfollow organizer');
+    }
+    return res.text();
+  },
+
+}; 
+
 
 export default apiService; 

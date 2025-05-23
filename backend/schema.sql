@@ -26,9 +26,9 @@ CREATE TABLE organizer (
 );
 
 CREATE TABLE follow (
-    user_id             INT PRIMARY KEY,
+    user_id             INT,
     organizer_id        INT NOT NULL,
-
+    PRIMARY KEY (user_id, organizer_id), 
     FOREIGN KEY (user_id) REFERENCES users(user_id),
     FOREIGN KEY (organizer_id) REFERENCES organizer(user_id)
 );

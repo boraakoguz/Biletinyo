@@ -23,10 +23,15 @@ export default function OrganizerPage() {
   const [loading, setLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
+  const user = JSON.parse(localStorage.getItem("user"));
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSignInRedirect = () => {
     navigate("/signin");
   };
+
+  localStorage.setItem("refreshFollowedTab", "true");
+
   const handleLoginRedirect = () => {
     navigate("/login");
   };
@@ -37,27 +42,44 @@ export default function OrganizerPage() {
     window.location.href = "/";
   };
   useEffect(() => {
+    let cancelled = false;
+
+    // reset state on each org change
+    setLoading(true);
+    setIsFollowing(false);
+
+    const storedUser = JSON.parse(localStorage.getItem("user"));
+    setIsLoggedIn(!!storedUser);
+
+    // if not logged in, bail early
+    if (!storedUser) {
+      setLoading(false);
+      return;
+    }
+
     (async () => {
       try {
-        const user = JSON.parse(localStorage.getItem("user"));
-        setIsLoggedIn(!!user);
+        // fetch all in parallel
+        const [detail, evs, following] = await Promise.all([
+          apiService.getUserById(id),
+          apiService.getEventsByOrganizer(id),
+          apiService.isFollowing(storedUser.id, Number(id)),
+        ]);
 
-        const detail = await apiService.getUserById(id);
+        if (cancelled) return;
         setOrg(detail);
-
-        const evs = await apiService.getEventsByOrganizer(id);
         setEvents(evs);
-
-        if (user) {
-          const followRes = await apiService.isFollowing(user.id, id);
-          setIsFollowing(followRes.following);
-        }
-      } catch (e) {
-        console.error(e);
+        setIsFollowing(following);
+      } catch (err) {
+        console.error("Error loading organizer page:", err);
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [id]);
 
   if (loading)
@@ -207,7 +229,25 @@ export default function OrganizerPage() {
         </Typography>
         {isLoggedIn && (
           <Box sx={{ mb: 3 }}>
-            <Button variant="outlined">
+            <Button
+              disabled={isSubmitting}
+              onClick={async () => {
+                if (!user) return;
+                try {
+                  setIsSubmitting(true);
+                  if (isFollowing) {
+                    await apiService.unfollowOrganizer(user.id, Number(id));
+                  } else {
+                    await apiService.followOrganizer(user.id, Number(id));
+                  }
+                  setIsFollowing(!isFollowing);
+                } catch (err) {
+                  console.error("Follow/unfollow error:", err);
+                } finally {
+                  setIsSubmitting(false);
+                }
+              }}
+            >
               {isFollowing ? "Unfollow" : "Follow"}
             </Button>
           </Box>
