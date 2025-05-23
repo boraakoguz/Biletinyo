@@ -1,246 +1,184 @@
-import {
-  Avatar,
-  Box,
-  Grid,
-  Typography,
-  Paper,
-  TableContainer,
-  Table,
-  TableHead,
-  TableBody,
-  TableCell,
-  TableRow,
-  Button,
-} from "@mui/material";
-
-import { useNavigate } from "react-router-dom";
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  AppBar,
+  Toolbar,
+  Typography,
+  Container,
+  Box,
+  Paper,
+  Avatar,
+  Grid,
+  Button,
+  Stack,
+  Card,
+  CardActionArea,
+  CardMedia,
+  CardContent,
+} from "@mui/material";
 
 function ProfilePage() {
   const navigate = useNavigate();
-  const viewTicket = (ticketId) => navigate(`/ticket/${ticketId}`);
+  const [user, setUser] = useState({});
+  const [tickets, setTickets] = useState([]);
+
+  const getBirthYear = (birthDate) => {
+    if (!birthDate) return null;
+    const year = new Date(birthDate).getFullYear();
+    return isNaN(year) ? null : year;
+  };
+
+  useEffect(() => {
+    const raw = localStorage.getItem("user");
+    setUser(raw ? JSON.parse(raw) : {});
+    setTickets([
+      {
+        id: "101",
+        image: "https://picsum.photos/300/150?random=1",
+        title: "BOOM CONCERT",
+        venue: "BOOM CITY",
+        datetime: "15.04.2025 • 15:00",
+        guests: 2,
+      },
+      {
+        id: "102",
+        image: "https://picsum.photos/300/150?random=2",
+        title: "YALIN LIVE",
+        venue: "CERNMODERN",
+        datetime: "15.04.2025 • 15:00",
+        guests: 3,
+      },
+    ]);
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
-    navigate("/"); // or navigate("/login") if you prefer
+    navigate("/");
   };
-  const rows = [
-    {
-      id: "101",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR9rPoOy-JnLdYc9O8BubM4URYh_N8BNOO8hQ&s",
-      name: "BOOM CONCERT",
-      location: "BOOM CITY",
-      date: "15.04.2025",
-      time: "15:00",
-      guest: 2,
-    },
-    {
-      id: "102",
-      image:
-        "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTKpMysp9ltSCrNetbD7nYWn2N3NNPl97nZyg&s",
-      name: "YALIN",
-      location: "CERNMODERN",
-      date: "15.04.2025",
-      time: "15:00",
-      guest: 3,
-    },
-  ];
 
   return (
-    <Box position="relative" sx={{ backgroundColor: "gray" }}>
-      <Grid container spacing={0} sx={{ height: "80%" }}>
-        <Grid
-          size={4}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100vh",
-          }}
-        >
-          <Paper
-            elevation={2}
+    <>
+      <AppBar position="static" sx={{ backgroundColor: "#002fa7" }}>
+        <Toolbar sx={{ justifyContent: "center" }}>
+          <Typography
+            variant="h5"
             sx={{
-              borderRadius: "40px",
-              width: "60%",
-              height: "70%",
-              padding: "30px",
-              justifyContent: "center",
-              alignItems: "center",
+              textDecoration: "underline",
+              fontStyle: "italic",
+              fontWeight: "bold",
+              cursor: "pointer",
             }}
+            onClick={() => navigate("/")}
           >
-            <Paper
-              elevation={2}
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                width: "100%",
-                height: "20%",
-                justifyContent: "center",
-                alignItems: "center",
-                borderRadius: "20px",
-                backgroundColor: "#002fa7",
-              }}
-            >
-              <Typography color="white" variant="h4">
-                Profile Page
-              </Typography>
-            </Paper>
-            <Box
-              sx={{
-                marginTop: "15px",
-                display: "flex",
-                flexDirection: "column",
-                width: "100%",
-                height: "70%",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Typography variant="h4" marginTop={"20px"}>
-                Name
-              </Typography>
-              <Typography variant="h5">Ege</Typography>
-              <Typography variant="h4" marginTop={"20px"}>
-                E-Mail
-              </Typography>
-              <Typography variant="h5">email</Typography>
-              <Typography variant="h4" marginTop={"20px"}>
-                Birth Year
-              </Typography>
-              <Typography variant="h5">2004</Typography>
-              <Typography variant="h4" marginTop={"20px"}>
-                Phone
-              </Typography>
-              <Typography variant="h5">532</Typography>
-              <Button
-                variant="outlined"
-                color="primary"
-                sx={{ mt: 2, mb: 1 }}
-                onClick={() => navigate("/")}
+            Biletinyo
+          </Typography>
+        </Toolbar>
+      </AppBar>
+
+      <Box sx={{ backgroundColor: "#ffffff", py: 6, minHeight: "100vh" }}>
+        <Container maxWidth="lg">
+          <Grid container spacing={6}>
+            {/* Profile Box */}
+            <Grid item xs={12} md={6}>
+              <Paper
+                elevation={3}
+                sx={{ p: 6, borderRadius: 4, height: "100%" }}
               >
-                Back
-              </Button>
-              <Button variant="contained" color="error" onClick={handleLogout}>
-                Logout
-              </Button>
-            </Box>
-          </Paper>
-        </Grid>
-        <Grid
-          size={8}
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100vh",
-          }}
-        >
-          <Paper
-            elevation={2}
-            sx={{
-              borderRadius: "40px",
-              width: "80%",
-              height: "70%",
-              padding: "30px",
-              justifyContent: "center",
-              alignItems: "center",
-            }}
-          >
-            <Paper
-              elevation={2}
-              sx={{
-                width: "100%",
-                borderRadius: "20px",
-                height: "15%",
-                padding: "30px",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundColor: "#002fa7",
-              }}
-            >
-              <Typography color="white" variant="h4">
-                Digital Tickets
+                <Stack spacing={3} alignItems="center">
+                  <Avatar
+                    sx={{
+                      width: 120,
+                      height: 120,
+                      bgcolor: "#002fa7",
+                      fontSize: 48,
+                    }}
+                  >
+                    {user.name ? user.name.charAt(0) : "U"}
+                  </Avatar>
+                  <Typography variant="h5">
+                    {user.name || "Unknown User"}
+                  </Typography>
+                  <Typography color="text.secondary" fontSize={18}>
+                    {user.email || "—"}
+                  </Typography>
+                  <Typography fontSize={16}>
+                    <strong>Birth Year:</strong>{" "}
+                    {getBirthYear(user.birth_date) || "—"}
+                  </Typography>
+                  <Typography fontSize={16}>
+                    <strong>Phone:</strong> {user.phone || "—"}
+                  </Typography>
+                  <Stack direction="row" spacing={3}>
+                    <Button variant="outlined" onClick={() => navigate("/")}>
+                      Back
+                    </Button>
+                    <Button
+                      variant="contained"
+                      color="error"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </Button>
+                  </Stack>
+                </Stack>
+              </Paper>
+            </Grid>
+
+            {/* Tickets */}
+            <Grid item xs={12} md={6}>
+              <Typography variant="h5" gutterBottom>
+                My Tickets
               </Typography>
-            </Paper>
-            <TableContainer
-              component={Paper}
-              sx={{
-                borderRadius: "20px",
-                marginTop: "15px",
-                minHeight: "auto",
-                maxHeight: "85%",
-              }}
-            >
-              <Table component={Paper} sx={{}}>
-                <TableBody>
-                  {rows.map((row) => (
-                    <TableRow
-                      key={row.id}
+              <Grid container spacing={3}>
+                {tickets.map((t) => (
+                  <Grid item key={t.id}>
+                    <Card
                       sx={{
-                        marginTop: "10px",
-                        borderRadius: "20px",
+                        width: 250,
+                        height: 400,
+                        boxShadow: 3,
+                        display: "flex",
+                        flexDirection: "column",
                       }}
                     >
-                      <TableCell width={"30%"} align="left">
-                        <Box width={"100%"} height={"100%"}>
-                          <Avatar
-                            variant="square"
-                            src={row.image}
-                            sx={{ width: "100%", height: "100%" }}
-                          ></Avatar>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Box
-                          sx={{
-                            minWidth: "40%",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            flexDirection: "row",
-                          }}
-                        >
-                          <Box
-                            sx={{
-                              marginLeft: "15px",
-                              justifyContent: "center",
-                              alignItems: "center",
-                              display: "flex",
-                              minWidth: "50%",
-                              flexDirection: "column",
-                            }}
-                          >
-                            <Typography variant="h5">{row.name}</Typography>
-                            <Typography variant="body1">
-                              {row.location}
-                            </Typography>
-                            <Typography variant="body1">{row.date}</Typography>
-                            <Typography variant="body1">{row.time}</Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell align="left">
-                        <Typography>Guest Number: {row.guest}</Typography>
-                      </TableCell>
-                      <TableCell align="right" width={"10%"}>
-                        <Button
-                          variant="outlined"
-                          onClick={() => viewTicket(row.id)}
-                        >
-                          View Ticket
-                        </Button>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Paper>
-        </Grid>
-      </Grid>
-    </Box>
+                      <CardActionArea
+                        onClick={() => navigate(`/ticket/${t.id}`)}
+                        sx={{
+                          flexGrow: 1,
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "stretch",
+                        }}
+                      >
+                        <CardMedia
+                          component="img"
+                          image={t.image}
+                          alt={t.title}
+                          sx={{ height: 150, objectFit: "cover" }}
+                        />
+                        <CardContent sx={{ flexGrow: 1 }}>
+                          <Typography variant="h6">{t.title}</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {t.venue}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            {t.datetime}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            Guests: {t.guests}
+                          </Typography>
+                        </CardContent>
+                      </CardActionArea>
+                    </Card>
+                  </Grid>
+                ))}
+              </Grid>
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+    </>
   );
 }
 
