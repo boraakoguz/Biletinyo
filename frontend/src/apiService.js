@@ -167,7 +167,7 @@ export const apiService = {
       throw new Error(errData?.error || "Failed to post comment");
     }
   
-    return res.json(); // or return "Insertion Successful"
+    return res.json(); 
   },
   // Venues
   getVenues: async () => {

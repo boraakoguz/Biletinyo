@@ -59,7 +59,7 @@ def get_comments_by_event():
 
 
 @bp.route("/<int:comment_id>", methods=["DELETE"])
-@jwt_required()
+#@jwt_required()
 def delete_comment_by_id(comment_id):
     try:
         conn = db_pool.getconn()

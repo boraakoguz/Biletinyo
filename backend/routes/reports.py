@@ -5,7 +5,7 @@ from flask_jwt_extended import jwt_required, get_jwt_identity
 bp = Blueprint("reports", __name__)
 
 @bp.route("/", methods=["GET"])
-@jwt_required()
+#@jwt_required()
 def get_reports():
     try:
         conn = db_pool.getconn()
@@ -20,7 +20,7 @@ def get_reports():
             db_pool.putconn(conn)
 
 @bp.route("/<int:report_id>", methods=["GET"])
-@jwt_required()
+#@jwt_required()
 def get_reports_by_id(report_id):
     try:
         conn = db_pool.getconn()
@@ -35,7 +35,7 @@ def get_reports_by_id(report_id):
             db_pool.putconn(conn)
 
 @bp.route("/sales/<int:organizer_id>", methods=["GET"])
-@jwt_required()
+#@jwt_required()
 def get_sales_report(organizer_id):
     try:
         conn = db_pool.getconn()
@@ -63,4 +63,23 @@ def get_sales_report(organizer_id):
         if conn:
             db_pool.putconn(conn)
 
-# TODO TO BE CONTINUED
+@bp.route("/", methods=["POST"])
+#@jwt_required()
+def post_report():
+    data = request.get_json()
+    user_id = data.get("user_id")
+    most_popular_event_id = data.get("most_popular_event_id")
+    report_date = data.get("report_date")
+    revenue_trend_data = data.get("revenue_trend_data")
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""INSERT INTO report (user_id, most_popular_event_id, report_date, revenue_trend_data)
+                VALUES (%s, %s, %s, %s);""",(user_id, most_popular_event_id, report_date, revenue_trend_data,))
+            conn.commit()
+        return "Insertion Successful", 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
