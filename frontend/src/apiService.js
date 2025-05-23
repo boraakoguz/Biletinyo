@@ -102,12 +102,25 @@ export const apiService = {
     return res.json();
   },
   
-  // User
-  getUserProfile: async (id) => {
-    const res = await fetchWithAuth(`/users/${id}`);
+  getUserById: async (userId) => {
+    const res = await fetch(`${API_BASE_URL}/users/${userId}`);
+    if (!res.ok) throw new Error("Failed to fetch user");
     return res.json();
   },
-  
+  getUsers: async (params = {}) => {
+    // params = { user_type: 1, search: "abc" }
+    const qs = new URLSearchParams(params).toString();  // user_type=1&search=abc
+    const res = await fetch(`${API_BASE_URL}/users/?${qs}`);
+    if (!res.ok) throw new Error("Failed to fetch users");
+    return res.json();
+  },
+
+  getEventsByOrganizer: async (organizerId) => {
+    const res = await fetch(`${API_BASE_URL}/events/?organizer_id=${organizerId}`);
+    if (!res.ok) throw new Error("Failed to load organizer events");
+    return res.json();
+  },
+
   updateUserProfile: async (id, userData) => {
     const res = await fetchWithAuth(`/users/${id}`, {
       method: 'PUT',

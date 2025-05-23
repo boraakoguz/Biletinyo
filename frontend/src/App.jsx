@@ -18,6 +18,7 @@ import AddVenue from "./Organizer/AddVenue";
 import SeatingConfig from "./Organizer/SeatingConfig";
 import SalesAnalytics from "./Organizer/SalesAnalytics";
 import AuthRoute from "./AuthRoute";
+import OrganizerPage from "./OrganizerPage";
 
 function App() {
   return (
@@ -29,6 +30,7 @@ function App() {
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/event/:id" element={<EventPage />} />
         <Route path="/event/comment" element={<CommentPage />} />
+        <Route path="/organizer/:id" element={<OrganizerPage />} />
 
         {/* Protected Routes - Require Authentication */}
         <Route
