@@ -31,7 +31,31 @@ export default function CreateEvent() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Mock yerine gerçek API çağrısı
+    const raw = localStorage.getItem("user");
+    const user = raw ? JSON.parse(raw) : null;
+    if (user && user.user_type === 1) {
+      setFormData((prev) => ({ ...prev, organizer_id: user.id }));
+    }
+
+    (async () => {
+      try {
+        const res = await fetch("http://localhost:8080/api/venues");
+        const data = await res.json();
+        setVenues(data);
+      } catch (err) {
+        console.error(err);
+        setError("Mekanlar yüklenirken hata oluştu.");
+      }
+    })();
+  }, []);
+
+  useEffect(() => {
+    const raw = localStorage.getItem("user");
+    const user = raw ? JSON.parse(raw) : null;
+    if (user && user.user_type === 1) {
+      setFormData((prev) => ({ ...prev, organizer_id: user.id }));
+    }
+
     (async () => {
       try {
         const res = await fetch("http://localhost:8080/api/venues");
@@ -52,6 +76,7 @@ export default function CreateEvent() {
     try {
       const payload = {
         ...formData,
+        event_status: 1,
         organizer_id: parseInt(formData.organizer_id, 10),
         venue_id: parseInt(formData.venue_id, 10),
         // backend tarih biçimi bekliyorsa ISO string'e çevir:
@@ -134,10 +159,9 @@ export default function CreateEvent() {
 
       {/* === FORM CONTENT === */}
       <Container sx={{ my: 4, mb: 6 }}>
-        <Typography variant="h4" gutterBottom>
+        <Typography variant="h4" gutterBottom align="center">
           Yeni Etkinlik Oluştur
         </Typography>
-
         <Paper sx={{ p: 4, maxWidth: 600, mx: "auto" }}>
           <Stack spacing={3}>
             <TextField
@@ -186,15 +210,6 @@ export default function CreateEvent() {
               onChange={handleChange}
               multiline
               rows={2}
-              fullWidth
-            />
-
-            <TextField
-              label="Organizatör ID"
-              name="organizer_id"
-              value={formData.organizer_id}
-              onChange={handleChange}
-              required
               fullWidth
             />
 

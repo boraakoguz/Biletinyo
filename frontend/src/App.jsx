@@ -84,7 +84,7 @@ function App() {
 
         {/* Organizer Routes - Require Organizer Role */}
         <Route
-          path="/create"
+          path="/organizer/create"
           element={
             <AuthRoute requireOrganizer={true}>
               <CreateEvent />

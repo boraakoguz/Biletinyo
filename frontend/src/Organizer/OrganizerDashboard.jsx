@@ -227,7 +227,15 @@ const OrganizerDashboard = () => {
             </CardContent>
           </Card>
         </Stack>
-
+        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+          <Button
+            variant="contained"
+            color="primary"
+            onClick={() => navigate("/organizer/create")}
+          >
+            Yeni Etkinlik Oluştur
+          </Button>
+        </Box>
         <Typography variant="h5" gutterBottom>
           Yaklaşan Etkinlikler
         </Typography>
