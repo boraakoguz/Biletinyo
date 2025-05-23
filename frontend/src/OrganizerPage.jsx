@@ -25,10 +25,17 @@ export default function OrganizerPage() {
   const [isFollowing, setIsFollowing] = useState(false);
   const user = JSON.parse(localStorage.getItem("user"));
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
 
   const handleSignInRedirect = () => {
     navigate("/signin");
   };
+  useEffect(() => {
+    apiService.getFollowerCounts().then((counts) => {
+      const count = counts.find((c) => c.organizer_id === Number(id));
+      if (count) setFollowerCount(count.follower_count);
+    });
+  }, [id]);
 
   localStorage.setItem("refreshFollowedTab", "true");
 
@@ -44,37 +51,48 @@ export default function OrganizerPage() {
   useEffect(() => {
     let cancelled = false;
 
-    // reset state on each org change
     setLoading(true);
     setIsFollowing(false);
 
     const storedUser = JSON.parse(localStorage.getItem("user"));
-    setIsLoggedIn(!!storedUser);
+    const loggedIn = !!storedUser;
+    setIsLoggedIn(loggedIn);
 
-    // if not logged in, bail early
-    if (!storedUser) {
-      setLoading(false);
-      return;
-    }
-
-    (async () => {
+    const loadCommonData = async () => {
       try {
-        // fetch all in parallel
-        const [detail, evs, following] = await Promise.all([
+        const [detail, evs] = await Promise.all([
           apiService.getUserById(id),
           apiService.getEventsByOrganizer(id),
-          apiService.isFollowing(storedUser.id, Number(id)),
         ]);
 
-        if (cancelled) return;
-        setOrg(detail);
-        setEvents(evs);
-        setIsFollowing(following);
+        if (!cancelled) {
+          setOrg(detail);
+          setEvents(evs);
+        }
       } catch (err) {
-        console.error("Error loading organizer page:", err);
-      } finally {
-        if (!cancelled) setLoading(false);
+        console.error("Error loading organizer/event data:", err);
       }
+    };
+
+    const loadFollowStatus = async () => {
+      try {
+        const following = await apiService.isFollowing(
+          storedUser.id,
+          Number(id)
+        );
+        if (!cancelled) setIsFollowing(following);
+      } catch (err) {
+        console.error("Error checking follow status:", err);
+      }
+    };
+
+    (async () => {
+      await loadCommonData();
+      if (loggedIn) {
+        localStorage.setItem("refreshFollowedTab", "true");
+        await loadFollowStatus();
+      }
+      if (!cancelled) setLoading(false);
     })();
 
     return () => {
@@ -89,7 +107,6 @@ export default function OrganizerPage() {
       </Box>
     );
 
-  // 🟦 Date comparison logic
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
@@ -224,8 +241,11 @@ export default function OrganizerPage() {
         <Typography variant="h4" fontWeight={700} gutterBottom>
           {org.organizer?.organization_name || org.name}
         </Typography>
-        <Typography variant="body1" color="text.secondary" mb={4}>
+        <Typography variant="body1" color="text.secondary" mb={1}>
           {org.email} • {org.phone}
+        </Typography>
+        <Typography variant="body2" color="text.secondary" mb={4}>
+          {followerCount} follower{followerCount === 1 ? "" : "s"}
         </Typography>
         {isLoggedIn && (
           <Box sx={{ mb: 3 }}>

@@ -77,3 +77,32 @@ def unfollow(user_id, organizer_id):
     finally:
         if conn:
             db_pool.putconn(conn)
+            
+@bp.route("/counts", methods=["GET"])
+def get_follower_counts():
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT
+                    o.user_id AS organizer_id,
+                    o.organization_name,
+                    COUNT(f.user_id) AS follower_count
+                FROM follow f
+                JOIN organizer o ON f.organizer_id = o.user_id
+                GROUP BY o.user_id, o.organization_name;
+            """)
+            rows = cur.fetchall()
+        return jsonify([
+            {
+                "organizer_id": row[0],
+                "organization_name": row[1],
+                "follower_count": row[2]
+            }
+            for row in rows
+        ])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)

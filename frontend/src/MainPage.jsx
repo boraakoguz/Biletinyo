@@ -38,6 +38,7 @@ function MainPage() {
   const [followedEvents, setFollowedEvents] = useState([]);
   const [search, setSearch] = useState("");
   const [refreshKey, setRefreshKey] = useState(0);
+  const [followerCounts, setFollowerCounts] = useState(0);
   const TABS = {
     EVENTS: 0,
     FOLLOWED: 1,
@@ -70,15 +71,37 @@ function MainPage() {
     return () => controller.abort();
   }, [tab, search]);
 
-  const [followedData, setFollowedData] = useState([]); // instead of followedEvents
+  const [followedData, setFollowedData] = useState([]);
 
   useEffect(() => {
     const flag = localStorage.getItem("refreshFollowedTab");
     if (flag === "true") {
-      setRefreshKey((k) => k + 1); // ⏫ force refetch
+      setRefreshKey((k) => k + 1);
       localStorage.removeItem("refreshFollowedTab");
     }
   }, [tab]);
+
+  useEffect(() => {
+    if (tab !== TABS.ORGANIZERS) return;
+
+    const controller = new AbortController();
+
+    Promise.all([
+      apiService.getUsers({ user_type: 1, search }),
+      apiService.getFollowerCounts(),
+    ])
+      .then(([users, counts]) => {
+        setOrgs(users);
+        const countMap = {};
+        counts.forEach(({ organizer_id, follower_count }) => {
+          countMap[organizer_id] = follower_count;
+        });
+        setFollowerCounts(countMap);
+      })
+      .catch(console.error);
+
+    return () => controller.abort();
+  }, [tab, search]);
 
   useEffect(() => {
     if (tab !== TABS.FOLLOWED) return;
@@ -89,7 +112,7 @@ function MainPage() {
     (async () => {
       try {
         const follows = await apiService.getUserFollows(user.id);
-        console.log("✅ follows returned:", follows);
+
         const result = [];
 
         for (const follow of follows) {
@@ -99,7 +122,6 @@ function MainPage() {
           );
           result.push({ organizer: org1, events });
         }
-        console.log("✅ result (final):", result);
 
         setFollowedData(result);
       } catch (err) {
@@ -232,7 +254,7 @@ function MainPage() {
                 backgroundColor: "white",
                 borderRadius: 3,
                 "& .MuiOutlinedInput-root": {
-                  "& fieldset": { border: "none" }, // remove the grey border
+                  "& fieldset": { border: "none" },
                 },
               }}
             />
@@ -485,10 +507,29 @@ function MainPage() {
           ) : (
             followedData.map(({ organizer, events }) => (
               <Box key={organizer.id} sx={{ mb: 4 }}>
-                <Typography variant="h6" fontWeight={700} gutterBottom>
-                  {organizer.organizer?.organization_name || organizer.name}
-                </Typography>
-                <Grid container spacing={3}>
+                <Stack
+                  direction="row"
+                  justifyContent="space-between"
+                  alignItems="center"
+                >
+                  <Button
+                    variant="text"
+                    color="primary"
+                    onClick={() => navigate(`/organizer/${organizer.id}`)}
+                    sx={{
+                      textTransform: "none",
+                      fontWeight: 700,
+                      fontSize: "1.1rem",
+                    }}
+                  >
+                    {organizer.organizer?.organization_name || organizer.name}
+                  </Button>
+                  <Typography variant="body2" color="text.secondary">
+                    {followerCounts[organizer.id] || 0} followers
+                  </Typography>
+                </Stack>
+
+                <Grid container spacing={3} sx={{ mt: 1 }}>
                   {events.map((event) => (
                     <Grid item key={event.event_id}>
                       <Card sx={{ width: 350, height: 300 }}>
@@ -537,9 +578,14 @@ function MainPage() {
                   onClick={() => navigate(`/organizer/${org.id}`)}
                   sx={{ p: 2 }}
                 >
-                  <Typography fontWeight={700}>
-                    {org.organization_name || org.name}
-                  </Typography>
+                  <Stack direction="row" justifyContent="space-between">
+                    <Typography fontWeight={700} color="primary">
+                      {org.organization_name || org.name}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {followerCounts[org.id] || 0} followers
+                    </Typography>
+                  </Stack>
                   <Typography variant="body2">{org.email}</Typography>
                 </CardActionArea>
               </Card>
