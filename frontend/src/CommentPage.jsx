@@ -12,78 +12,104 @@ import {
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 
-const mockDB = [
-  {
-    id: "1",
-    title: "Duman",
-    location: "CerModern",
-    date: "02 Mayıs 2025",
-    price: "900 TL",
-    image: "https://via.placeholder.com/300x180?text=Duman",
-    time: "20.00",
-  },
-  {
-    id: "2",
-    title: "Ajda Pekkan",
-    location: "Oran Açıkhava",
-    date: "20 Haziran 2025",
-    price: "1100 TL",
-    image: "https://via.placeholder.com/300x180?text=Ajda+Pekkan",
-    time: "19.00",
-  },
-  {
-    id: "3",
-    title: "Yaşar",
-    location: "ODTÜ MD",
-    date: "31 Mayıs 2025",
-    price: "700 TL",
-    image: "https://via.placeholder.com/300x180?text=Yaşar",
-    time: "19.00",
-  },
-];
-const fakeFetchEventById = (id) =>
-  new Promise((res, rej) =>
-    setTimeout(() => {
-      const ev = mockDB.find((e) => e.id === id);
-      ev ? res(ev) : rej(new Error("not found"));
-    }, 400)
-  );
-
 export default function CommentPage() {
+  const [comments, setComments] = useState([]);
+  const [event, setEvent] = useState([]);
+  const [loading, setLoading] = useState("");
+  const searchParams = new URLSearchParams(location.search);
+  const eventId = searchParams.get("event_id");
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
 
+  const handleSignInRedirect = () => {
+    navigate("/signin");
+  };
+  const handleLoginRedirect = () => {
+    navigate("/login");
+  };
+  const handleProfileRedirect = () => navigate("/profile");
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    window.location.href = "/";
+  };
+
   /* fetch event once */
-  const [event, setEvent] = useState(null);
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    setLoading(true);
-    fakeFetchEventById(id)
-      .then((data) => setEvent(data))
-      .catch(() => navigate("/"))
-      .finally(() => setLoading(false));
-  }, [id, navigate]);
+    if (!eventId) return;
 
-  const [comments, setComments] = useState([
-    { id: 1, text: "It was wonderful", rating: 5 },
-    { id: 2, text: "Spectacular!", rating: 4 },
-    { id: 3, text: "Meh…", rating: 2 },
-    { id: 4, text: "Awful.", rating: 1 },
-  ]);
+    const fetchEventAndComments = async () => {
+      try {
+        const eventRes = await fetch(
+          `http://localhost:8080/api/events/${eventId}`
+        );
+        const eventData = await eventRes.json();
+        setEvent(eventData);
+
+        const commentsRes = await fetch(
+          `http://localhost:8080/api/comments/event?event_id=${eventId}`
+        );
+        const commentsData = await commentsRes.json();
+        setComments(commentsData);
+        const token = localStorage.getItem("token");
+
+        setIsLoggedIn(!!token);
+      } catch (err) {
+        console.error("Failed to load event or comments", err);
+      }
+    };
+
+    fetchEventAndComments();
+  }, [eventId]);
+
   const [newText, setNewText] = useState("");
   const [newRate, setNewRate] = useState(0);
+  const [newTitle, setNewTitle] = useState("");
 
   const avg = comments.reduce((s, c) => s + c.rating, 0) / comments.length || 0;
 
-  const send = () => {
-    if (!newText.trim() || newRate === 0) return;
-    setComments((prev) => [
-      ...prev,
-      { id: Date.now(), text: newText.trim(), rating: newRate },
-    ]);
-    setNewText("");
-    setNewRate(0);
+  const send = async () => {
+    if (!newTitle.trim() || !newText.trim() || newRate === 0) return;
+
+    const token = localStorage.getItem("token");
+    const raw = localStorage.getItem("user");
+    const user = raw ? JSON.parse(raw) : null;
+    const userId = user ? Number(user.id) : null;
+    const commentPayload = {
+      event_id: parseInt(eventId),
+      rating: newRate,
+      attendee_id: userId,
+      comment_title: newTitle.trim(),
+      comment_text: newText.trim(),
+      comment_date: new Date().toISOString().split("T")[0],
+    };
+
+    try {
+      const res = await fetch("http://localhost:8080/api/comments/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(commentPayload),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to post comment");
+      }
+
+      setComments((prev) => [
+        ...prev,
+        { ...commentPayload, comment_id: Date.now() },
+      ]);
+      setNewTitle("");
+      setNewText("");
+      setNewRate(0);
+    } catch (err) {
+      console.error("Comment send failed:", err);
+    }
   };
 
   const goLogin = () => navigate("/login");
@@ -106,16 +132,20 @@ export default function CommentPage() {
           alignItems: "center",
           p: 2,
           boxShadow: 10,
-          bgcolor: "#002fa7",
+          backgroundColor: "#002fa7",
           color: "white",
+          flexWrap: "wrap",
         }}
       >
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
+            alignItems: "center",
+            color: "white",
             width: "100%",
             maxWidth: 1000,
+            px: 6,
           }}
         >
           <Typography
@@ -128,13 +158,72 @@ export default function CommentPage() {
           >
             Biletinyo
           </Typography>
+
           <Stack direction="row" spacing={1}>
-            <Button color="inherit" onClick={goLogin}>
-              Üye Girişi
-            </Button>
-            <Button color="inherit" variant="outlined" onClick={goSignIn}>
-              Üye Ol
-            </Button>
+            {isLoggedIn ? (
+              <>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={handleProfileRedirect}
+                  sx={{
+                    borderColor: "white",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  Profile
+                </Button>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={handleLogout}
+                  sx={{
+                    borderColor: "white",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button
+                  color="inherit"
+                  onClick={handleLoginRedirect}
+                  sx={{
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                    },
+                  }}
+                >
+                  Login
+                </Button>
+                <Button
+                  color="inherit"
+                  variant="outlined"
+                  onClick={handleSignInRedirect}
+                  sx={{
+                    borderColor: "white",
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255, 255, 255, 0.1)",
+                      borderColor: "white",
+                    },
+                  }}
+                >
+                  Sign In
+                </Button>
+              </>
+            )}
           </Stack>
         </Box>
       </Box>
@@ -142,10 +231,10 @@ export default function CommentPage() {
       <Box sx={{ p: 3, mt: 8, display: "flex", justifyContent: "center" }}>
         <Card sx={{ p: 4, width: "100%", maxWidth: 1200, minHeight: 550 }}>
           <Typography variant="h5" fontWeight={700}>
-            {event.title}
+            {event.event_title}
           </Typography>
           <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 3 }}>
-            {event.time} • {event.date} • {event.location}
+            {event.event_time} • {event.event_date} • {event.venue_name}
           </Typography>
 
           <Stack
@@ -161,39 +250,80 @@ export default function CommentPage() {
 
           <Box sx={{ display: "flex", gap: 3 }}>
             {/* input side */}
-            <Box sx={{ minWidth: 280 }}>
-              <Typography fontWeight={600} mb={1}>
-                Leave a Comment
-              </Typography>
-              <Rating
-                value={newRate}
-                onChange={(_, v) => setNewRate(v)}
-                sx={{ mb: 1 }}
-              />
-              <TextField
-                multiline
-                minRows={5}
-                fullWidth
-                value={newText}
-                onChange={(e) => setNewText(e.target.value)}
-                placeholder="Add a comment"
-              />
-              <Button
-                fullWidth
-                variant="contained"
-                sx={{ mt: 1 }}
-                onClick={send}
-              >
-                Send
-              </Button>
-            </Box>
+            {isLoggedIn ? (
+              <Box sx={{ minWidth: 280 }}>
+                <Typography fontWeight={600} mb={1}>
+                  Leave a Comment
+                </Typography>
+
+                <TextField
+                  fullWidth
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="Title"
+                />
+
+                <Rating
+                  value={newRate}
+                  onChange={(_, v) => setNewRate(v)}
+                  sx={{ mb: 1, mt: 1 }}
+                />
+
+                <TextField
+                  multiline
+                  minRows={5}
+                  fullWidth
+                  value={newText}
+                  onChange={(e) => setNewText(e.target.value)}
+                  placeholder="Add a comment"
+                />
+
+                <Button
+                  fullWidth
+                  variant="contained"
+                  sx={{ mt: 1 }}
+                  onClick={send}
+                >
+                  Send
+                </Button>
+              </Box>
+            ) : (
+              <Box sx={{ minWidth: 280 }}>
+                <Typography fontWeight={600} mb={2}>
+                  You must be logged in to leave a comment.
+                </Typography>
+                <Button fullWidth variant="contained" onClick={goLogin}>
+                  Login
+                </Button>
+                <Button
+                  fullWidth
+                  variant="outlined"
+                  sx={{ mt: 1 }}
+                  onClick={goSignIn}
+                >
+                  Register
+                </Button>
+              </Box>
+            )}
 
             <Box sx={{ flexGrow: 1, maxHeight: 350, overflowY: "auto", pl: 1 }}>
               <Stack spacing={1}>
                 {comments.map((c) => (
-                  <Paper key={c.id} sx={{ p: 1, display: "flex", gap: 1 }}>
+                  <Paper
+                    key={c.comment_id}
+                    sx={{
+                      p: 1,
+                      display: "flex",
+                      flexDirection: "column",
+                      gap: 1,
+                    }}
+                  >
                     <Rating value={c.rating} readOnly size="small" />
-                    <Typography variant="body2">{c.text}</Typography>
+                    <Typography fontWeight="bold">{c.comment_title}</Typography>
+                    <Typography variant="body2">{c.comment_text}</Typography>
+                    <Typography variant="caption" color="text.secondary">
+                      {c.comment_date} • User #{c.attendee_id}
+                    </Typography>
                   </Paper>
                 ))}
               </Stack>

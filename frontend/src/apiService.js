@@ -150,15 +150,25 @@ export const apiService = {
     const res = await fetch(`${API_BASE_URL}/comments/?event_id=${eventId}`);
     return res.json();
   },
-  
   addComment: async (commentData) => {
-    const res = await fetchWithAuth('/comments/', {
-      method: 'POST',
+    const token = localStorage.getItem("token");
+  
+    const res = await fetch("http://localhost:8080/api/comments/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       body: JSON.stringify(commentData),
     });
-    return res.json();
-  },
   
+    if (!res.ok) {
+      const errData = await res.json();
+      throw new Error(errData?.error || "Failed to post comment");
+    }
+  
+    return res.json(); // or return "Insertion Successful"
+  },
   // Venues
   getVenues: async () => {
     const res = await fetch(`${API_BASE_URL}/venues/`);

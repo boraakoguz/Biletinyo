@@ -1,6 +1,8 @@
 from flask import Blueprint, jsonify, request
 from database import db_pool
 from flask_jwt_extended import jwt_required, get_jwt_identity
+import logging
+logger = logging.getLogger("comment") 
 
 bp = Blueprint("comments", __name__)
 
@@ -17,7 +19,45 @@ def get_comments():
     finally:
         if conn:
             db_pool.putconn(conn)
-    
+
+
+
+@bp.route("/event", methods=["GET"])
+def get_comments_by_event():
+    event_id = request.args.get("event_id")
+    if not event_id:
+        return jsonify({"error": "Missing event_id"}), 400
+
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT comment_id, event_id, attendee_id, rating, comment_title, comment_text, comment_date
+                FROM comment
+                WHERE event_id = %s;
+            """, (event_id,))
+            comments = cur.fetchall()
+
+        return jsonify([
+            {
+                "comment_id": comment[0],
+                "event_id": comment[1],
+                "attendee_id": comment[2],
+                "rating": comment[3],
+                "comment_title": comment[4],
+                "comment_text": comment[5],
+                "comment_date": comment[6].isoformat()
+            }
+            for comment in comments
+        ])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
+
+
 @bp.route("/<int:comment_id>", methods=["DELETE"])
 @jwt_required()
 def delete_comment_by_id(comment_id):
@@ -34,7 +74,6 @@ def delete_comment_by_id(comment_id):
             db_pool.putconn(conn)
 
 @bp.route("/", methods=["POST"])
-@jwt_required()
 def post_comment():
     data = request.get_json()
     event_id = data.get("event_id")

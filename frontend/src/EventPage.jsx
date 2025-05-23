@@ -48,22 +48,16 @@ function EventPage() {
     fetchEvents();
   }, [id]);
 
-  const handleComments = () => navigate(`/event/${id}/comments`);
+  const handleComments = () => navigate(`/event/comment?event_id=${id}`);
   const handleLoginRedirect = () => navigate("/login");
   const handleSignInRedirect = () => navigate("/signin");
   const handleProfileRedirect = () => navigate("/profile");
+
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
     window.location.href = "/";
   };
-
-  const [selectedTicket, setSelectedTicket] = useState(null);
-  const ticketOptions = [
-    { id: 1, name: "Regular", price: 2000, left: 5 },
-    { id: 2, name: "VIP", price: 5000, left: 15 },
-    { id: 3, name: "Premium", price: 10000, left: 1 },
-  ];
 
   if (loading) {
     return (
@@ -247,50 +241,6 @@ function EventPage() {
                 <Typography variant="body2">
                   {event.venue_description}
                 </Typography>
-
-                <Box sx={{ mt: 2, overflowX: "auto", maxWidth: 520 }}>
-                  <Stack
-                    direction="row"
-                    spacing={2}
-                    sx={{ py: 1, whiteSpace: "nowrap" }}
-                  >
-                    {ticketOptions.map((opt) => {
-                      const selected = selectedTicket?.id === opt.id;
-                      return (
-                        <Card
-                          key={opt.id}
-                          onClick={() => setSelectedTicket(opt)}
-                          sx={{
-                            minWidth: 150,
-                            cursor: "pointer",
-                            flexShrink: 0,
-                            border: selected
-                              ? "2px solid #002fa7"
-                              : "1px solid rgba(0,0,0,0.12)",
-                            boxShadow: 3,
-                          }}
-                        >
-                          <Box sx={{ p: 1, textAlign: "center" }}>
-                            <Typography variant="subtitle2" fontWeight={600}>
-                              {opt.name}
-                            </Typography>
-                            <Typography variant="body2">
-                              {opt.price} TL
-                            </Typography>
-                            <Typography
-                              variant="caption"
-                              color={
-                                opt.left > 3 ? "success.main" : "error.main"
-                              }
-                            >
-                              {opt.left} Tickets Left
-                            </Typography>
-                          </Box>
-                        </Card>
-                      );
-                    })}
-                  </Stack>
-                </Box>
               </Grid>
             </Grid>
 
@@ -314,7 +264,6 @@ function EventPage() {
               <Button
                 variant="contained"
                 sx={{ width: 200 }}
-                disabled={!selectedTicket}
                 onClick={() => {
                   if (!isLoggedIn) {
                     navigate("/login", {
