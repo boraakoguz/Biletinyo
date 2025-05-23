@@ -78,8 +78,7 @@ function MainPage() {
           if (startDate) params.append("start_date", startDate);
           if (endDate) params.append("end_date", endDate);
         }
-
-        const data = await apiService.getEvents();
+        const data = await apiService.getEvents(params.toString());
         console.log("Fetched events:", data);
         console.log("Fetching with:", params.toString());
         setEvents(data);

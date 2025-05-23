@@ -229,7 +229,9 @@ function EventPage() {
                 <Typography variant="h5" fontWeight={700} gutterBottom>
                   {event.event_title}
                 </Typography>
-
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  {event.description}
+                </Typography>
                 <Stack
                   direction="row"
                   spacing={2}
@@ -315,11 +317,11 @@ function EventPage() {
                 disabled={!selectedTicket}
                 onClick={() => {
                   if (!isLoggedIn) {
-                    navigate("/login", { 
-                      state: { 
+                    navigate("/login", {
+                      state: {
                         from: `/event/${id}`,
-                        message: "Please login to purchase tickets" 
-                      }
+                        message: "Please login to purchase tickets",
+                      },
                     });
                   } else {
                     navigate(`/event/${id}/seating`);

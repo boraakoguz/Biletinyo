@@ -55,9 +55,23 @@ export const apiService = {
   },
   
   // Events
-  getEvents: async () => {
-    const res = await fetch(`${API_BASE_URL}/events/`);
-    return res.json();
+  getEvents: async (params = {}) => {
+    const queryString = new URLSearchParams(params).toString();
+    const url = `${API_BASE_URL}/events/${queryString ? `?${queryString}` : ""}`;
+    
+    const token = localStorage.getItem("token");
+    const res = await fetch(url, {
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+  
+    if (!res.ok) {
+      throw new Error("Failed to fetch events");
+    }
+  
+    return await res.json();
   },
   
   getEventById: async (id) => {
