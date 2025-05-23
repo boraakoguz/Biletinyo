@@ -77,7 +77,7 @@ def unfollow(user_id, organizer_id):
     finally:
         if conn:
             db_pool.putconn(conn)
-            
+
 @bp.route("/counts", methods=["GET"])
 def get_follower_counts():
     try:
@@ -101,6 +101,20 @@ def get_follower_counts():
             }
             for row in rows
         ])
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
+@bp.route("/count/<int:user_id>", methods=["GET"])
+def get_following_count(user_id):
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("SELECT COUNT(*) FROM follow WHERE user_id = %s;", (user_id,))
+            count = cur.fetchone()[0]
+        return jsonify({"user_id": user_id, "following_count": count})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:

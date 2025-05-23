@@ -262,6 +262,11 @@ export const apiService = {
     if (!res.ok) throw new Error("Failed to fetch follower counts");
     return res.json();
   },
+  getFollowingCount: async (userId) => {
+    const res = await fetchWithAuth(`/follows/count/${userId}`);
+    if (!res.ok) throw new Error("Failed to fetch following count");
+    return res.json();
+  },
 }; 
 
 
