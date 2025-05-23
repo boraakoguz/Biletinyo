@@ -87,7 +87,6 @@ function EventPage() {
       </Box>
     );
   }
-
   return (
     <>
       <Box
