@@ -59,6 +59,7 @@ CREATE TABLE event (
     regulations	    TEXT,
     category_name   INT NOT NULL,
     image_ids       INT[],
+    
     FOREIGN KEY (organizer_id) REFERENCES organizer(user_id),
     FOREIGN KEY (venue_id) REFERENCES venue(venue_id)
 );
@@ -131,7 +132,7 @@ CREATE TABLE ticket_guest (
 
 INSERT INTO users (name, email, password, user_type, phone, birth_date) VALUES
 ('User johnson', 'user@user.com', '$2b$12$KKprei.9FfMVomfUWlYYAu8icc7TS58KesyN11GQpI.2eYteMWUXC', 0, '555-1234', '1995-06-15'),
-('Organizer Smith', 'org@org.com', '$2b$12$mGapQFzDalequVp3S7GZpOp8NZbghmNmlMsD4wusmo76lKQQjI4CG', 1, '555-5678', '2000-06-15'),
+('Organizer Smith', 'org@org.com', '$2b$12$Srau6Ny7nGQQQ1tHeiBfUOsuinZZOdyplF2c831mVqlUgFqcetwmq', 1, '555-5678', '2000-06-15'),
 ('Ege Babs', 'ege@gmail.com', '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-8765', '2015-06-15');
 
 INSERT INTO venue (capacity, location, venue_name, venue_description, city, seat_map, available)
