@@ -24,7 +24,6 @@ def register():
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
-            # Insert into users
             cur.execute("""
                 INSERT INTO users (name, email, password, user_type, phone, birth_date)
                 VALUES (%s, %s, %s, %s, %s, %s)
