@@ -1,21 +1,76 @@
-import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import { Box, Button, Card, Stack, TextField, Typography } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import {
+  Box,
+  Button,
+  Card,
+  Stack,
+  TextField,
+  Typography,
+  CircularProgress,
+} from "@mui/material";
 
 function GuestPage() {
-  const { state } = useLocation();
   const navigate = useNavigate();
-  const event = state?.event || {
-    title: "Rock Concert Name 2 - VIP Section",
-    time: "19.00",
-    date: "30.03.2025",
-    location: "Ankara",
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [guestData, setGuestData] = useState([]);
+
+  const eventId = localStorage.getItem("event_id");
+  const selectedTicketIds = JSON.parse(localStorage.getItem("selected_ticket_ids")) || [];
+  const selectedTicketNames = JSON.parse(localStorage.getItem("selected_ticket_names")) || [];
+
+  useEffect(() => {
+    if (!eventId) return;
+
+    fetch(`http://localhost:8080/api/events/${eventId}`)
+      .then((res) => res.json())
+      .then((data) => {
+        setEvent(data);
+        setGuestData(
+          selectedTicketIds.map(() => ({
+            name: "",
+            mail: "",
+            contact: "",
+            birth_date: "",
+          }))
+        );
+        setLoading(false);
+      });
+  }, [eventId]);
+
+  const today = new Date().toISOString().split("T")[0];
+
+  const handleChange = (index, field, value) => {
+    setGuestData((prev) =>
+      prev.map((entry, i) =>
+        i === index ? { ...entry, [field]: value } : entry
+      )
+    );
   };
 
-  const formCount = 3;
-  const seats = "B4, B5, B6";
+  const handleContinue = () => {
+    localStorage.setItem("guest_info", JSON.stringify(guestData));
+    navigate(`/event/${eventId}/payment`);
+  };
 
-  const forms = Array.from({ length: formCount }, (_, i) => (
+  if (loading) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
+        <CircularProgress />
+      </Box>
+    );
+  }
+
+  if (!event) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
+        <Typography color="error">Etkinlik bulunamadı.</Typography>
+      </Box>
+    );
+  }
+
+  const forms = selectedTicketIds.map((_, i) => (
     <Card
       key={i}
       sx={{
@@ -28,12 +83,40 @@ function GuestPage() {
       }}
     >
       <Typography textAlign="center" fontWeight={700} mb={1}>
-        Guest {i + 1}
+        Guest {i + 1} - {selectedTicketNames[i] || "?"}
       </Typography>
-      <Stack spacing={1}>
-        <TextField label="Name" size="small" fullWidth />
-        <TextField label="Mail" size="small" fullWidth />
-        <TextField label="Contact Number" size="small" fullWidth />
+      <Stack spacing={2}>
+        <TextField
+          label="Name"
+          size="small"
+          fullWidth
+          value={guestData[i]?.name || ""}
+          onChange={(e) => handleChange(i, "name", e.target.value)}
+        />
+        <TextField
+          label="Mail"
+          size="small"
+          fullWidth
+          value={guestData[i]?.mail || ""}
+          onChange={(e) => handleChange(i, "mail", e.target.value)}
+        />
+        <TextField
+          label="Contact Number"
+          size="small"
+          fullWidth
+          value={guestData[i]?.contact || ""}
+          onChange={(e) => handleChange(i, "contact", e.target.value)}
+        />
+        <TextField
+          label="Birth Date"
+          type="date"
+          size="small"
+          fullWidth
+          InputLabelProps={{ shrink: true }}
+          inputProps={{ max: today }}
+          value={guestData[i]?.birth_date || ""}
+          onChange={(e) => handleChange(i, "birth_date", e.target.value)}
+        />
       </Stack>
     </Card>
   ));
@@ -49,57 +132,18 @@ function GuestPage() {
           boxShadow: 10,
           backgroundColor: "#002fa7",
           color: "white",
-          flexWrap: "wrap",
         }}
       >
-        <Box
+        <Typography
+          variant="h4"
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            width: "100%",
-            maxWidth: 1000,
-            px: 6,
+            textDecoration: "underline",
+            fontWeight: "bold",
+            fontStyle: "italic",
           }}
         >
-          <Typography
-            variant="h4"
-            sx={{
-              textDecoration: "underline",
-              fontWeight: "bold",
-              fontStyle: "italic",
-            }}
-          >
-            Biletinyo
-          </Typography>
-          <Box sx={{ flexGrow: 1, mx: 5, minWidth: 200 }}>
-            <TextField
-              variant="outlined"
-              placeholder="Arama yapmak için bu sayfadan çıkın..."
-              size="small"
-              disabled
-              fullWidth
-              sx={{
-                backgroundColor: "white",
-                borderRadius: 3,
-                "& .MuiOutlinedInput-root fieldset": { border: "none" },
-              }}
-            />
-          </Box>
-          <Stack direction="row" spacing={1}>
-            <Button color="inherit" onClick={() => navigate("/login")}>
-              Üye Girişi
-            </Button>
-            <Button
-              color="inherit"
-              variant="outlined"
-              onClick={() => navigate("/signin")}
-              sx={{ borderColor: "white", color: "white" }}
-            >
-              Üye Ol
-            </Button>
-          </Stack>
-        </Box>
+          Biletinyo
+        </Typography>
       </Box>
 
       <Box sx={{ p: 3, mt: 8, display: "flex", justifyContent: "center" }}>
@@ -111,31 +155,27 @@ function GuestPage() {
             sx={{ mb: 2 }}
           >
             <Typography variant="h6" fontWeight={700}>
-              {event.title}
+              {event.event_title}
             </Typography>
             <Stack direction="row" spacing={2} divider={<span>•</span>}>
-              <Typography>{event.time}</Typography>
-              <Typography>{event.date}</Typography>
-              <Typography>{event.location}</Typography>
+              <Typography>{event.event_time}</Typography>
+              <Typography>{event.event_date}</Typography>
+              <Typography>{event.venue_name}</Typography>
             </Stack>
           </Stack>
 
-          <Box
-            sx={{
-              mt: 2,
-              overflowX: "auto",
-              pb: 1,
-            }}
-          >
+          <Box sx={{ mt: 2, overflowX: "auto", pb: 1 }}>
             <Stack direction="row" spacing={3}>
               {forms}
             </Stack>
           </Box>
 
-          <Typography sx={{ mt: 2 }}>Seats: {seats}</Typography>
+          <Typography sx={{ mt: 2 }}>
+            Selected Tickets: {selectedTicketNames.join(", ")}
+          </Typography>
 
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 3 }}>
-            <Button variant="contained" onClick={() => navigate("/")}>
+            <Button variant="contained" onClick={handleContinue}>
               Continue
             </Button>
           </Box>

@@ -66,7 +66,7 @@ function App() {
           element={<GroupedTicketsPage />}
         />
         <Route
-          path="/payment"
+          path="/event/:id/payment"
           element={
             <AuthRoute>
               <PaymentPage />
