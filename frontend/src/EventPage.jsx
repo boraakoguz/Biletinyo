@@ -22,6 +22,7 @@ function EventPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [imgIndex, setImgIndex] = useState(0);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -81,6 +82,7 @@ function EventPage() {
       </Box>
     );
   }
+  const imageUrls = event.image_urls || [];
   return (
     <>
       <Box
@@ -211,12 +213,50 @@ function EventPage() {
             borderRadius: "20px",
           }}
         >
-          <CardMedia
-            component="img"
-            height="300"
-            image={event.image}
-            alt={event.title}
-          />
+          <Box sx={{ position: "relative" }}>
+            <CardMedia
+              component="img"
+              height="300"
+              image={`http://localhost:8080${imageUrls[imgIndex]}`}
+              alt={event.event_title}
+              sx={{ objectFit: "cover", width: "100%" }}
+            />
+            {imageUrls.length > 1 && (
+              <Box
+                sx={{
+                  position: "absolute",
+                  top: "50%",
+                  left: 0,
+                  right: 0,
+                  display: "flex",
+                  justifyContent: "space-between",
+                  px: 2,
+                  transform: "translateY(-50%)",
+                }}
+              >
+                <Button
+                  size="small"
+                  variant="contained"
+                  onClick={() =>
+                    setImgIndex((prev) =>
+                      (prev - 1 + imageUrls.length) % imageUrls.length
+                    )
+                  }
+                >
+                  ◀
+                </Button>
+                <Button
+                  size="small"
+                  variant="contained"
+                  onClick={() =>
+                    setImgIndex((prev) => (prev + 1) % imageUrls.length)
+                  }
+                >
+                  ▶
+                </Button>
+              </Box>
+            )}
+          </Box>
           <CardContent sx={{ position: "relative", pb: 12 }}>
             <Grid container spacing={3}>
               <Grid item xs={12}>

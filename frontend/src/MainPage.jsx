@@ -461,7 +461,7 @@ function MainPage() {
                   >
                     <CardMedia
                       component="img"
-                      image={event.image}
+                      image={`http://localhost:8080${event.image_urls?.[0] || "/api/images/default.png"}`}
                       alt={event.title}
                       sx={{ height: 180, objectFit: "cover" }}
                     />
