@@ -23,6 +23,15 @@ function EventPage() {
   const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
+  const [imageSrc, setImageSrc] = useState(null);
+  useEffect(() => {
+    if (event?.image_ids?.length) {
+      const imgId = event.image_ids[imgIndex];
+      apiService.getImageById(imgId)
+        .then((url) => setImageSrc(url))
+        .catch((err) => console.error('Failed to load image:', err));
+    }
+  }, [event, imgIndex]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -223,7 +232,7 @@ function EventPage() {
             <CardMedia
               component="img"
               height="300"
-              image={`http://localhost:8080${imageUrls[imgIndex]}`}
+              image={imageSrc}
               alt={event.event_title}
               sx={{ objectFit: "cover", width: "100%" }}
             />
