@@ -20,13 +20,14 @@ bp = Blueprint("tickets", __name__)
 
 @bp.route("/", methods=["GET"])
 def get_tickets():
-    attendee_id=request.args.get("attendee_id")
-    event_id=request.args.get("event_id")
-    ticket_state=request.args.get("ticket_state")
-    ticket_class=request.args.get("ticket_class")
-    
-    clauses=[]
-    params=[]
+    attendee_id = request.args.get("attendee_id")
+    event_id = request.args.get("event_id")
+    ticket_state = request.args.get("ticket_state")
+    ticket_class = request.args.get("ticket_class")
+    seat_pairs = request.args.getlist("seats")
+
+    clauses = []
+    params = []
 
     if attendee_id:
         clauses.append("attendee_id=%s")
@@ -40,44 +41,54 @@ def get_tickets():
     if ticket_class:
         clauses.append("ticket_class=%s")
         params.append(ticket_class)
-    where=""
+
+    seat_conditions = []
+    for seat in seat_pairs:
+        try:
+            row, col = map(int, seat.split("-"))
+            seat_conditions.append("(seat_row=%s AND seat_column=%s)")
+            params.extend([row, col])
+        except ValueError:
+            continue
+
+    if seat_conditions:
+        clauses.append(f"({' OR '.join(seat_conditions)})")
+
+    where = ""
     if clauses:
-        where="WHERE " + " AND ".join(clauses)
-    
+        where = "WHERE " + " AND ".join(clauses)
+
     try:
-        conn=db_pool.getconn()
+        conn = db_pool.getconn()
         with conn.cursor() as cur:
             cur.execute(f"""
                 SELECT ticket_id, 
-                        attendee_id, 
-                        payment_id, 
-                        event_id, 
-                        ticket_state, 
-                        ticket_class, 
-                        price, 
-                        seat_row, 
-                        seat_column
+                       attendee_id, 
+                       payment_id, 
+                       event_id, 
+                       ticket_state, 
+                       ticket_class, 
+                       price, 
+                       seat_row, 
+                       seat_column
                 FROM ticket
                 {where};
             """, params)
-            tickets=cur.fetchall()
+            tickets = cur.fetchall()
 
             results = []
             for row in tickets:
                 ticket_id, attendee_id, payment_id, event_id, \
                 ticket_state, ticket_class, price, \
                 seat_row, seat_column = row
-                cur.execute(
-                    """
+                cur.execute("""
                     SELECT guest_name,
                            guest_mail,
                            guest_phone,
                            guest_birth_date
                     FROM ticket_guest
                     WHERE ticket_id = %s;
-                    """,
-                    (ticket_id,)
-                )
+                """, (ticket_id,))
                 guests = [
                     {
                       "guest_name": guest[0],
@@ -87,7 +98,6 @@ def get_tickets():
                     }
                     for guest in cur.fetchall()
                 ]
-
                 results.append({
                     "ticket_id": ticket_id,
                     "attendee_id": attendee_id,
@@ -106,6 +116,7 @@ def get_tickets():
     finally:
         if conn:
             db_pool.putconn(conn)
+
 
 def get_ticket(ticket_id):
     try:
