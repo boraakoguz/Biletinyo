@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Container,
   Box,
@@ -14,6 +12,7 @@ import {
   CardActionArea,
   CardMedia,
   CardContent,
+  Divider,
 } from "@mui/material";
 import apiService from "./apiService";
 
@@ -35,6 +34,7 @@ function ProfilePage() {
 
     return `${day}/${month}/${year}`;
   };
+
   useEffect(() => {
     const raw = localStorage.getItem("user");
     const parsedUser = raw ? JSON.parse(raw) : {};
@@ -150,22 +150,49 @@ function ProfilePage() {
 
   return (
     <>
-      <AppBar position="static" sx={{ backgroundColor: "#002fa7" }}>
-        <Toolbar sx={{ justifyContent: "center" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          p: 2,
+          boxShadow: 10,
+          backgroundColor: "#002fa7",
+          color: "white",
+          flexWrap: "wrap",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            color: "white",
+            width: "100%",
+            maxWidth: 1000,
+            px: 6,
+          }}
+        >
           <Typography
-            variant="h5"
+            variant="h4"
             sx={{
               textDecoration: "underline",
-              fontStyle: "italic",
               fontWeight: "bold",
+              fontStyle: "italic",
               cursor: "pointer",
             }}
             onClick={() => navigate("/")}
           >
             Biletinyo
           </Typography>
-        </Toolbar>
-      </AppBar>
+          <Button color="inherit" variant="text" sx={{ color: "white" }} onClick={() => navigate(-1)}>
+            Back
+          </Button>
+        </Box>
+      </Box>
+      <Box sx={{ bgcolor: "#fafafa" }}>
+        <Divider />
+      </Box>
 
       <Box sx={{ backgroundColor: "#fff", py: 6, minHeight: "100vh" }}>
         <Container maxWidth="lg">
