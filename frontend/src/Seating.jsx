@@ -10,10 +10,10 @@ import {
 import armchair from "./assets/armchair.png";
 
 const SEAT_COLORS = {
-  1: "#90caf9", // Default
-  2: "#a5d6a7", // VIP
-  3: "#ce93d8", // Premium
-  4: "#ef9a9a", // Occupied
+  1: "#E2E8F0",
+  2: "#C3DAFE",
+  3: "#E9D8FD",
+  4: "#FF0000",
 };
 
 function toRowLabel(n) {
@@ -47,7 +47,7 @@ function Seating() {
 
   const toggleSeat = (rowIdx, colIdx) => {
     const val = event.seat_type_map[rowIdx][colIdx];
-    if (val === 4) return; // Don't allow interaction on occupied seats
+    if (val === 4) return;
 
     const seatId = `${rowIdx + 1}-${colIdx + 1}`;
     setSelectedSeats((prev) =>
@@ -129,11 +129,7 @@ function Seating() {
                         cursor: isOccupied ? "not-allowed" : "pointer",
                         opacity: isOccupied ? 0.5 : 1,
                         "&:hover": {
-                          bgcolor: isSelected
-                            ? "darkgreen"
-                            : isOccupied
-                            ? SEAT_COLORS[val]
-                            : "#ccc",
+                          bgcolor: "#b0b3b8",
                         },
                       }}
                     />
@@ -165,6 +161,37 @@ function Seating() {
             ))}
           </Grid>
 
+          <Box sx={{ mt: 4 }}>
+            <Typography variant="h6" gutterBottom>
+              Seat Indicators
+            </Typography>
+            <Grid container spacing={2}>
+              {[
+                { label: "Default", color: SEAT_COLORS[1] },
+                { label: "VIP", color: SEAT_COLORS[2] },
+                { label: "Premium", color: SEAT_COLORS[3] },
+                { label: "Occupied", color: SEAT_COLORS[4] },
+                { label: "Selected", color: "green" },
+              ].map(({ label, color }) => (
+                <Grid item key={label}>
+                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                    <Box
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        bgcolor: color,
+                        border: "1px solid black",
+                        borderRadius: 0.5,
+                        mr: 1,
+                      }}
+                    />
+                    <Typography variant="body2">{label}</Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
+
           <Box sx={{ mt: 3 }}>
             <Typography variant="h6">Selected Seats:</Typography>
             <Typography variant="body1">
@@ -193,9 +220,7 @@ function Seating() {
               variant="contained"
               color="primary"
               disabled={selectedSeats.length === 0}
-              onClick={() => {
-                // Implement here, to be continued...
-              }}
+              onClick={() => {}}
             >
               Continue
             </Button>
