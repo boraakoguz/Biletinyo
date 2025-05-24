@@ -155,7 +155,14 @@ export const apiService = {
     });
     return res.json();
   },
-  
+  getTicketsByUserId: async (userId) => {
+    const res = await fetchWithAuth(`/tickets/?attendee_id=${userId}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.error || 'Failed to fetch tickets');
+    }
+    return res.json();
+  },  
   // Payments
   createPayment: async (paymentData) => {
     const res = await fetchWithAuth('/payments/', {
@@ -273,6 +280,22 @@ export const apiService = {
     const res = await fetchWithAuth(`/follows/count/${userId}`);
     if (!res.ok) throw new Error("Failed to fetch following count");
     return res.json();
+  },
+  getPaymentsByUserId: async (userId) => {
+    const res = await fetchWithAuth(`/payments/${userId}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => null);
+      throw new Error(err?.error || 'Failed to fetch payments');
+    }
+    return res.json();
+  },
+  getImageById: async (id) => {
+    const res = await fetchWithAuth(`/images/${id}`);
+    if (!res.ok) {
+      throw new Error('Failed to fetch image');
+    }
+    const blob = await res.blob();
+    return URL.createObjectURL(blob);
   },
 }; 
 

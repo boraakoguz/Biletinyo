@@ -1,8 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  AppBar,
-  Toolbar,
   Typography,
   Container,
   Box,
@@ -14,7 +12,7 @@ import {
   CardActionArea,
   CardMedia,
   CardContent,
-  Grid,
+  Divider,
 } from "@mui/material";
 import apiService from "./apiService";
 
@@ -36,6 +34,7 @@ function ProfilePage() {
 
     return `${day}/${month}/${year}`;
   };
+
   useEffect(() => {
     const raw = localStorage.getItem("user");
     const parsedUser = raw ? JSON.parse(raw) : {};
@@ -61,82 +60,86 @@ function ProfilePage() {
         .catch((err) => console.error("Failed to fetch following count:", err));
     }
   }, []);
+  useEffect(() => {
+    const raw = localStorage.getItem("user");
+    const parsedUser = raw ? JSON.parse(raw) : {};
+
+    if (parsedUser.id) {
+      apiService
+        .getPaymentsByUserId(parsedUser.id)
+        .then((payments) => {
+          const formatted = payments.map((p) => ({
+            id: p.payment_id,
+            amount: parseFloat(p.payment_amount),
+            method: p.payment_method === 0 ? "Credit Card" : "Wallet",
+            date: new Date(p.payment_date).toLocaleDateString("en-GB"),
+          }));
+          setTransactions(formatted);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch payment history:", err);
+        });
+    }
+  }, []);
 
   useEffect(() => {
-    setTickets([
-      {
-        id: "101",
-        image: "https://picsum.photos/300/150?random=1",
-        title: "BOOM CONCERT",
-        venue: "BOOM CITY",
-        datetime: "15.04.2025 • 15:00",
-        guests: 2,
-      },
-      {
-        id: "102",
-        image: "https://picsum.photos/300/150?random=2",
-        title: "YALIN LIVE",
-        venue: "CERNMODERN",
-        datetime: "15.04.2025 • 15:00",
-        guests: 3,
-      },
-      {
-        id: "103",
-        image: "https://picsum.photos/300/150?random=3",
-        title: "ELECTRO NIGHT",
-        venue: "CLUB X",
-        datetime: "20.04.2025 • 22:00",
-        guests: 1,
-      },
-      {
-        id: "104",
-        image: "https://picsum.photos/300/150?random=4",
-        title: "JAZZ FEST",
-        venue: "BLUE HALL",
-        datetime: "25.04.2025 • 19:30",
-        guests: 4,
-      },
-      {
-        id: "105",
-        image: "https://picsum.photos/300/150?random=5",
-        title: "ROCK POPUP",
-        venue: "STADIUM",
-        datetime: "30.04.2025 • 18:00",
-        guests: 2,
-      },
-      {
-        id: "106",
-        image: "https://picsum.photos/300/150?random=6",
-        title: "CLASSICAL EVENING",
-        venue: "OPERA HOUSE",
-        datetime: "05.05.2025 • 20:00",
-        guests: 2,
-      },
-    ]);
+    const raw = localStorage.getItem("user");
+    const parsedUser = raw ? JSON.parse(raw) : {};
 
-    setTransactions([
-      {
-        id: "P1001",
-        amount: 150.0,
-        method: "VISA •••• 1234",
-        status: "Completed",
-        date: "10.04.2025",
-      },
-      {
-        id: "P1002",
-        amount: 200.0,
-        method: "Wallet",
-        status: "Pending",
-        date: "12.04.2025",
-      },
-      {
-        id: "P1003",
-        amount: 75.5,
-        method: "Mastercard •••• 5678",
-        status: "Failed",
-        date: "01.04.2025",
-      },
-    ]);
+    const fetchTicketsWithEvent = async () => {
+      if (!parsedUser.id) return;
+      try {
+        const ticketsData = await apiService.getTicketsByUserId(parsedUser.id);
+        const enriched = await Promise.all(
+          ticketsData.map(async (t) => {
+            const event = await apiService.getEventById(t.event_id);
+            const imageSrc = event.image_ids?.[0]
+              ? await apiService.getImageById(event.image_ids[0])
+              : null;
+            return {
+              id: t.ticket_id,
+              payment_id: t.payment_id,
+              event_id: t.event_id,
+              image: imageSrc,
+              title: event.event_title,
+              venue: event.venue_name,
+              datetime: `${event.event_date} • ${event.event_time}`,
+              guests: t.ticket_guest.length,
+              eventImages: event.image_urls,
+              seat: { row: t.seat_row, col: t.seat_column },
+              guest: t.ticket_guest[0] || {},
+              price: t.price,
+            };
+          })
+        );
+        const grouped = Object.values(
+          enriched.reduce((acc, ticket) => {
+            const key = ticket.event_id;
+            if (!acc[key]) {
+              acc[key] = {
+                event_id:   ticket.event_id,
+                image:      ticket.image,
+                title:      ticket.title,
+                venue:      ticket.venue,
+                datetime:   ticket.datetime,
+                seats:      [],
+                guests:     [],
+                totalPaid:  0,
+              };
+            }
+            acc[key].seats.push(ticket.seat);
+            acc[key].guests.push(ticket.guest);
+            acc[key].totalPaid += ticket.price;
+            return acc;
+          }, {})
+        );
+        setTickets(grouped);
+      } catch (err) {
+        console.error("Failed to fetch tickets or events:", err);
+      }
+    };
+
+    fetchTicketsWithEvent();
   }, []);
 
   const handleLogout = () => {
@@ -147,22 +150,49 @@ function ProfilePage() {
 
   return (
     <>
-      <AppBar position="static" sx={{ backgroundColor: "#002fa7" }}>
-        <Toolbar sx={{ justifyContent: "center" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          p: 2,
+          boxShadow: 10,
+          backgroundColor: "#002fa7",
+          color: "white",
+          flexWrap: "wrap",
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            color: "white",
+            width: "100%",
+            maxWidth: 1000,
+            px: 6,
+          }}
+        >
           <Typography
-            variant="h5"
+            variant="h4"
             sx={{
               textDecoration: "underline",
-              fontStyle: "italic",
               fontWeight: "bold",
+              fontStyle: "italic",
               cursor: "pointer",
             }}
             onClick={() => navigate("/")}
           >
             Biletinyo
           </Typography>
-        </Toolbar>
-      </AppBar>
+          <Button color="inherit" variant="text" sx={{ color: "white" }} onClick={() => navigate(-1)}>
+            Back
+          </Button>
+        </Box>
+      </Box>
+      <Box sx={{ bgcolor: "#fafafa" }}>
+        <Divider />
+      </Box>
 
       <Box sx={{ backgroundColor: "#fff", py: 6, minHeight: "100vh" }}>
         <Container maxWidth="lg">
@@ -229,15 +259,12 @@ function ProfilePage() {
                     elevation={1}
                     sx={{ p: 2, mb: 2, borderRadius: 2 }}
                   >
-                    <Typography variant="subtitle2">{tx.id}</Typography>
+                    <Typography variant="subtitle2"><strong>Payment ID: </strong> {tx.id}</Typography>
                     <Typography variant="body2">
                       <strong>Amount:</strong> ${tx.amount.toFixed(2)}
                     </Typography>
                     <Typography variant="body2">
                       <strong>Method:</strong> {tx.method}
-                    </Typography>
-                    <Typography variant="body2">
-                      <strong>Status:</strong> {tx.status}
                     </Typography>
                     <Typography variant="body2">
                       <strong>Date:</strong> {tx.date}
@@ -252,19 +279,29 @@ function ProfilePage() {
             <Typography variant="h5" gutterBottom>
               My Tickets
             </Typography>
-            <Grid container spacing={3}>
+            <Box
+              sx={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
+                gap: 3,
+                alignItems: "stretch",
+              }}
+            >
               {tickets.map((t) => (
-                <Grid item xs={12} sm={6} md={6} key={t.id}>
+                <Box key={t.event_id} sx={{ display: 'flex', flexDirection: 'column' }}>
                   <Card
                     sx={{
-                      height: 400,
+                      flexGrow: 1,
+                      width: '100%',
                       boxShadow: 3,
                       display: "flex",
                       flexDirection: "column",
                     }}
                   >
                     <CardActionArea
-                      onClick={() => navigate(`/ticket/${t.id}`)}
+                      onClick={() =>
+                        navigate(`/tickets/group?event_id=${t.event_id}&attendee_id=${user.id}`)
+                      }
                       sx={{
                         flexGrow: 1,
                         display: "flex",
@@ -275,7 +312,7 @@ function ProfilePage() {
                         component="img"
                         image={t.image}
                         alt={t.title}
-                        sx={{ height: 150, objectFit: "cover" }}
+                        sx={{ width: '100%', height: 150, objectFit: "cover" }}
                       />
                       <CardContent sx={{ flexGrow: 1 }}>
                         <Typography variant="h6">{t.title}</Typography>
@@ -286,14 +323,14 @@ function ProfilePage() {
                           {t.datetime}
                         </Typography>
                         <Typography variant="body2" color="text.secondary">
-                          Guests: {t.guests}
+                          Guests: {t.guests.length}
                         </Typography>
                       </CardContent>
                     </CardActionArea>
                   </Card>
-                </Grid>
+                </Box>
               ))}
-            </Grid>
+            </Box>
           </Box>
         </Container>
       </Box>

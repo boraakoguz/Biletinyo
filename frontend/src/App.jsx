@@ -18,7 +18,11 @@ import AddVenue from "./Organizer/AddVenue";
 import SeatingConfig from "./Organizer/SeatingConfig";
 import SalesAnalytics from "./Organizer/SalesAnalytics";
 import AuthRoute from "./AuthRoute";
+import GroupedTicketsPage from "./GroupedTicketsPage";
 import OrganizerPage from "./OrganizerPage";
+import VenueRequest from "./Organizer/VenueRequest";
+import VenueSeatMap from "./Organizer/VenueSeatMap";
+import ConfigureSeating from "./Organizer/ConfigureSeating";
 
 function App() {
   return (
@@ -58,12 +62,8 @@ function App() {
           }
         />
         <Route
-          path="/ticket/:id"
-          element={
-            <AuthRoute>
-              <TicketPage />
-            </AuthRoute>
-          }
+          path="/tickets/group"
+          element={<GroupedTicketsPage />}
         />
         <Route
           path="/payment"
@@ -75,6 +75,24 @@ function App() {
         />
 
         {/* Organizer Routes - Require Organizer Role */}
+
+        <Route
+          path="/organizer/venues/request"
+          element={
+            <AuthRoute requireOrganizer={true}>
+              <VenueRequest />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/organizer/venues/request/seatmap"
+          element={
+            <AuthRoute requireOrganizer={true}>
+              <VenueSeatMap />
+            </AuthRoute>
+          }
+        />
+
         <Route
           path="/organizer/create"
           element={
@@ -120,6 +138,14 @@ function App() {
           element={
             <AuthRoute requireOrganizer={true}>
               <TicketCategoryEdit />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/organizer/events/configure-seating"
+          element={
+            <AuthRoute requireOrganizer={true}>
+              <ConfigureSeating />
             </AuthRoute>
           }
         />
