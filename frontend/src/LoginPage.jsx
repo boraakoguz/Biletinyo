@@ -22,13 +22,13 @@ function LoginPage() {
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
-    
+
     // Check for redirect message
     const redirectState = location.state;
     if (redirectState?.message) {
       setMessage(redirectState.message);
     }
-    
+
     if (token && user) {
       navigate("/", { replace: true });
     }

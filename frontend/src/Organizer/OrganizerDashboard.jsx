@@ -22,6 +22,7 @@ const OrganizerDashboard = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const navigate = useNavigate();
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [followerCount, setFollowerCount] = useState(0);
   const now = new Date();
 
   useEffect(() => {
@@ -47,6 +48,30 @@ const OrganizerDashboard = () => {
   const user = raw ? JSON.parse(raw) : null;
   const userId = user ? Number(user.id) : null;
 
+  const fetchFollowerCount = async () => {
+    try {
+      const counts = await apiService.getFollowerCounts();
+      const count = counts.find((c) => c.organizer_id === Number(userId));
+      if (count) setFollowerCount(count.follower_count);
+    } catch (err) {
+      console.error("Error fetching follower count:", err);
+    }
+  };
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const evs = await apiService.getEventsByOrganizer(userId);
+        setEvents(evs);
+
+        await fetchFollowerCount(); // corrected
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setLoading(false);
+      }
+    })();
+  }, [userId]);
   useEffect(() => {
     (async () => {
       try {
@@ -210,7 +235,7 @@ const OrganizerDashboard = () => {
       {/* İçerik */}
       <Container sx={{ mt: 4 }}>
         <Typography variant="h4" gutterBottom>
-          Organizatör Panosu
+          Organizer Dashboard
         </Typography>
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={4}>
@@ -224,6 +249,12 @@ const OrganizerDashboard = () => {
             <CardContent>
               <Typography variant="subtitle1">Toplam Gelir</Typography>
               <Typography variant="h5">{summary.totalRevenue} TL</Typography>
+            </CardContent>
+          </Card>
+          <Card sx={{ flex: 1, minWidth: 150 }}>
+            <CardContent>
+              <Typography variant="subtitle1">Takipçi Sayısı</Typography>
+              <Typography variant="h5">{followerCount}</Typography>
             </CardContent>
           </Card>
         </Stack>
