@@ -317,7 +317,6 @@ function EventPage() {
                 </Typography>
               </Grid>
             </Grid>
-
             <Box
               sx={{
                 position: "absolute",
