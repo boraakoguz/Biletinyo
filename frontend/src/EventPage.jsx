@@ -27,6 +27,9 @@ function EventPage() {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
     setIsLoggedIn(!!token && !!user);
+    if (localStorage.getItem("event_id")) {
+      localStorage.removeItem("event_id");
+    }
   }, []);
 
   useEffect(() => {
@@ -273,6 +276,7 @@ function EventPage() {
                       },
                     });
                   } else {
+                    localStorage.setItem("event_id", id);
                     navigate(`/event/${id}/seating`);
                   }
                 }}
