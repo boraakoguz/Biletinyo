@@ -11,7 +11,7 @@ import {
   Grid,
   CircularProgress,
 } from "@mui/material";
-import { useNavigate, useParams, Outlet } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import apiService from "./apiService";
 
 function EventPage() {
@@ -23,6 +23,16 @@ function EventPage() {
   const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [imgIndex, setImgIndex] = useState(0);
+  const [organizerName, setOrganizerName] = useState("");
+  const [imageSrc, setImageSrc] = useState(null);
+  useEffect(() => {
+    if (event?.image_ids?.length) {
+      const imgId = event.image_ids[imgIndex];
+      apiService.getImageById(imgId)
+        .then((url) => setImageSrc(url))
+        .catch((err) => console.error('Failed to load image:', err));
+    }
+  }, [event, imgIndex]);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -40,7 +50,20 @@ function EventPage() {
         const data = await apiService.getEventById(id);
         setEvent(data);
         setError(null);
-        console.log("Fetched event:", data);
+
+        if (data.organizer_id) {
+          try {
+            const response = await fetch(
+              `http://localhost:8080/api/users/${data.organizer_id}`
+            );
+            const orgData = await response.json();
+            if (orgData.organizer?.organization_name) {
+              setOrganizerName(orgData.organizer.organization_name);
+            }
+          } catch (orgError) {
+            console.error("Failed to fetch organizer info:", orgError);
+          }
+        }
       } catch (error) {
         console.error("Error fetching event:", error);
         setError(error.message);
@@ -85,7 +108,9 @@ function EventPage() {
       </Box>
     );
   }
+
   const imageUrls = event.image_urls || [];
+
   return (
     <>
       <Box
@@ -226,7 +251,7 @@ function EventPage() {
             <CardMedia
               component="img"
               height="300"
-              image={`http://localhost:8080${imageUrls[imgIndex]}`}
+              image={imageSrc}
               alt={event.event_title}
               sx={{ objectFit: "cover", width: "100%" }}
             />
@@ -247,8 +272,8 @@ function EventPage() {
                   size="small"
                   variant="contained"
                   onClick={() =>
-                    setImgIndex((prev) =>
-                      (prev - 1 + imageUrls.length) % imageUrls.length
+                    setImgIndex(
+                      (prev) => (prev - 1 + imageUrls.length) % imageUrls.length
                     )
                   }
                 >
@@ -272,9 +297,6 @@ function EventPage() {
                 <Typography variant="h5" fontWeight={700} gutterBottom>
                   {event.event_title}
                 </Typography>
-                <Typography variant="body1" sx={{ mb: 2 }}>
-                  {event.description}
-                </Typography>
                 <Stack
                   direction="row"
                   spacing={2}
@@ -286,6 +308,12 @@ function EventPage() {
                   <Typography>{event.venue_name}</Typography>
                   <Typography>{event.venue_city}</Typography>
                 </Stack>
+                <Typography variant="body1" sx={{ mb: 2 }}>
+                  {event.description}
+                </Typography>
+                <Typography variant="caption">
+                  Organized by: {organizerName}
+                </Typography>
 
                 <Typography variant="body2">
                   {event.venue_description}

@@ -18,6 +18,7 @@ import AddVenue from "./Organizer/AddVenue";
 import SeatingConfig from "./Organizer/SeatingConfig";
 import SalesAnalytics from "./Organizer/SalesAnalytics";
 import AuthRoute from "./AuthRoute";
+import GroupedTicketsPage from "./GroupedTicketsPage";
 import OrganizerPage from "./OrganizerPage";
 import VenueRequest from "./Organizer/VenueRequest";
 import VenueSeatMap from "./Organizer/VenueSeatMap";
@@ -61,12 +62,8 @@ function App() {
           }
         />
         <Route
-          path="/ticket/:id"
-          element={
-            <AuthRoute>
-              <TicketPage />
-            </AuthRoute>
-          }
+          path="/tickets/group"
+          element={<GroupedTicketsPage />}
         />
         <Route
           path="/seating"
