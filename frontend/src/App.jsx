@@ -18,7 +18,11 @@ import AddVenue from "./Organizer/AddVenue";
 import SeatingConfig from "./Organizer/SeatingConfig";
 import SalesAnalytics from "./Organizer/SalesAnalytics";
 import AuthRoute from "./AuthRoute";
+import GroupedTicketsPage from "./GroupedTicketsPage";
 import OrganizerPage from "./OrganizerPage";
+import VenueRequest from "./Organizer/VenueRequest";
+import VenueSeatMap from "./Organizer/VenueSeatMap";
+import ConfigureSeating from "./Organizer/ConfigureSeating";
 import AdminDashboard from "./Admin/AdminDashboard"; 
 import AdminVenueManagement from "./Admin/VenueManagement";
 import AdminAddVenue        from "./Admin/AdminAddVenue";
@@ -59,7 +63,7 @@ function App() {
           }
         />
         <Route
-          path="/guest"
+          path="/event/:id/guest"
           element={
             <AuthRoute>
               <GuestPage />
@@ -67,20 +71,8 @@ function App() {
           }
         />
         <Route
-          path="/ticket/:id"
-          element={
-            <AuthRoute>
-              <TicketPage />
-            </AuthRoute>
-          }
-        />
-        <Route
-          path="/seating"
-          element={
-            <AuthRoute>
-              <Seating />
-            </AuthRoute>
-          }
+          path="/tickets/group"
+          element={<GroupedTicketsPage />}
         />
         <Route
           path="/payment"
@@ -92,6 +84,24 @@ function App() {
         />
 
         {/* Organizer Routes - Require Organizer Role */}
+
+        <Route
+          path="/organizer/venues/request"
+          element={
+            <AuthRoute requireOrganizer={true}>
+              <VenueRequest />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/organizer/venues/request/seatmap"
+          element={
+            <AuthRoute requireOrganizer={true}>
+              <VenueSeatMap />
+            </AuthRoute>
+          }
+        />
+
         <Route
           path="/organizer/create"
           element={
@@ -137,6 +147,14 @@ function App() {
           element={
             <AuthRoute requireOrganizer={true}>
               <TicketCategoryEdit />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/organizer/events/configure-seating"
+          element={
+            <AuthRoute requireOrganizer={true}>
+              <ConfigureSeating />
             </AuthRoute>
           }
         />

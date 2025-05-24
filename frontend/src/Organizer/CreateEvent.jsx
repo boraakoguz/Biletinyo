@@ -1,5 +1,3 @@
-// frontend/src/Organizer/CreateEvent.jsx
-
 import React, { useState, useEffect } from "react";
 import {
   AppBar,
@@ -23,15 +21,23 @@ export default function CreateEvent() {
     event_title: "",
     description: "",
     event_date: "",
+    event_time: "",
     category: "",
     regulations: "",
     organizer_id: "",
     venue_id: "",
-    image: null,
+    seat_map: [[]],
+    images: [],
   });
   const [venues, setVenues] = useState([]);
   const [error, setError] = useState(null);
-  const [imgName, setImgName] = useState("");
+  const [images, setImages] = useState([]);
+  const hourOptions = Array.from({ length: 24 }, (_, i) =>
+    i.toString().padStart(2, "0")
+  );
+  const minuteOptions = Array.from({ length: 60 }, (_, i) =>
+    i.toString().padStart(2, "0")
+  );
 
   useEffect(() => {
     const raw = localStorage.getItem("user");
@@ -50,56 +56,112 @@ export default function CreateEvent() {
       }
     })();
   }, []);
+  useEffect(() => {
+    console.log("Updated formData:", formData);
+  }, [formData]);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
 
-  const handleChange = (e) =>
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    if (name === "venue_id") {
+      const venueId = parseInt(value, 10);
+      const selectedVenue = venues.find((v) => v.venue_id === venueId);
+      console.log("Selected: ", selectedVenue);
+      setFormData((prev) => ({
+        ...prev,
+        [name]: value,
+        seat_map: selectedVenue?.seat_map || [],
+      }));
+    } else {
+      setFormData((prev) => ({ ...prev, [name]: value }));
+    }
+    console.log("Form: ", formData);
+  };
 
   const handleFileChange = (e) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      if (file.type !== "image/png") {
-        setError("Sadece PNG formatı kabul edilir.");
-        return;
-      }
-      setFormData((p) => ({ ...p, image: file }));
-      setImgName(file.name);
-      setError(null);
+    const files = Array.from(e.target.files || []);
+    const validFiles = files.filter((file) => file.type === "image/png");
+
+    if (validFiles.length !== files.length) {
+      setError("Sadece PNG formatı kabul edilir.");
+      return;
     }
+
+    setImages((prev) => [...prev, ...validFiles]);
+    setFormData((p) => ({
+      ...p,
+      images: [...(p.images || []), ...validFiles],
+    }));
+    setError(null);
+  };
+
+  const handleContinue = () => {
+    const draftEvent = {
+      ...formData,
+      event_status: 1,
+      revenue: 0.0,
+      default_ticket_price: 0.0,
+      vip_ticket_price: 0.0,
+      premium_ticket_price: 0.0,
+      seat_type_map: formData.seat_map || [[0]],
+    };
+
+    navigate("/organizer/events/configure-seating", {
+      state: {
+        eventData: draftEvent,
+        images: images,
+        venue_id: formData.venue_id,
+      },
+    });
   };
 
   const handleSubmit = async () => {
     try {
-      const payload = new FormData();
-      payload.append("event_title", formData.event_title);
-      payload.append("description", formData.description);
-      payload.append("event_date", new Date(formData.event_date).toISOString());
-      payload.append("category", formData.category);
-      payload.append("regulations", formData.regulations);
-      payload.append("event_status", 1);
-      payload.append("organizer_id", parseInt(formData.organizer_id, 10));
-      payload.append("venue_id", parseInt(formData.venue_id, 10));
-      if (formData.image) payload.append("image", formData.image);
+      const eventPayload = {
+        event_title: formData.event_title,
+        description: formData.description,
+        event_date: new Date(formData.event_date).toISOString(),
+        event_time: formData.event_time || "00:00:00",
+        category: formData.category,
+        regulations: formData.regulations,
+        event_status: 1,
+        organizer_id: parseInt(formData.organizer_id, 10),
+        venue_id: parseInt(formData.venue_id, 10),
+        revenue: 0.0,
+        seat_type_map: [[1]],
+        default_ticket_price: 0.0,
+        vip_ticket_price: 0.0,
+        premium_ticket_price: 0.0,
+      };
+      console.log(eventPayload);
 
       const res = await fetch("http://localhost:8080/api/events/", {
         method: "POST",
-        body: payload,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(eventPayload),
       });
-      if (!res.ok) throw new Error(await res.text());
 
-      // Test if it works, cant test now
-      const { event_id } = await createRes.json();
-      if (formData.image) {
+      if (!res.ok) throw new Error(await res.text());
+      const resData = await res.json();
+      const event_id = resData.event_id;
+
+      for (const img of formData.images) {
         const imgPayload = new FormData();
-        imgPayload.append("image", formData.image);
+        imgPayload.append("image", img);
 
         const imgRes = await fetch(
-          `http://localhost:8080/api/events/${event_id}`,
+          `http://localhost:8080/api/images/${event_id}`,
           {
             method: "POST",
             body: imgPayload,
           }
         );
-        if (!imgRes.ok) throw new Error(await imgRes.text());
+
+        if (!imgRes.ok) {
+          console.error("Image upload failed for", img.name);
+          throw new Error(await imgRes.text());
+        }
       }
 
       alert("Etkinlik başarıyla oluşturuldu!");
@@ -164,7 +226,7 @@ export default function CreateEvent() {
 
       <Container sx={{ my: 4, mb: 6 }}>
         <Typography variant="h4" gutterBottom align="center">
-          Yeni Etkinlik Oluştur
+          Create a New Event
         </Typography>
         <Paper sx={{ p: 4, maxWidth: 600, mx: "auto" }}>
           <Stack spacing={3}>
@@ -195,6 +257,47 @@ export default function CreateEvent() {
               required
               fullWidth
             />
+            <Stack direction="row" spacing={2}>
+              <TextField
+                select
+                label="Saat"
+                value={formData.hour || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    hour: e.target.value,
+                    event_time: `${e.target.value}:${prev.minute || "00"}:00`,
+                  }))
+                }
+                fullWidth
+              >
+                {hourOptions.map((hour) => (
+                  <MenuItem key={hour} value={hour}>
+                    {hour}
+                  </MenuItem>
+                ))}
+              </TextField>
+
+              <TextField
+                select
+                label="Dakika"
+                value={formData.minute || ""}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    minute: e.target.value,
+                    event_time: `${prev.hour || "00"}:${e.target.value}:00`,
+                  }))
+                }
+                fullWidth
+              >
+                {minuteOptions.map((minute) => (
+                  <MenuItem key={minute} value={minute}>
+                    {minute}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </Stack>
             <TextField
               label="Kategori"
               name="category"
@@ -227,22 +330,88 @@ export default function CreateEvent() {
                 </MenuItem>
               ))}
             </TextField>
+            <Box textAlign="right" mt={1}>
+              <Button
+                variant="text"
+                color="primary"
+                onClick={() => navigate("/organizer/venues/request")}
+              >
+                Can't find the venue? Request!
+              </Button>
+            </Box>
             <Box>
-              <InputLabel sx={{ mb: 1 }}>Tanıtım Görseli (PNG)</InputLabel>
+              <InputLabel sx={{ mb: 1 }}>Upload Image* (PNG)</InputLabel>
               <Button
                 variant="outlined"
                 component="label"
                 fullWidth
                 sx={{ justifyContent: "flex-start" }}
               >
-                {imgName || "Dosya seç"}
+                {images.length > 0
+                  ? `${images.length} dosya seçildi`
+                  : "Dosya seç"}
                 <input
                   hidden
                   type="file"
                   accept="image/png"
+                  multiple
                   onChange={handleFileChange}
                 />
               </Button>
+              {images.length > 0 && (
+                <Box mt={1}>
+                  <Typography variant="subtitle2">
+                    Yüklenen Görseller:
+                  </Typography>
+                  <Stack spacing={1}>
+                    {images.map((img, idx) => (
+                      <Box
+                        key={idx}
+                        sx={{
+                          display: "flex",
+                          gap: 2,
+                          alignItems: "center",
+                          justifyContent: "space-between",
+                          border: "1px solid #ccc",
+                          borderRadius: 2,
+                          p: 1,
+                        }}
+                      >
+                        <Box
+                          sx={{ display: "flex", alignItems: "center", gap: 2 }}
+                        >
+                          <img
+                            src={URL.createObjectURL(img)}
+                            alt={`preview-${idx}`}
+                            style={{
+                              width: 80,
+                              height: "auto",
+                              borderRadius: 4,
+                            }}
+                          />
+                          <Typography variant="body2">{img.name}</Typography>
+                        </Box>
+                        <Button
+                          color="error"
+                          variant="outlined"
+                          size="small"
+                          onClick={() => {
+                            const updated = [...images];
+                            updated.splice(idx, 1);
+                            setImages(updated);
+                            setFormData((prev) => ({
+                              ...prev,
+                              images: updated,
+                            }));
+                          }}
+                        >
+                          Delete
+                        </Button>
+                      </Box>
+                    ))}
+                  </Stack>
+                </Box>
+              )}
             </Box>
             {error && (
               <Typography color="error" variant="body2">
@@ -255,10 +424,10 @@ export default function CreateEvent() {
                 sx={{ mr: 2 }}
                 onClick={() => navigate("/organizer/events")}
               >
-                İptal
+                Cancel
               </Button>
-              <Button variant="contained" onClick={handleSubmit}>
-                Oluştur
+              <Button variant="contained" onClick={handleContinue}>
+                Continue
               </Button>
             </Box>
           </Stack>
