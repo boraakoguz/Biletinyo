@@ -7,6 +7,7 @@ import {
   CircularProgress,
   Button,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import armchair from "./assets/armchair.png";
 
 const SEAT_COLORS = {
@@ -30,6 +31,7 @@ function Seating() {
   const [event, setEvent] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const raw = localStorage.getItem("event_id");
@@ -56,6 +58,30 @@ function Seating() {
         : [...prev, seatId]
     );
   };
+
+const handleContinue = async () => {
+  const eventId = localStorage.getItem("event_id");
+  if (!eventId || selectedSeats.length === 0) return;
+
+  const params = new URLSearchParams();
+  params.append("event_id", eventId);
+
+  selectedSeats.forEach(seat => {
+    const [row, col] = seat.split("-");
+    params.append("seats", `${parseInt(row)}-${parseInt(col)}`);
+  });
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/tickets/?${params.toString()}`);
+    if (!res.ok) throw new Error("Failed to fetch tickets");
+    const tickets = await res.json();
+    const ticketIds = tickets.map(ticket => ticket.ticket_id);
+    localStorage.setItem("selected_ticket_ids", JSON.stringify(ticketIds));
+    navigate(`/event/${eventId}/guest`);
+  } catch (err) {
+    console.error("Ticket fetch error:", err);
+  }
+};
 
   if (loading || !event) return <CircularProgress sx={{ m: 5 }} />;
 
@@ -230,7 +256,7 @@ function Seating() {
               variant="contained"
               color="primary"
               disabled={selectedSeats.length === 0}
-              onClick={() => {}}
+              onClick={handleContinue}
             >
               Continue
             </Button>

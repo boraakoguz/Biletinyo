@@ -50,7 +50,7 @@ function App() {
           }
         />
         <Route
-          path="/guest"
+          path="/event/:id/guest"
           element={
             <AuthRoute>
               <GuestPage />
@@ -62,14 +62,6 @@ function App() {
           element={
             <AuthRoute>
               <TicketPage />
-            </AuthRoute>
-          }
-        />
-        <Route
-          path="/seating"
-          element={
-            <AuthRoute>
-              <Seating />
             </AuthRoute>
           }
         />

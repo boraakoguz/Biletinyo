@@ -29,9 +29,6 @@ function EventPage() {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
     setIsLoggedIn(!!token && !!user);
-    if (localStorage.getItem("event_id")) {
-      localStorage.removeItem("event_id");
-    }
   }, []);
 
   useEffect(() => {
