@@ -51,7 +51,14 @@ export const apiService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
     });
-    return res.json();
+  
+    const data = await res.json();
+  
+    if (!res.ok) {
+      throw new Error(data.error || 'Registration failed');
+    }
+  
+    return data;
   },
   
   // Events

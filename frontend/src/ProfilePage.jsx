@@ -25,17 +25,32 @@ function ProfilePage() {
   const [transactions, setTransactions] = useState([]);
   const [followingCount, setFollowingCount] = useState(null);
 
-  const getBirthYear = (birthDate) => {
+  const formatBirthDate = (birthDate) => {
     if (!birthDate) return null;
-    const year = new Date(birthDate).getFullYear();
-    return isNaN(year) ? null : year;
+    const dateObj = new Date(birthDate);
+    if (isNaN(dateObj)) return null;
+
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+    const year = dateObj.getFullYear();
+
+    return `${day}/${month}/${year}`;
   };
   useEffect(() => {
     const raw = localStorage.getItem("user");
     const parsedUser = raw ? JSON.parse(raw) : {};
-    setUser(parsedUser);
 
     if (parsedUser.id) {
+      apiService
+        .getUserById(parsedUser.id)
+        .then((data) => {
+          setUser(data);
+        })
+        .catch((err) => {
+          console.error("Failed to fetch user from DB:", err);
+          setUser(parsedUser);
+        });
+
       apiService
         .getFollowingCount(parsedUser.id)
         .then((data) => {
@@ -48,9 +63,6 @@ function ProfilePage() {
   }, []);
 
   useEffect(() => {
-    const raw = localStorage.getItem("user");
-    setUser(raw ? JSON.parse(raw) : {});
-
     setTickets([
       {
         id: "101",
@@ -176,7 +188,7 @@ function ProfilePage() {
                   </Typography>
                   <Typography fontSize={16}>
                     <strong>Birth Year:</strong>{" "}
-                    {getBirthYear(user.birth_date) || "—"}
+                    {formatBirthDate(user.birth_date) || "—"}
                   </Typography>
                   <Typography fontSize={16}>
                     <strong>Phone:</strong> {user.phone || "—"}
