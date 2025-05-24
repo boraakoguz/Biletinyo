@@ -19,6 +19,15 @@ import SeatingConfig from "./Organizer/SeatingConfig";
 import SalesAnalytics from "./Organizer/SalesAnalytics";
 import AuthRoute from "./AuthRoute";
 import OrganizerPage from "./OrganizerPage";
+import AdminDashboard from "./Admin/AdminDashboard"; 
+import AdminVenueManagement from "./Admin/VenueManagement";
+import AdminAddVenue        from "./Admin/AdminAddVenue";
+import AdminEditSeatingConfig from "./Admin/AdminEditSeatingConfig";
+import AdminPendingEvents from "./Admin/AdminPendingEvents";
+import AdminUserManagement  from "./Admin/UserManagement";
+import AdminReports           from "./Admin/AdminReports";
+import AdminPayments        from "./Admin/AdminPayments";
+
 
 function App() {
   return (
@@ -163,6 +172,76 @@ function App() {
             </AuthRoute>
           }
         />
+        <Route
+          path="/admin/dashboard"
+          element={
+            <AuthRoute requireAdmin={true}>
+              <AdminDashboard />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/admin/venues"
+          element={
+            <AuthRoute requireAdmin={true}>
+              <AdminVenueManagement />
+            </AuthRoute>
+          }
+        />
+               
+       <Route
+          path="/admin/venues/new"
+          element={
+            <AuthRoute requireAdmin={true}>
+              <AdminAddVenue />
+            </AuthRoute>
+          }
+        />
+
+       <Route
+          path="/admin/venues/:id/edit"
+          element={
+            <AuthRoute requireAdmin={true}>
+              <AdminEditSeatingConfig />
+            </AuthRoute>
+          }
+        />
+
+        <Route
+          path="/admin/events/pending"
+          element={
+            <AuthRoute requireAdmin={true}>
+              <AdminPendingEvents />
+            </AuthRoute>
+          }
+        />
+         <Route
+          path="/admin/users"
+          element={
+            <AuthRoute requireAdmin={true}>
+              <AdminUserManagement />
+            </AuthRoute>
+          }
+        />
+
+        <Route
+        path="/admin/reports"
+        element={
+          <AuthRoute requireAdmin={true}>
+            <AdminReports />
+         </AuthRoute>
+        }
+      />
+
+      <Route
+        path="/admin/payments"
+        element={
+          <AuthRoute requireAdmin={true}>
+            <AdminPayments />
+          </AuthRoute>
+        }
+      />
+
       </Routes>
     </BrowserRouter>
   );
