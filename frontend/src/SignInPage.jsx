@@ -101,15 +101,15 @@ function SignInPage() {
     }
 
     const userData = {
-      name: formData.name,
+      name: `${formData.name} ${formData.surname}`,
       email: formData.email,
       password: formData.password,
-      user_type: role === "organizer" ? 1 : 0,
       phone: countryCode + phoneNumber,
       birth_date: formData.birthDate,
+      user_type: role === "organizer" ? 1 : 0,
       organization_name: role === "organizer" ? formData.organization : null,
     };
-
+    console.log(userData);
     try {
       const data = await apiService.register(userData);
 

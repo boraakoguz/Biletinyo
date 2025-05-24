@@ -150,10 +150,16 @@ export default function CommentPage() {
         >
           <Typography
             variant="h4"
+            onClick={() => navigate("/")}
             sx={{
+              cursor: "pointer",
               textDecoration: "underline",
               fontWeight: "bold",
               fontStyle: "italic",
+              "&:hover": {
+                textDecoration: "none",
+                opacity: 0.8,
+              },
             }}
           >
             Biletinyo

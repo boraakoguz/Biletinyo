@@ -51,7 +51,14 @@ export const apiService = {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userData),
     });
-    return res.json();
+  
+    const data = await res.json();
+  
+    if (!res.ok) {
+      throw new Error(data.error || 'Registration failed');
+    }
+  
+    return data;
   },
   
   // Events
@@ -260,6 +267,11 @@ export const apiService = {
   getFollowerCounts: async () => {
     const res = await fetchWithAuth("/follows/counts");
     if (!res.ok) throw new Error("Failed to fetch follower counts");
+    return res.json();
+  },
+  getFollowingCount: async (userId) => {
+    const res = await fetchWithAuth(`/follows/count/${userId}`);
+    if (!res.ok) throw new Error("Failed to fetch following count");
     return res.json();
   },
 }; 

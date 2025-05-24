@@ -27,14 +27,21 @@ export default function OrganizerPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
 
+  const fetchFollowerCount = async () => {
+    try {
+      const counts = await apiService.getFollowerCounts();
+      const count = counts.find((c) => c.organizer_id === Number(id));
+      if (count) setFollowerCount(count.follower_count);
+    } catch (err) {
+      console.error("Error fetching follower count:", err);
+    }
+  };
+
   const handleSignInRedirect = () => {
     navigate("/signin");
   };
   useEffect(() => {
-    apiService.getFollowerCounts().then((counts) => {
-      const count = counts.find((c) => c.organizer_id === Number(id));
-      if (count) setFollowerCount(count.follower_count);
-    });
+    fetchFollowerCount();
   }, [id]);
 
   localStorage.setItem("refreshFollowedTab", "true");
@@ -160,10 +167,16 @@ export default function OrganizerPage() {
         >
           <Typography
             variant="h4"
+            onClick={() => navigate("/")}
             sx={{
+              cursor: "pointer",
               textDecoration: "underline",
               fontWeight: "bold",
               fontStyle: "italic",
+              "&:hover": {
+                textDecoration: "none",
+                opacity: 0.8,
+              },
             }}
           >
             Biletinyo
@@ -261,6 +274,7 @@ export default function OrganizerPage() {
                     await apiService.followOrganizer(user.id, Number(id));
                   }
                   setIsFollowing(!isFollowing);
+                  await fetchFollowerCount();
                 } catch (err) {
                   console.error("Follow/unfollow error:", err);
                 } finally {

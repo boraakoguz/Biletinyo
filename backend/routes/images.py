@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request, current_app
+from flask import Blueprint, jsonify, request, current_app, send_from_directory
 from database import db_pool
 import os
 
@@ -7,16 +7,11 @@ bp = Blueprint("images", __name__)
 @bp.route("/<int:image_id>", methods=["GET"])
 def get_image_by_id(image_id):
     try:
-        image_path = os.path.join(current_app.config["UPLOAD_FOLDER"], f"{image_id}.png")
-        
-        if not os.path.exists(image_path):
-            return jsonify({"error" : f"No image with id {image_id}"}), 400
-        
-        return jsonify({"url": f"/images/{image_id}.png"})
+        image_folder = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'images'))
+        return send_from_directory(image_folder, f"{image_id}.png")
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-
-
+   
 @bp.route("/<int:event_id>", methods=["POST"])
 def upload_image(event_id):
     try:
