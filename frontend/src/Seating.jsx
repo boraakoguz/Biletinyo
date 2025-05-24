@@ -63,16 +63,16 @@ function Seating() {
     <Box sx={{ p: 4 }}>
       <Paper elevation={3} sx={{ p: 3, position: "relative" }}>
         <Typography variant="h4" gutterBottom>
-          Event Seating
+          <strong>Event Seating:</strong> {event.event_title}
         </Typography>
         <Typography variant="h6" gutterBottom>
-          <strong>Event:</strong> {event.event_title}
-        </Typography>
-        <Typography variant="body2" gutterBottom>
           <strong>Location:</strong> {event.location}
         </Typography>
-        <Typography variant="body2" gutterBottom>
-          <strong>Date:</strong> {event.event_date} — {event.event_time}
+        <Typography variant="h6" gutterBottom>
+          <strong>Date:</strong> {event.event_date}
+        </Typography>
+        <Typography variant="h6" gutterBottom>
+          <strong>Time</strong> {event.event_time}
         </Typography>
 
         <Grid container direction="column" spacing={1}>
@@ -215,8 +215,18 @@ function Seating() {
             </Typography>
           </Box>
 
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-end",
+              mt: 4,
+            }}
+          >
             <Button
+              sx={{
+                py: 1,
+                minWidth: 200,
+              }}
               variant="contained"
               color="primary"
               disabled={selectedSeats.length === 0}
