@@ -69,13 +69,10 @@ CREATE TABLE event (
 
 CREATE TABLE report (
     report_id               SERIAL PRIMARY KEY,
-    user_id                 INT NOT NULL,
-    most_popular_event_id   INT,
-
-    report_date             DATE,
-    revenue_trend_data      INT[],
-    FOREIGN KEY (user_id) REFERENCES users(user_id),
-    FOREIGN KEY (most_popular_event_id) REFERENCES event(event_id)
+  
+    report_name    VARCHAR(100) NOT NULL DEFAULT 'generic_report',
+    generated_at   TIMESTAMP WITH TIME ZONE DEFAULT now(),
+    payload        JSONB
 );
 
 CREATE TABLE daily_revenue (
@@ -170,6 +167,32 @@ CREATE TRIGGER update_daily_revenue_trigger
   FOR EACH ROW
   EXECUTE FUNCTION update_daily_revenue();
 
+CREATE OR REPLACE FUNCTION log_payment_sale()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO report (
+    report_name,
+    generated_at,
+    payload
+  )
+  VALUES (
+    'ticket_sale',
+    now(),
+    jsonb_build_object(
+      'ticket_id', NEW.payment_id,
+      'amount',    NEW.payment_amount,
+      'date',      NEW.payment_date
+    )
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER log_ticket_sale_trigger
+  AFTER INSERT ON payment
+  FOR EACH ROW
+  EXECUTE FUNCTION log_payment_sale();
+
 INSERT INTO users (name, email, password, user_type, phone, birth_date) VALUES
 ('User johnson', 'user@user.com', '$2b$12$KKprei.9FfMVomfUWlYYAu8icc7TS58KesyN11GQpI.2eYteMWUXC', 0, '555-1234', '1995-06-15'),
 ('Organizer Smith', 'org@org.com', '$2b$12$Srau6Ny7nGQQQ1tHeiBfUOsuinZZOdyplF2c831mVqlUgFqcetwmq', 1, '555-5678', '2000-06-15'),
@@ -262,9 +285,3 @@ INSERT INTO comment (event_id, attendee_id, rating, comment_title, comment_text,
   (2, 5, 5, 'Rocked!',         'The bands were awesome.',      '2025-05-29'),
   (3, 6, 3, 'Good food',       'Tasty but a bit crowded.',     '2025-06-06'),
   (4, 7, 5, 'Art was stunning','Loved the installations.',     '2025-06-13');
-
-INSERT INTO report (user_id, most_popular_event_id, report_date, revenue_trend_data) VALUES
-  (2,  1, '2025-04-30', '{1000,2000,1500,3000}'),
-  (8,  2, '2025-05-31', '{500,1200,900,1500}'),
-  (9,  1, '2025-06-10', '{800,600,1400,1000}'),
-  (10, 3, '2025-06-20', '{1200,1300,1100,900}');
