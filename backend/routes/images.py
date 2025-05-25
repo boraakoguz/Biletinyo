@@ -46,9 +46,9 @@ def upload_image(event_id):
                 if name.isdigit():
                     all_image_ids.append(int(name))
 
-        next_filename = max(all_image_ids) + 1
-
-        if not next_filename:
+        if all_image_ids:
+            next_filename = max(all_image_ids) + 1
+        else:
             next_filename = 1
          
         image.save(os.path.join(current_app.config["UPLOAD_FOLDER"], f"{next_filename}.png"))
