@@ -111,7 +111,7 @@ export default function CreateEvent() {
     const validFiles = files.filter((file) => file.type === "image/png");
 
     if (validFiles.length !== files.length) {
-      setError("Sadece PNG formatı kabul edilir.");
+      setError("Only PNG files are accepted");
       return;
     }
 
@@ -122,8 +122,38 @@ export default function CreateEvent() {
     }));
     setError(null);
   };
+  const validateForm = () => {
+    const fieldLabels = {
+      event_title: "Event Title",
+      description: "Description",
+      event_date: "Date",
+      event_time: "Clock",
+      category: "Category",
+      venue_id: "Venue",
+      organizer_id: "Orgaizor",
+    };
 
+    const requiredFields = Object.keys(fieldLabels);
+
+    for (const field of requiredFields) {
+      if (!formData[field] || formData[field].toString().trim() === "") {
+        return `Please fill "${fieldLabels[field]}".`;
+      }
+    }
+
+    if (images.length === 0) {
+      return "At least one PNG must be uploaded";
+    }
+
+    return null;
+  };
   const handleContinue = () => {
+    const errorMessage = validateForm();
+    if (errorMessage) {
+      setError(errorMessage);
+      return;
+    }
+    s;
     const draftEvent = {
       ...formData,
       event_status: 1,
@@ -204,7 +234,7 @@ export default function CreateEvent() {
         <Paper sx={{ p: 4, maxWidth: 600, mx: "auto" }}>
           <Stack spacing={3}>
             <TextField
-              label="Etkinlik Başlığı"
+              label="Event Title"
               name="event_title"
               value={formData.event_title}
               onChange={handleChange}
@@ -212,16 +242,17 @@ export default function CreateEvent() {
               fullWidth
             />
             <TextField
-              label="Açıklama"
+              label="Description"
               name="description"
               value={formData.description}
               onChange={handleChange}
+              required
               multiline
               rows={3}
               fullWidth
             />
             <TextField
-              label="Tarih"
+              label="Date"
               name="event_date"
               type="date"
               value={formData.event_date}
@@ -233,7 +264,7 @@ export default function CreateEvent() {
             <Stack direction="row" spacing={2}>
               <TextField
                 select
-                label="Saat"
+                label="Hour"
                 value={formData.hour || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -253,7 +284,7 @@ export default function CreateEvent() {
 
               <TextField
                 select
-                label="Dakika"
+                label="Minute"
                 value={formData.minute || ""}
                 onChange={(e) =>
                   setFormData((prev) => ({
@@ -273,7 +304,7 @@ export default function CreateEvent() {
             </Stack>
             <TextField
               select
-              label="Kategori"
+              label="Category"
               name="category"
               value={formData.category}
               onChange={handleChange}
@@ -287,7 +318,7 @@ export default function CreateEvent() {
               ))}
             </TextField>
             <TextField
-              label="Kurallar"
+              label="Regulations"
               name="regulations"
               value={formData.regulations}
               onChange={handleChange}
@@ -297,7 +328,7 @@ export default function CreateEvent() {
             />
             <TextField
               select
-              label="Mekan Seç"
+              label="Select Venue"
               name="venue_id"
               value={formData.venue_id}
               onChange={handleChange}
@@ -328,8 +359,8 @@ export default function CreateEvent() {
                 sx={{ justifyContent: "flex-start" }}
               >
                 {images.length > 0
-                  ? `${images.length} dosya seçildi`
-                  : "Dosya seç"}
+                  ? `${images.length} File Selected`
+                  : "Choose File"}
                 <input
                   hidden
                   type="file"
@@ -340,9 +371,7 @@ export default function CreateEvent() {
               </Button>
               {images.length > 0 && (
                 <Box mt={1}>
-                  <Typography variant="subtitle2">
-                    Yüklenen Görseller:
-                  </Typography>
+                  <Typography variant="subtitle2">Uploaded Images:</Typography>
                   <Stack spacing={1}>
                     {images.map((img, idx) => (
                       <Box

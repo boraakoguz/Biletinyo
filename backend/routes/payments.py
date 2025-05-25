@@ -31,3 +31,48 @@ def get_payments():
     finally:
         if conn:
             db_pool.putconn(conn)
+
+
+@bp.route("/", methods=["POST"])
+def create_test_payment():
+    """
+    Expects JSON in the body:
+    {
+      "attendee_id": <int>,
+      "payment_amount": <number>,
+      "payment_method": <string or int>,
+      "payment_date": "YYYY-MM-DD"
+    }
+    """
+    data = request.get_json()
+    attendee_id     = data.get("attendee_id")
+    payment_amount  = data.get("payment_amount")
+    payment_method  = data.get("payment_method")
+    payment_date    = data.get("payment_date")  # e.g. "2025-05-25"
+
+    if not all([attendee_id, payment_amount, payment_date]):
+        return jsonify({"error": "attendee_id, payment_amount and payment_date are required"}), 400
+
+    conn = None
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                INSERT INTO payment (attendee_id, payment_amount, payment_method, payment_date)
+                VALUES (%s, %s, %s, %s)
+                RETURNING payment_id;
+            """, (attendee_id, payment_amount, payment_method, payment_date))
+            new_id = cur.fetchone()[0]
+        conn.commit()
+
+        return jsonify({
+            "message": "Test payment created",
+            "payment_id": new_id
+        }), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if conn:
+            db_pool.putconn(conn)

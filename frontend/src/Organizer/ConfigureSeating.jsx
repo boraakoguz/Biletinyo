@@ -19,7 +19,7 @@ const CATEGORY_COLORS = { 1: "#E2E8F0", 2: "#C3DAFE", 3: "#E9D8FD" };
 export default function ConfigureSeating() {
   const { state } = useLocation();
   const navigate = useNavigate();
-
+  const [submitting, setSubmitting] = useState(false);
   const [venueMap, setVenueMap] = useState([]);
   const [seatMap, setSeatMap] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -53,8 +53,10 @@ export default function ConfigureSeating() {
       return updated;
     });
   };
-
   const handleSubmit = async () => {
+    if (submitting) return; // prevent double click
+    setSubmitting(true);
+
     try {
       const payload = {
         ...eventData,
@@ -77,7 +79,6 @@ export default function ConfigureSeating() {
       const resData = await res.json();
       const event_id = resData.event_id;
 
-      // Upload images
       for (const img of images) {
         const imgPayload = new FormData();
         imgPayload.append("image", img);
@@ -92,14 +93,16 @@ export default function ConfigureSeating() {
 
         if (!imgRes.ok) throw new Error(await imgRes.text());
       }
+
       localStorage.removeItem("draftEvent");
       setSnackbar({ open: true, message: "Etkinlik başarıyla oluşturuldu." });
-      setTimeout(() => navigate("/organizer/events"), 1500);
+      navigate("/organizer/events");
     } catch (err) {
       setSnackbar({ open: true, message: "Hata: " + err.message });
+    } finally {
+      setSubmitting(false);
     }
   };
-
   if (loading)
     return (
       <Box sx={{ mt: 10, textAlign: "center" }}>
@@ -115,23 +118,26 @@ export default function ConfigureSeating() {
       <Paper sx={{ p: 3, mb: 3 }}>
         <Stack direction="row" spacing={2}>
           <TextField
-            label="Default"
+            label="Default Price"
             type="number"
+            required
             value={prices.default_ticket_price}
             onChange={(e) =>
               setPrices((p) => ({ ...p, default_ticket_price: e.target.value }))
             }
           />
           <TextField
-            label="VIP"
+            label="VIP Price"
             type="number"
+            required
             value={prices.vip_ticket_price}
             onChange={(e) =>
               setPrices((p) => ({ ...p, vip_ticket_price: e.target.value }))
             }
           />
           <TextField
-            label="Premium"
+            label="Premium Price"
+            required
             type="number"
             value={prices.premium_ticket_price}
             onChange={(e) =>
@@ -141,6 +147,47 @@ export default function ConfigureSeating() {
         </Stack>
       </Paper>
       <Paper sx={{ p: 3 }}>
+        {/* Legend Section */}
+        <Box sx={{ mb: 3 }}>
+          <Typography variant="h6" gutterBottom>
+            Legend
+          </Typography>
+          <Stack direction="row" spacing={3}>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Box
+                sx={{
+                  width: 20,
+                  height: 20,
+                  bgcolor: CATEGORY_COLORS[1],
+                  borderRadius: 0.5,
+                }}
+              />
+              <Typography variant="body2">Default Seat</Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Box
+                sx={{
+                  width: 20,
+                  height: 20,
+                  bgcolor: CATEGORY_COLORS[2],
+                  borderRadius: 0.5,
+                }}
+              />
+              <Typography variant="body2">VIP Seat</Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <Box
+                sx={{
+                  width: 20,
+                  height: 20,
+                  bgcolor: CATEGORY_COLORS[3],
+                  borderRadius: 0.5,
+                }}
+              />
+              <Typography variant="body2">Premium Seat</Typography>
+            </Box>
+          </Stack>
+        </Box>
         <Grid container direction="column" spacing={1}>
           {seatMap.map((row, r) => (
             <Grid container item spacing={1} key={r}>
@@ -170,8 +217,12 @@ export default function ConfigureSeating() {
           ))}
         </Grid>
         <Box textAlign="right" mt={4}>
-          <Button variant="contained" onClick={handleSubmit}>
-            Save
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? "Saving..." : "Save"}
           </Button>
         </Box>
       </Paper>

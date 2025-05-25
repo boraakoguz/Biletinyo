@@ -53,6 +53,25 @@ export default function VenueSeatMap() {
         Seat Map for {venueName} ({city})
       </Typography>
       <Paper sx={{ p: 3, mt: 2 }}>
+        <Box sx={{ mb: 2, display: "flex", justifyContent: "center", gap: 4 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box
+              sx={{
+                width: 20,
+                height: 20,
+                bgcolor: "#1976d2",
+                borderRadius: 1,
+              }}
+            />
+            <Typography variant="body2">Available</Typography>
+          </Box>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Box
+              sx={{ width: 20, height: 20, bgcolor: "#ccc", borderRadius: 1 }}
+            />
+            <Typography variant="body2">Unavailable</Typography>
+          </Box>
+        </Box>
         <Paper sx={{ p: 3, mt: 2, overflowX: "auto" }}>
           <Grid container direction="column" spacing={1}>
             {seatMap.map((row, rowIdx) => (
