@@ -97,6 +97,13 @@ const ManageEvents = () => {
           >
             Biletinyo
           </Typography>
+          <Button
+            variant="outlined"
+            color="inherit"
+            onClick={() => navigate("/organizer/dashboard")}
+            >
+              Back
+          </Button>
         </Toolbar>
       </AppBar>
 
