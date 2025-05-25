@@ -22,6 +22,8 @@ function ForgotPassword() {
   const [cooldown, setCooldown] = useState(0);
   const [message, setMessage] = useState("");
 
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
@@ -37,6 +39,11 @@ function ForgotPassword() {
   }, [navigate, location]);
 
   const handleSendCode = async () => {
+    if (!isValidEmail(email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
     setLoading(true);
     try {
       await apiService.sendResetCode(email);
