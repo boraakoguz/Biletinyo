@@ -475,3 +475,32 @@ def put_event_by_id(event_id):
     finally:
         if conn:
             db_pool.putconn(conn)
+@bp.route("/<int:event_id>/capacity", methods=["GET"])
+def get_event_capacity(event_id):
+    conn = db_pool.getconn()
+    try:
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT seat_type_map
+                FROM event
+                WHERE event_id = %s;
+            """, (event_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"error": "Event not found"}), 404
+
+            seat_map_raw = row[0]
+            seat_map = seat_map_raw or []
+
+            capacity = sum(
+                1 for row_seats in seat_map for seat in row_seats if seat != 0
+            )
+
+            return jsonify({
+                "event_id": event_id,
+                "capacity": capacity
+            }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        db_pool.putconn(conn)

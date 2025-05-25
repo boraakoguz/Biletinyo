@@ -16,6 +16,14 @@ import { useNavigate } from "react-router-dom";
 
 export default function CreateEvent() {
   const navigate = useNavigate();
+  const categoryOptions = [
+    "Concert",
+    "Theatre",
+    "Festival",
+    "Cinema",
+    "Music",
+    "Technology",
+  ];
 
   const [formData, setFormData] = useState({
     event_title: "",
@@ -32,6 +40,27 @@ export default function CreateEvent() {
   const [venues, setVenues] = useState([]);
   const [error, setError] = useState(null);
   const [images, setImages] = useState([]);
+
+  useEffect(() => {
+    const savedDraft = localStorage.getItem("draftEvent");
+    const savedImageMeta = localStorage.getItem("draftImages");
+
+    if (savedDraft) {
+      const parsed = JSON.parse(savedDraft);
+      setFormData((prev) => ({
+        ...prev,
+        ...parsed,
+      }));
+    }
+
+    if (savedImageMeta) {
+      const parsedMeta = JSON.parse(savedImageMeta);
+      if (parsedMeta.length > 0) {
+        setError("Images should be re-uploaded!");
+      }
+    }
+  }, []);
+
   const hourOptions = Array.from({ length: 24 }, (_, i) =>
     i.toString().padStart(2, "0")
   );
@@ -105,6 +134,8 @@ export default function CreateEvent() {
       seat_type_map: formData.seat_map || [[0]],
     };
 
+    localStorage.setItem("draftEvent", JSON.stringify(draftEvent));
+
     navigate("/organizer/events/configure-seating", {
       state: {
         eventData: draftEvent,
@@ -112,64 +143,6 @@ export default function CreateEvent() {
         venue_id: formData.venue_id,
       },
     });
-  };
-
-  const handleSubmit = async () => {
-    try {
-      const eventPayload = {
-        event_title: formData.event_title,
-        description: formData.description,
-        event_date: new Date(formData.event_date).toISOString(),
-        event_time: formData.event_time || "00:00:00",
-        category: formData.category,
-        regulations: formData.regulations,
-        event_status: 1,
-        organizer_id: parseInt(formData.organizer_id, 10),
-        venue_id: parseInt(formData.venue_id, 10),
-        revenue: 0.0,
-        seat_type_map: [[1]],
-        default_ticket_price: 0.0,
-        vip_ticket_price: 0.0,
-        premium_ticket_price: 0.0,
-      };
-      console.log(eventPayload);
-
-      const res = await fetch("http://localhost:8080/api/events/", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(eventPayload),
-      });
-
-      if (!res.ok) throw new Error(await res.text());
-      const resData = await res.json();
-      const event_id = resData.event_id;
-
-      for (const img of formData.images) {
-        const imgPayload = new FormData();
-        imgPayload.append("image", img);
-
-        const imgRes = await fetch(
-          `http://localhost:8080/api/images/${event_id}`,
-          {
-            method: "POST",
-            body: imgPayload,
-          }
-        );
-
-        if (!imgRes.ok) {
-          console.error("Image upload failed for", img.name);
-          throw new Error(await imgRes.text());
-        }
-      }
-
-      alert("Etkinlik başarıyla oluşturuldu!");
-      navigate("/organizer/events");
-    } catch (err) {
-      console.error(err);
-      setError("Etkinlik oluşturma hatası: " + err.message);
-    }
   };
 
   return (
@@ -299,13 +272,20 @@ export default function CreateEvent() {
               </TextField>
             </Stack>
             <TextField
+              select
               label="Kategori"
               name="category"
               value={formData.category}
               onChange={handleChange}
               required
               fullWidth
-            />
+            >
+              {categoryOptions.map((category) => (
+                <MenuItem key={category} value={category}>
+                  {category}
+                </MenuItem>
+              ))}
+            </TextField>
             <TextField
               label="Kurallar"
               name="regulations"

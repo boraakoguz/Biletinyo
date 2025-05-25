@@ -84,7 +84,6 @@ const OrganizerDashboard = () => {
       }
     })();
   }, [userId]);
-  // --- Mock data for development ---
 
   if (loading) {
     return (
@@ -183,15 +182,6 @@ const OrganizerDashboard = () => {
           <Stack direction="row" spacing={1}>
             {isLoggedIn ? (
               <>
-                <Button
-                  color="inherit"
-                  onClick={() => navigate("/profile")}
-                  sx={{
-                    "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
-                  }}
-                >
-                  Profile
-                </Button>
                 <Button
                   variant="outlined"
                   color="inherit"
