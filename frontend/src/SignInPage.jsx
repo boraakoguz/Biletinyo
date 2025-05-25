@@ -257,6 +257,7 @@ function SignInPage() {
               name="birthDate"
               label="Birth Date"
               InputLabelProps={{ shrink: true }}
+              inputProps={{ max: '9999-12-31' }}
               value={formData.birthDate}
               onChange={handleChange}
               required

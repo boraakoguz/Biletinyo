@@ -11,11 +11,12 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import apiService from "./apiService";
 
-function LoginPage() {
+function ForgotPassword() {
   const navigate = useNavigate();
   const location = useLocation();
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -23,7 +24,6 @@ function LoginPage() {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
 
-    // Check for redirect message
     const redirectState = location.state;
     if (redirectState?.message) {
       setMessage(redirectState.message);
@@ -34,35 +34,21 @@ function LoginPage() {
     }
   }, [navigate, location]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleSendCode = async () => {
     setLoading(true);
-
     try {
-      const data = await apiService.login({ email, password });
-
-      if (!data.access_token) {
-        throw new Error(data.error || "Login failed");
-      }
-
-      localStorage.setItem("token", data.access_token);
-      localStorage.setItem("user", JSON.stringify(data.user));
-
-      if (location.state?.from) {
-        navigate(location.state.from);
-      } else if (data.user.user_type === 2) {
-        navigate("/admin/dashboard");
-      } else if (data.user.user_type === 1) {
-        navigate("/organizer/dashboard");
-      } else {
-        navigate("/");
-      }
+      await apiService.sendResetCode(email);
+      alert("Code sent to your email.");
     } catch (error) {
-      console.error("Login error:", error.message);
-      alert(error.message);
+      console.error("Error sending code:", error.message);
+      alert("Failed to send code.");
     } finally {
       setLoading(false);
     }
+  };
+
+  const handleConfirm = async () => {
+    
   };
 
   return (
@@ -72,7 +58,7 @@ function LoginPage() {
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        backgroundColor: " #002fa7",
+        backgroundColor: "#002fa7",
       }}
     >
       <Container sx={{ width: "40%" }}>
@@ -91,7 +77,7 @@ function LoginPage() {
               Biletinyo
             </Typography>
             <Typography variant="h4" color="#002fa7">
-              Login
+              Forgot Password
             </Typography>
           </Box>
 
@@ -101,46 +87,49 @@ function LoginPage() {
             </Alert>
           )}
 
-          <Box
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
               label="Email"
               variant="outlined"
-              type={email}
               required
               onChange={(e) => setEmail(e.target.value)}
               value={email}
             />
-            <TextField
-              label="Password"
-              variant="outlined"
-              type={"password"}
-              required
-              onChange={(e) => setPassword(e.target.value)}
-              value={password}
-            />
             <Button
-              type="submit"
               variant="contained"
               color="primary"
-              fullWidth
-              disabled={loading}
+              onClick={handleSendCode}
+              disabled={loading || !email}
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading ? "Sending..." : "Send Code"}
             </Button>
-            <Button type="button" variant="text" color="zort" onClick={() => navigate("/forgot-password")}>
-              Forgot Password?
+            <TextField
+              label="Enter Code"
+              variant="outlined"
+              onChange={(e) => setCode(e.target.value)}
+              value={code}
+            />
+            <TextField
+              label="Enter New Password"
+              variant="outlined"
+              type="password"
+              onChange={(e) => setNewPassword(e.target.value)}
+              value={newPassword}
+            />
+            <Button
+              variant="contained"
+              color="success"
+              fullWidth
+              onClick={handleConfirm}
+            >
+              Confirm
             </Button>
             <Button
               type="button"
               variant="outlined"
               color="primary"
               fullWidth
-              sx={{ mt: 1 }}
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/login")}
             >
               Back
             </Button>
@@ -150,4 +139,5 @@ function LoginPage() {
     </Box>
   );
 }
-export default LoginPage;
+
+export default ForgotPassword;

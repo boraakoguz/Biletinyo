@@ -82,7 +82,7 @@ const OrganizerDashboard = () => {
         const evs = await apiService.getEventsByOrganizer(userId);
         setEvents(evs);
 
-        await fetchFollowerCount(); // corrected
+        await fetchFollowerCount();
       } catch (e) {
         console.error(e);
       } finally {

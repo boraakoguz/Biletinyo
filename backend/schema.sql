@@ -78,6 +78,11 @@ CREATE TABLE report (
     FOREIGN KEY (most_popular_event_id) REFERENCES event(event_id)
 );
 
+CREATE TABLE daily_revenue (
+  rev_date    DATE        PRIMARY KEY,
+  total_amount NUMERIC(12,2) NOT NULL DEFAULT 0.00
+);
+
 CREATE TABLE comment(
     comment_id      SERIAL PRIMARY KEY,
     event_id        INT NOT NULL,
@@ -148,6 +153,22 @@ CREATE TRIGGER auto_create_attendee_trigger
 AFTER INSERT ON users
 FOR EACH ROW
 EXECUTE FUNCTION auto_create_attendee();
+
+CREATE OR REPLACE FUNCTION update_daily_revenue()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO daily_revenue (rev_date, total_amount)
+  VALUES (NEW.payment_date, NEW.payment_amount)
+  ON CONFLICT (rev_date) DO
+    UPDATE SET total_amount = daily_revenue.total_amount + NEW.payment_amount;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER update_daily_revenue_trigger
+  AFTER INSERT ON payment
+  FOR EACH ROW
+  EXECUTE FUNCTION update_daily_revenue();
 
 INSERT INTO users (name, email, password, user_type, phone, birth_date) VALUES
 ('User johnson', 'user@user.com', '$2b$12$KKprei.9FfMVomfUWlYYAu8icc7TS58KesyN11GQpI.2eYteMWUXC', 0, '555-1234', '1995-06-15'),
