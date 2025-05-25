@@ -28,6 +28,11 @@ const OrganizerDashboard = () => {
   const [requestedVenues, setRequestedVenues] = useState([]);
 
   useEffect(() => {
+    localStorage.removeItem("draftEvent");
+    localStorage.removeItem("draftImages");
+  }, []);
+
+  useEffect(() => {
     (async () => {
       try {
         const venues = await apiService.getRequestedVenues();
