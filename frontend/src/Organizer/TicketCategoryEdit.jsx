@@ -56,9 +56,9 @@ export default function TicketCategoryEdit() {
   }, [location]);
 
   const categories = [
-    { name: "Category 1", color: COLORS[0] },
-    { name: "Category 2", color: COLORS[1] },
-    { name: "Category 3", color: COLORS[2] },
+    { name: "Default", color: COLORS[0] },
+    { name: "VIP", color: COLORS[1] },
+    { name: "Premium", color: COLORS[2] },
   ];
 
   const [selectedCat, setSelectedCat] = useState(categories[0].name);
@@ -115,14 +115,14 @@ export default function TicketCategoryEdit() {
           </Box>
           <Stack direction="row" spacing={1}>
             <Button color="inherit" onClick={() => navigate("/login")}>
-              Giriş
+              Login
             </Button>
             <Button
               variant="outlined"
               color="inherit"
               onClick={() => navigate("/signin")}
             >
-              Kayıt Ol
+              Sign In
             </Button>
           </Stack>
         </Toolbar>

@@ -38,10 +38,10 @@ export default function AddVenue() {
   // basit validasyon
   const validate = () => {
     const e = {};
-    if (!form.venue_name.trim()) e.venue_name = "Mekan adı gerekli";
-    if (!form.city.trim())       e.city        = "Şehir gerekli";
-    if (form.rows < 1)           e.rows        = "Satır sayısı en az 1 olmalı";
-    if (form.columns < 1)        e.columns     = "Sütun sayısı en az 1 olmalı";
+    if (!form.venue_name.trim()) e.venue_name = "Venue name required";
+    if (!form.city.trim())       e.city        = "City name required";
+    if (form.rows < 1)           e.rows        = "At most 1 row required";
+    if (form.columns < 1)        e.columns     = "At most 1 column required";
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -51,11 +51,11 @@ export default function AddVenue() {
     try {
       // gerçek API çağrısı yerine mock
       // await fetch('/api/venues', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(form) });
-      setSnackbarInfo({ severity: 'success', message: 'Mekan başarıyla eklendi' });
+      setSnackbarInfo({ severity: 'success', message: 'Venue added successfully' });
       setOpenSnackbar(true);
       setTimeout(() => navigate('/organizer/venues'), 1200);
     } catch (err) {
-      setSnackbarInfo({ severity: 'error', message: 'Mekan eklenirken hata oluştu' });
+      setSnackbarInfo({ severity: 'error', message: 'Error occured when adding venue' });
       setOpenSnackbar(true);
     }
   };
@@ -75,21 +75,21 @@ export default function AddVenue() {
             <TextField
               fullWidth
               size="small"
-              placeholder="Mekan arayın..."
+              placeholder="Search venue..."
               disabled
               sx={{ backgroundColor: 'white', borderRadius: 3, '& .MuiOutlinedInput-root fieldset': { border: 'none' } }}
             />
           </Box>
           <Stack direction="row" spacing={1}>
-            <Button color="inherit" onClick={() => navigate('/login')}>Üye Girişi</Button>
-            <Button variant="outlined" color="inherit" onClick={() => navigate('/signin')}>Üye Ol</Button>
+            <Button color="inherit" onClick={() => navigate('/login')}>Login</Button>
+            <Button variant="outlined" color="inherit" onClick={() => navigate('/signin')}>Sign In</Button>
           </Stack>
         </Toolbar>
       </AppBar>
 
       <Container sx={{ my: 4, mb: 6 }}>
         <Typography variant="h4" gutterBottom>
-          Yeni Mekan Ekle
+          Add New Venue
         </Typography>
 
         <Paper sx={{ p: 4, maxWidth: 600, mx: 'auto' }}>
@@ -106,7 +106,7 @@ export default function AddVenue() {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Şehir"
+                label="City"
                 fullWidth
                 value={form.city}
                 onChange={handleChange('city')}
@@ -116,7 +116,7 @@ export default function AddVenue() {
             </Grid>
             <Grid item xs={12} sm={6}>
               <TextField
-                label="Adres"
+                label="Address"
                 fullWidth
                 value={form.address}
                 onChange={handleChange('address')}
@@ -124,7 +124,7 @@ export default function AddVenue() {
             </Grid>
             <Grid item xs={6} sm={3}>
               <TextField
-                label="Satır Sayısı"
+                label="Row Number"
                 type="number"
                 fullWidth
                 value={form.rows}
@@ -135,7 +135,7 @@ export default function AddVenue() {
             </Grid>
             <Grid item xs={6} sm={3}>
               <TextField
-                label="Sütun Sayısı"
+                label="Column Number"
                 type="number"
                 fullWidth
                 value={form.columns}
@@ -146,7 +146,7 @@ export default function AddVenue() {
             </Grid>
             <Grid item xs={12}>
               <TextField
-                label="Açıklama"
+                label="Description"
                 fullWidth
                 multiline
                 rows={3}
@@ -156,8 +156,8 @@ export default function AddVenue() {
             </Grid>
             <Grid item xs={12} sx={{ textAlign: 'right' }}>
               <Stack direction="row" spacing={2} justifyContent="flex-end">
-                <Button variant="outlined" onClick={() => navigate('/organizer/venues')}>İptal</Button>
-                <Button variant="contained" onClick={handleSave}>Kaydet</Button>
+                <Button variant="outlined" onClick={() => navigate('/organizer/venues')}>Cancel</Button>
+                <Button variant="contained" onClick={handleSave}>Save</Button>
               </Stack>
             </Grid>
           </Grid>

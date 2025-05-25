@@ -12,10 +12,7 @@ import CreateEvent from "./Organizer/CreateEvent";
 import OrganizerDashboard from "./Organizer/OrganizerDashboard";
 import ManageEvents from "./Organizer/ManageEvents";
 import TicketCategoryEdit from "./Organizer/TicketCategoryEdit";
-import VenueManagement from "./Organizer/VenueManagement";
 import AddVenue from "./Organizer/AddVenue";
-import SeatingConfig from "./Organizer/SeatingConfig";
-import SalesAnalytics from "./Organizer/SalesAnalytics";
 import AuthRoute from "./AuthRoute";
 import GroupedTicketsPage from "./GroupedTicketsPage";
 import OrganizerPage from "./OrganizerPage";
@@ -154,34 +151,10 @@ function App() {
           }
         />
         <Route
-          path="/organizer/venues"
-          element={
-            <AuthRoute requireOrganizer={true}>
-              <VenueManagement />
-            </AuthRoute>
-          }
-        />
-        <Route
           path="/organizer/venues/new"
           element={
             <AuthRoute requireOrganizer={true}>
               <AddVenue />
-            </AuthRoute>
-          }
-        />
-        <Route
-          path="/organizer/venues/:id/seating"
-          element={
-            <AuthRoute requireOrganizer={true}>
-              <SeatingConfig />
-            </AuthRoute>
-          }
-        />
-        <Route
-          path="/organizer/reports/sales"
-          element={
-            <AuthRoute requireOrganizer={true}>
-              <SalesAnalytics />
             </AuthRoute>
           }
         />
