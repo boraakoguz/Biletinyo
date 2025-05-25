@@ -1,3 +1,5 @@
+import "./main-header.css";
+
 import React, { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Container, Typography, Paper, Box, Button, Divider } from "@mui/material";
@@ -58,16 +60,7 @@ export default function GroupedTicketsPage() {
             px: 6,
           }}
         >
-          <Typography
-            variant="h4"
-            sx={{
-              textDecoration: "underline",
-              fontWeight: "bold",
-              fontStyle: "italic",
-            }}
-          >
-            Biletinyo
-          </Typography>
+          <a href="/" className={"header-main"}>Biletinyo</a>
           <Button color="inherit" onClick={() => navigate(-1)} sx={{ color: "white" }}>
             Back
           </Button>

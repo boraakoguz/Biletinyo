@@ -1,3 +1,5 @@
+import "./main-header.css";
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
@@ -173,18 +175,7 @@ function ProfilePage() {
             px: 6,
           }}
         >
-          <Typography
-            variant="h4"
-            sx={{
-              textDecoration: "underline",
-              fontWeight: "bold",
-              fontStyle: "italic",
-              cursor: "pointer",
-            }}
-            onClick={() => navigate("/")}
-          >
-            Biletinyo
-          </Typography>
+          <a href="/" className={"header-main"}>Biletinyo</a>
           <Button color="inherit" variant="text" sx={{ color: "white" }} onClick={() => navigate(-1)}>
             Back
           </Button>

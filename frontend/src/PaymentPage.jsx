@@ -1,3 +1,5 @@
+import "./main-header.css";
+
 import React, { useEffect, useState } from "react";
 import {
   Box,
@@ -157,12 +159,7 @@ export default function PaymentPage() {
           color: "white",
         }}
       >
-        <Typography
-          variant="h4"
-          sx={{ textDecoration: "underline", fontWeight: "bold", fontStyle: "italic" }}
-        >
-          Biletinyo
-        </Typography>
+        <a href="/" className={"header-main"}>Biletinyo</a>
       </Box>
 
       <Box sx={{ p: 3, mt: 8, display: "flex", justifyContent: "center" }}>
