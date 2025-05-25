@@ -267,3 +267,22 @@ def get_attendees():
     finally:
         if conn:
             db_pool.putconn(conn)
+
+@bp.route("/organizer/<int:organizer_id>/revenue", methods=["GET"])
+def get_organizer_revenue(organizer_id):
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT COALESCE(SUM(revenue), 0)
+                FROM event
+                WHERE organizer_id = %s;
+            """, (organizer_id,))
+            total_revenue = cur.fetchone()[0]
+
+        return jsonify({"organizer_id": organizer_id, "total_revenue": total_revenue}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)

@@ -54,33 +54,39 @@ export default function AdminVenueSeatMap() {
       </Typography>
 
       <Paper sx={{ p: 3, mt: 2 }}>
-        <Grid container direction="column" spacing={1}>
-          {seatMap.map((row, rowIdx) => (
-            <Grid
-              container
-              item
-              key={rowIdx}
-              spacing={1}
-              justifyContent="center"
-              alignItems="center"
-            >
-              {row.map((seat, colIdx) => (
-                <Grid item key={`${rowIdx}-${colIdx}`}>
-                  <Box
-                    onClick={() => toggleSeat(rowIdx, colIdx)}
-                    sx={{
-                      width: 40,
-                      height: 40,
-                      bgcolor: seat === 1 ? "#1976d2" : "#ccc",
-                      borderRadius: 1,
-                      cursor: "pointer",
-                    }}
-                  />
+        <Paper sx={{ p: 3, mt: 2, overflowX: "auto" }}>
+          <Box sx={{ minWidth: cols * 45 }}>
+            {" "}
+            {/* ensures enough space */}
+            <Grid container direction="column" spacing={1}>
+              {seatMap.map((row, rowIdx) => (
+                <Grid
+                  container
+                  item
+                  key={rowIdx}
+                  spacing={1}
+                  wrap="nowrap" // prevents row from wrapping
+                  alignItems="center"
+                >
+                  {row.map((seat, colIdx) => (
+                    <Grid item key={`${rowIdx}-${colIdx}`}>
+                      <Box
+                        onClick={() => toggleSeat(rowIdx, colIdx)}
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          bgcolor: seat === 1 ? "#1976d2" : "#ccc",
+                          borderRadius: 1,
+                          cursor: "pointer",
+                        }}
+                      />
+                    </Grid>
+                  ))}
                 </Grid>
               ))}
             </Grid>
-          ))}
-        </Grid>
+          </Box>
+        </Paper>
 
         <Box textAlign="right" mt={3}>
           <Button

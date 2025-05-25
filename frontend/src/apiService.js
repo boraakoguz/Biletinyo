@@ -155,6 +155,11 @@ export const apiService = {
   },
 
 
+  getOrganizerRevenue: async (organizerId) => {
+    const res = await fetch(`${API_BASE_URL}/users/organizer/${organizerId}/revenue`);
+    if (!res.ok) throw new Error("Failed to fetch organizer revenue");
+    return res.json();
+  },
 
   getEventsByOrganizer: async (organizerId) => {
     const res = await fetch(`${API_BASE_URL}/events/?organizer_id=${organizerId}`);
