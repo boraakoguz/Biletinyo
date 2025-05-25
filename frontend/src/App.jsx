@@ -31,9 +31,6 @@ import AdminUserManagement from "./Admin/UserManagement";
 import AdminReports from "./Admin/AdminReports";
 import AdminPayments from "./Admin/AdminPayments";
 import ForgotPassword from "./ForgotPassword";
-import AdminUserManagement from "./Admin/UserManagement";
-import AdminReports from "./Admin/AdminReports";
-import AdminPayments from "./Admin/AdminPayments";
 import AdminVenueSeatMap from "./Admin/AdminVenueSeatMap";
 import HomeRedirect from "./HomeRedirect";
 
