@@ -336,7 +336,7 @@ def sell_ticket(ticket_id):
                             ticket_state = %s,
                             attendee_id  = %s
                         WHERE ticket_id  = %s;""",
-                        (new_payment_id, user_id, definitions.TICKET_STATE_SOLD, ticket_id)
+                        (new_payment_id, definitions.TICKET_STATE_SOLD, user_id, ticket_id)
                         )
 
             cur.execute("""

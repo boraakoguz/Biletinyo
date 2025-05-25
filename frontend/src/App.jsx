@@ -7,7 +7,6 @@ import EventPage from "./EventPage";
 import CommentPage from "./CommentPage";
 import GuestPage from "./GuestPage";
 import Seating from "./Seating";
-import TicketPage from "./TicketPage";
 import PaymentPage from "./PaymentPage";
 import CreateEvent from "./Organizer/CreateEvent";
 import OrganizerDashboard from "./Organizer/OrganizerDashboard";
@@ -31,7 +30,7 @@ import AdminPendingEvents from "./Admin/AdminPendingEvents";
 import AdminUserManagement  from "./Admin/UserManagement";
 import AdminReports           from "./Admin/AdminReports";
 import AdminPayments        from "./Admin/AdminPayments";
-
+import ForgotPassword from "./ForgotPassword";
 
 function App() {
   return (
@@ -44,7 +43,7 @@ function App() {
         <Route path="/event/:id" element={<EventPage />} />
         <Route path="/event/comment" element={<CommentPage />} />
         <Route path="/organizer/:id" element={<OrganizerPage />} />
-
+        <Route path="/forgot-password" element={<ForgotPassword />} />
         {/* Protected Routes - Require Authentication */}
         <Route
           path="/profile"
