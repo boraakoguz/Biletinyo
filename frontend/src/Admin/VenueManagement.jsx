@@ -190,7 +190,7 @@ export default function AdminVenueManagement() {
 
       <Container sx={{ mt: 4, mb: 6 }}>
         <Typography variant="h4" gutterBottom>
-          Venue Yönetimi
+          Venue Management
         </Typography>
         <Grid container spacing={3}>
           {filtered.map((v) => (

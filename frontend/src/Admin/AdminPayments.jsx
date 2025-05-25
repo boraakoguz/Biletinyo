@@ -54,9 +54,6 @@ export default function AdminPayments() {
           >
             Biletinyo Admin
           </Typography>
-          <Typography variant="body2" sx={{ color: "white" }}>
-            All Ticket Sales Reports
-          </Typography>
         </Toolbar>
       </AppBar>
 
@@ -69,7 +66,7 @@ export default function AdminPayments() {
           {payloads.map((p, idx) => (
             <Card key={idx} sx={{ boxShadow: 2 }}>
               <CardContent>
-                <Typography variant="h6">Ticket #{p.ticket_id}</Typography>
+                <Typography variant="h6">Ticket #{p.payment_id}</Typography>
                 <Divider sx={{ my: 1 }} />
                 <Typography>
                   <strong>Amount:</strong> {p.amount} ₺

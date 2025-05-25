@@ -73,7 +73,6 @@ const ManageEvents = () => {
     );
   }
 
-  // Ara filtrelemesi
   const filtered = events.filter(
     (e) =>
       e.event_title.toLowerCase().includes(search.toLowerCase()) ||
@@ -104,6 +103,10 @@ const ManageEvents = () => {
           My Events
         </Typography>
 
+        <Button variant="outlined" onClick={() => navigate("/")} sx={{ mb: 2 }}>
+          Back
+        </Button>
+
         <Grid container spacing={3}>
           {filtered.map((evt) => (
             <Grid item xs={12} sm={6} md={4} key={evt.event_id}>
@@ -118,7 +121,7 @@ const ManageEvents = () => {
                   </Typography>
                   <Box sx={{ mt: 1 }}>
                     <Chip
-                      label={`${evt.occupied} / ${evt.capacity} fullness`}
+                      label={`${evt.occupied} / ${evt.capacity} Sold`}
                       size="small"
                       color={
                         evt.capacity > 0 && evt.occupied / evt.capacity > 0.8
