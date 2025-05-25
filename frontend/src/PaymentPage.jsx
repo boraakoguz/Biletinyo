@@ -38,7 +38,8 @@ export default function PaymentPage() {
   }, [userId]);
 
   useEffect(() => {
-    if (!eventId) return;
+    if (!eventId || selectedTicketIds.length === 0) return;
+    setLoading(true);
     Promise.all([
       fetch(`http://localhost:8080/api/events/${eventId}`).then((r) => r.json()),
       Promise.all(
@@ -53,7 +54,7 @@ export default function PaymentPage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [eventId, selectedTicketIds]);
+  }, [eventId]);
 
   const totalPrice = tickets.reduce((s, t) => s + (t.price || 0), 0);
   const seatNames = (JSON.parse(localStorage.getItem("selected_ticket_names")) || []).join(", ");
