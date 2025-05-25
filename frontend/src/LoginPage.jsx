@@ -131,7 +131,7 @@ function LoginPage() {
             >
               {loading ? "Logging in..." : "Login"}
             </Button>
-            <Button type="button" variant="text" color="zort">
+            <Button type="button" variant="text" color="zort" onClick={() => navigate("/forgot-password")}>
               Forgot Password?
             </Button>
             <Button
