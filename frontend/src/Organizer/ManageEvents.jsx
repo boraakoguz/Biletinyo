@@ -35,20 +35,24 @@ const ManageEvents = () => {
       try {
         const data = await apiService.getEventsByOrganizer(userId);
 
-        // Fetch capacities in parallel
-        const capacities = await Promise.all(
-          data.map((evt) =>
-            apiService
-              .getEventCapacityById(evt.event_id)
-              .then((cap) => cap.capacity)
-              .catch(() => 0)
-          )
-        );
+        const enriched = await Promise.all(
+          data.map(async (evt) => {
+            const [capacityData, occupiedData] = await Promise.all([
+              apiService
+                .getEventCapacityById(evt.event_id)
+                .catch(() => ({ capacity: 0 })),
+              apiService
+                .getEventOccupiedSeatsById(evt.event_id)
+                .catch(() => ({ occupied: 0 })),
+            ]);
 
-        const enriched = data.map((evt, idx) => ({
-          ...evt,
-          capacity: capacities[idx],
-        }));
+            return {
+              ...evt,
+              capacity: capacityData.capacity,
+              occupied: occupiedData.occupied,
+            };
+          })
+        );
 
         setEvents(enriched);
       } catch (err) {
@@ -141,10 +145,10 @@ const ManageEvents = () => {
                   {/* Doluluk oranı göstergesi */}
                   <Box sx={{ mt: 1 }}>
                     <Chip
-                      label={`${evt.tickets_sold} / ${evt.capacity} doluluk`}
+                      label={`${evt.occupied} / ${evt.capacity} doluluk`}
                       size="small"
                       color={
-                        evt.tickets_sold / evt.capacity > 0.8
+                        evt.capacity > 0 && evt.occupied / evt.capacity > 0.8
                           ? "error"
                           : "primary"
                       }
