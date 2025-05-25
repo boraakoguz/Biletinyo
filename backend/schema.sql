@@ -149,22 +149,6 @@ AFTER INSERT ON users
 FOR EACH ROW
 EXECUTE FUNCTION auto_create_attendee();
 
-CREATE OR REPLACE FUNCTION create_organizer_record()
-RETURNS TRIGGER AS $$
-BEGIN
-  IF NEW.user_type = 1 THEN
-    INSERT INTO organizer (user_id, organization_name)
-    VALUES (NEW.user_id, NEW.name);
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-CREATE TRIGGER trg_after_insert_users_organizer
-  AFTER INSERT ON users
-  FOR EACH ROW
-  EXECUTE FUNCTION create_organizer_record();
-
 INSERT INTO users (name, email, password, user_type, phone, birth_date) VALUES
 ('User johnson', 'user@user.com', '$2b$12$KKprei.9FfMVomfUWlYYAu8icc7TS58KesyN11GQpI.2eYteMWUXC', 0, '555-1234', '1995-06-15'),
 ('Organizer Smith', 'org@org.com', '$2b$12$Srau6Ny7nGQQQ1tHeiBfUOsuinZZOdyplF2c831mVqlUgFqcetwmq', 1, '555-5678', '2000-06-15'),
@@ -203,7 +187,11 @@ INSERT INTO venue (capacity, location, venue_name, venue_description, city, seat
   (120, 'Alsancak, İzmir',       'Harbor Arena',      'Waterfront open-air arena.',           'Izmir',
    '{{1,1,1,1,1},{1,1,1,1,1}}',                                      1),
   (50,  'Odunpazarı, Eskişehir', 'Pavilion A',        'Small intimate performance space.',    'Eskişehir',
-   '{{1,1,1},{1,1,1}}',                                              1);
+   '{{1,1,1},{1,1,1}}',                                              1), 
+  (150, 'Konak, İzmir',      'Culture Dome',      'Modern cultural events center.',           'İzmir',
+   '{{1,1,1,1},{1,1,1,1}}',                                        0),
+  (250, 'Lara, Antalya',     'Sunset Pavilion',   'Outdoor pavilion with sea views.',         'Antalya',
+   '{{1,1,1},{1,1,1},{1,1,1}}',                                    0);
 
 INSERT INTO event (
   organizer_id, venue_id, event_title, event_time, event_status,
