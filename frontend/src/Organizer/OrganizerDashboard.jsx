@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import apiService from "../apiService";
+
 const OrganizerDashboard = () => {
   const [events, setEvents] = useState([]);
   const [summary, setSummary] = useState({ totalSales: 0, totalRevenue: 0 });
@@ -62,6 +63,7 @@ const OrganizerDashboard = () => {
     localStorage.removeItem("user");
     navigate("/");
   };
+
   const raw = localStorage.getItem("user");
   const user = raw ? JSON.parse(raw) : null;
   const userId = user ? Number(user.id) : null;
@@ -81,7 +83,6 @@ const OrganizerDashboard = () => {
       try {
         const evs = await apiService.getEventsByOrganizer(userId);
         setEvents(evs);
-
         await fetchFollowerCount();
       } catch (e) {
         console.error(e);
@@ -122,9 +123,6 @@ const OrganizerDashboard = () => {
     );
   }
 
-  // Bugün başlangıcı
-
-  // Arama ve tarih filtreleri
   const filtered = events.filter((e) =>
     e.event_title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -202,19 +200,17 @@ const OrganizerDashboard = () => {
           </Box>
           <Stack direction="row" spacing={1}>
             {isLoggedIn ? (
-              <>
-                <Button
-                  variant="outlined"
-                  color="inherit"
-                  onClick={handleLogout}
-                  sx={{
-                    borderColor: "white",
-                    "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
-                  }}
-                >
-                  Logout
-                </Button>
-              </>
+              <Button
+                variant="outlined"
+                color="inherit"
+                onClick={handleLogout}
+                sx={{
+                  borderColor: "white",
+                  "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
+                }}
+              >
+                Logout
+              </Button>
             ) : (
               <>
                 <Button
@@ -243,7 +239,6 @@ const OrganizerDashboard = () => {
         </Toolbar>
       </AppBar>
 
-      {/* İçerik */}
       <Container sx={{ mt: 4 }}>
         <Typography variant="h4" gutterBottom>
           Organizer Dashboard
@@ -252,23 +247,24 @@ const OrganizerDashboard = () => {
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={4}>
           <Card sx={{ flex: 1, minWidth: 150 }}>
             <CardContent>
-              <Typography variant="subtitle1">Toplam Satış</Typography>
+              <Typography variant="subtitle1">Total Sales</Typography>
               <Typography variant="h5">{summary.totalSales}</Typography>
             </CardContent>
           </Card>
           <Card sx={{ flex: 1, minWidth: 150 }}>
             <CardContent>
-              <Typography variant="subtitle1">Toplam Gelir</Typography>
+              <Typography variant="subtitle1">Total Revenue</Typography>
               <Typography variant="h5">{summary.totalRevenue} TL</Typography>
             </CardContent>
           </Card>
           <Card sx={{ flex: 1, minWidth: 150 }}>
             <CardContent>
-              <Typography variant="subtitle1">Takipçi Sayısı</Typography>
+              <Typography variant="subtitle1">Followers</Typography>
               <Typography variant="h5">{followerCount}</Typography>
             </CardContent>
           </Card>
         </Stack>
+
         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
           <Button
             variant="contained"
@@ -278,6 +274,7 @@ const OrganizerDashboard = () => {
             Create New Event
           </Button>
         </Box>
+
         <Typography variant="h5" gutterBottom>
           Upcoming Events
         </Typography>
@@ -301,6 +298,7 @@ const OrganizerDashboard = () => {
         ) : (
           <Typography color="text.secondary">No Past Events.</Typography>
         )}
+
         <Typography variant="h5" gutterBottom>
           Requested Venues
         </Typography>
@@ -329,7 +327,6 @@ const OrganizerDashboard = () => {
                     <Typography variant="h6" gutterBottom>
                       {v.venue_name}
                     </Typography>
-
                     <Typography
                       variant="body2"
                       color="text.secondary"
@@ -338,7 +335,7 @@ const OrganizerDashboard = () => {
                       City: {v.city}
                     </Typography>
                     <Typography variant="body2">
-                      Description: {v.venue_description || "Açıklama yok"}
+                      Description: {v.venue_description || "No description"}
                     </Typography>
                   </CardContent>
                 </Card>
@@ -347,7 +344,7 @@ const OrganizerDashboard = () => {
           </Grid>
         ) : (
           <Typography color="text.secondary" mb={4}>
-            No requested venue
+            No requested venues.
           </Typography>
         )}
       </Container>
