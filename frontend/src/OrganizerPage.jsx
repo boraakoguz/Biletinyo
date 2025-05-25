@@ -31,7 +31,7 @@ export default function OrganizerPage() {
     try {
       const counts = await apiService.getFollowerCounts();
       const count = counts.find((c) => c.organizer_id === Number(id));
-      if (count) setFollowerCount(count.follower_count);
+      setFollowerCount(count ? count.follower_count : 0); // <-- fix
     } catch (err) {
       console.error("Error fetching follower count:", err);
     }
@@ -265,7 +265,7 @@ export default function OrganizerPage() {
           {org.email} • {org.phone}
         </Typography>
         <Typography variant="body2" color="text.secondary" mb={4}>
-          {followerCount} follower{followerCount === 1 ? "" : "s"}
+          {followerCount} followers
         </Typography>
         {isLoggedIn && (
           <Box sx={{ mb: 3 }}>
