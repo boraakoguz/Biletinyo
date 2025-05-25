@@ -36,6 +36,19 @@ function ForgotPassword() {
 
   const handleSendCode = async () => {
     setLoading(true);
+    try {
+      await apiService.sendResetCode(email);
+      alert("Code sent to your email.");
+    } catch (error) {
+      console.error("Error sending code:", error.message);
+      alert("Failed to send code.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleConfirm = async () => {
+    
   };
 
   return (
@@ -74,9 +87,7 @@ function ForgotPassword() {
             </Alert>
           )}
 
-          <Box
-            sx={{ display: "flex", flexDirection: "column", gap: 2 }}
-          >
+          <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
             <TextField
               label="Email"
               variant="outlined"
@@ -106,11 +117,18 @@ function ForgotPassword() {
               value={newPassword}
             />
             <Button
+              variant="contained"
+              color="success"
+              fullWidth
+              onClick={handleConfirm}
+            >
+              Confirm
+            </Button>
+            <Button
               type="button"
               variant="outlined"
               color="primary"
               fullWidth
-              sx={{ mt: 1 }}
               onClick={() => navigate("/login")}
             >
               Back
@@ -121,4 +139,5 @@ function ForgotPassword() {
     </Box>
   );
 }
+
 export default ForgotPassword;
