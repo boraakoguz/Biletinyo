@@ -203,7 +203,7 @@ export default function PaymentPage() {
 
                 <Typography fontWeight={700}>Load Amount</Typography>
                 <TextField
-                  placeholder="e.g. 100.00"
+                  placeholder="TL"
                   size="small"
                   fullWidth
                   value={amount}
@@ -220,7 +220,11 @@ export default function PaymentPage() {
               </Stack>
             </Card>
           </Stack>
-
+          {method === "Wallet" && balance < totalPrice && (
+            <Typography color="error" sx={{ mt: 1 }}>
+              Your account balance is insufficient.
+            </Typography>
+            )}
           <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
             <Button variant="contained" size="large" onClick={handlePurchase}>
               Confirm Payment

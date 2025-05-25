@@ -100,6 +100,24 @@ export const apiService = {
     return res.json();
   },
 
+  updateEventPrices: async (eventId, prices) => {
+    const res = await fetch(`http://localhost:8080/api/events/${eventId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        default_ticket_price: prices.cat1,
+        vip_ticket_price: prices.cat2,
+        premium_ticket_price: prices.cat3,
+      }),
+    });
+    if (!res.ok) {
+      throw new Error("Failed to update prices");
+    }
+    return res.json();
+  },
+
   createEvent: async (eventData) => {
     const res = await fetchWithAuth('/events/', {
       method: 'POST',
@@ -133,6 +151,13 @@ export const apiService = {
     const qs = new URLSearchParams(params).toString();  // user_type=1&search=abc
     const res = await fetch(`${API_BASE_URL}/users/?${qs}`);
     if (!res.ok) throw new Error("Failed to fetch users");
+    return res.json();
+  },
+
+
+  getOrganizerRevenue: async (organizerId) => {
+    const res = await fetch(`${API_BASE_URL}/users/organizer/${organizerId}/revenue`);
+    if (!res.ok) throw new Error("Failed to fetch organizer revenue");
     return res.json();
   },
 
@@ -263,6 +288,12 @@ export const apiService = {
     }
   
     return res.text();
+  },
+
+  getPendingVenueCount: async () => {
+    const res = await fetch("http://localhost:8080/api/venues/request/count");
+    if (!res.ok) throw new Error("Failed to fetch count");
+    return res.json();
   },
 
   acceptVenueRequest: async (venueId) => {

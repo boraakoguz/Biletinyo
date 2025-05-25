@@ -28,6 +28,11 @@ const OrganizerDashboard = () => {
   const [requestedVenues, setRequestedVenues] = useState([]);
 
   useEffect(() => {
+    localStorage.removeItem("draftEvent");
+    localStorage.removeItem("draftImages");
+  }, []);
+
+  useEffect(() => {
     (async () => {
       try {
         const venues = await apiService.getRequestedVenues();
@@ -77,7 +82,7 @@ const OrganizerDashboard = () => {
         const evs = await apiService.getEventsByOrganizer(userId);
         setEvents(evs);
 
-        await fetchFollowerCount(); // corrected
+        await fetchFollowerCount();
       } catch (e) {
         console.error(e);
       } finally {
@@ -85,13 +90,24 @@ const OrganizerDashboard = () => {
       }
     })();
   }, [userId]);
+
   useEffect(() => {
     (async () => {
       try {
-        const evs = await apiService.getEventsByOrganizer(userId);
+        const [evs, revenueData] = await Promise.all([
+          apiService.getEventsByOrganizer(userId),
+          apiService.getOrganizerRevenue(userId),
+        ]);
+
         setEvents(evs);
+        setSummary((prev) => ({
+          ...prev,
+          totalRevenue: revenueData.total_revenue,
+        }));
+
+        await fetchFollowerCount();
       } catch (e) {
-        console.error(e);
+        console.error("Failed to load dashboard data", e);
       } finally {
         setLoading(false);
       }
@@ -129,7 +145,9 @@ const OrganizerDashboard = () => {
         <CardContent sx={{ flexGrow: 1 }}>
           <Typography variant="h6">{evt.event_title}</Typography>
           <Typography variant="body2" color="text.secondary">
-            {new Date(evt.event_date).toLocaleString("tr-TR")}
+            {new Date(`${evt.event_date}T${evt.event_time}`).toLocaleString(
+              "tr-TR"
+            )}
           </Typography>
           <Typography variant="body2" color="text.secondary">
             {evt.venue_name}, {evt.location}
@@ -142,16 +160,7 @@ const OrganizerDashboard = () => {
               variant="contained"
               onClick={() => navigate(`/organizer/events/${evt.event_id}`)}
             >
-              Yönet
-            </Button>
-            <Button
-              size="small"
-              variant="outlined"
-              onClick={() =>
-                navigate(`/organizer/events/${evt.event_id}/categories`)
-              }
-            >
-              Kategorileri Düzenle
+              Manage
             </Button>
           </Stack>
         </Box>
@@ -161,7 +170,6 @@ const OrganizerDashboard = () => {
 
   return (
     <>
-      {/* Global Header */}
       <AppBar position="static" color="primary" elevation={4}>
         <Toolbar sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
           <Typography

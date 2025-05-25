@@ -3,7 +3,7 @@ import { Box, Container, Typography, Button, Paper, Grid } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
 import apiService from "../apiService";
 
-export default function VenueSeatMap() {
+export default function AdminVenueSeatMap() {
   const navigate = useNavigate();
   const { state } = useLocation();
   const { venueName, city, location, venue_description, rows, cols } =
@@ -40,7 +40,7 @@ export default function VenueSeatMap() {
     try {
       await apiService.requestVenue(venueData);
       alert("Venue request submitted!");
-      navigate("/organizer/events");
+      navigate("/");
     } catch (err) {
       console.error("Error requesting venue:", err);
       alert("Venue request failed: " + err.message);
@@ -52,54 +52,40 @@ export default function VenueSeatMap() {
       <Typography variant="h5" gutterBottom>
         Seat Map for {venueName} ({city})
       </Typography>
+
       <Paper sx={{ p: 3, mt: 2 }}>
-        <Box sx={{ mb: 2, display: "flex", justifyContent: "center", gap: 4 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Box
-              sx={{
-                width: 20,
-                height: 20,
-                bgcolor: "#1976d2",
-                borderRadius: 1,
-              }}
-            />
-            <Typography variant="body2">Available</Typography>
-          </Box>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Box
-              sx={{ width: 20, height: 20, bgcolor: "#ccc", borderRadius: 1 }}
-            />
-            <Typography variant="body2">Unavailable</Typography>
-          </Box>
-        </Box>
         <Paper sx={{ p: 3, mt: 2, overflowX: "auto" }}>
-          <Grid container direction="column" spacing={1}>
-            {seatMap.map((row, rowIdx) => (
-              <Grid
-                container
-                item
-                key={rowIdx}
-                spacing={1}
-                justifyContent="center"
-                alignItems="center"
-              >
-                {row.map((seat, colIdx) => (
-                  <Grid item key={`${rowIdx}-${colIdx}`}>
-                    <Box
-                      onClick={() => toggleSeat(rowIdx, colIdx)}
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        bgcolor: seat === 1 ? "#1976d2" : "#ccc",
-                        borderRadius: 1,
-                        cursor: "pointer",
-                      }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            ))}
-          </Grid>
+          <Box sx={{ minWidth: cols * 45 }}>
+            {" "}
+            {/* ensures enough space */}
+            <Grid container direction="column" spacing={1}>
+              {seatMap.map((row, rowIdx) => (
+                <Grid
+                  container
+                  item
+                  key={rowIdx}
+                  spacing={1}
+                  wrap="nowrap" // prevents row from wrapping
+                  alignItems="center"
+                >
+                  {row.map((seat, colIdx) => (
+                    <Grid item key={`${rowIdx}-${colIdx}`}>
+                      <Box
+                        onClick={() => toggleSeat(rowIdx, colIdx)}
+                        sx={{
+                          width: 40,
+                          height: 40,
+                          bgcolor: seat === 1 ? "#1976d2" : "#ccc",
+                          borderRadius: 1,
+                          cursor: "pointer",
+                        }}
+                      />
+                    </Grid>
+                  ))}
+                </Grid>
+              ))}
+            </Grid>
+          </Box>
         </Paper>
 
         <Box textAlign="right" mt={3}>
