@@ -83,7 +83,7 @@ export default function PaymentPage() {
       const ticketId = selectedTicketIds[i];
       const body = {
         user_id: userId,
-        payment_method: method === "Wallet" ? 0 : 1,
+        payment_method: method === "Wallet" ? 1 : 0,
         guest_info: {
           guest_name: guests[i]?.name,
           guest_mail: guests[i]?.mail,
