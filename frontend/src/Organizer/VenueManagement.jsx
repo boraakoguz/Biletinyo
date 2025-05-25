@@ -23,7 +23,7 @@ export default function VenueManagement() {
   const [search, setSearch] = useState("");
 
   useEffect(() => {
-    // Mock API 
+    // Mock API
     setTimeout(() => {
       setVenues([
         { venue_id: 1, venue_name: "Bilkent Konser Salonu", city: "Ankara" },
@@ -33,9 +33,10 @@ export default function VenueManagement() {
     }, 500);
   }, []);
 
-  const filtered = venues.filter(v =>
-    v.venue_name.toLowerCase().includes(search.toLowerCase()) ||
-    v.city.toLowerCase().includes(search.toLowerCase())
+  const filtered = venues.filter(
+    (v) =>
+      v.venue_name.toLowerCase().includes(search.toLowerCase()) ||
+      v.city.toLowerCase().includes(search.toLowerCase())
   );
 
   if (loading) {
@@ -64,7 +65,7 @@ export default function VenueManagement() {
               size="small"
               placeholder="Mekan ara..."
               value={search}
-              onChange={e => setSearch(e.target.value)}
+              onChange={(e) => setSearch(e.target.value)}
               sx={{
                 backgroundColor: "white",
                 borderRadius: 3,
@@ -112,11 +113,17 @@ export default function VenueManagement() {
                     {venue.city}
                   </Typography>
                 </CardContent>
-                <Stack direction="row" spacing={1} sx={{ p: 2, pt: 0, justifyContent: "flex-end" }}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  sx={{ p: 2, pt: 0, justifyContent: "flex-end" }}
+                >
                   <Button
                     size="small"
                     variant="contained"
-                    onClick={() => navigate(`/organizer/venues/${venue.venue_id}/seating`)}
+                    onClick={() =>
+                      navigate(`/organizer/venues/${venue.venue_id}/seating`)
+                    }
                   >
                     Oturma Planı
                   </Button>
@@ -129,7 +136,18 @@ export default function VenueManagement() {
           ))}
           {/* Yeni Mekan Ekle Kartı */}
           <Grid item xs={12} sm={6} md={4}>
-            <Card sx={{ boxShadow: 3, height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', p: 4, cursor: 'pointer' }} onClick={() => navigate('/organizer/venues/new')}>
+            <Card
+              sx={{
+                boxShadow: 3,
+                height: "100%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                p: 4,
+                cursor: "pointer",
+              }}
+              onClick={() => navigate("/organizer/venues/new")}
+            >
               <Typography variant="h6" color="primary">
                 + Yeni Mekan Ekle
               </Typography>

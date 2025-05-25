@@ -275,11 +275,11 @@ const OrganizerDashboard = () => {
             color="primary"
             onClick={() => navigate("/organizer/create")}
           >
-            Yeni Etkinlik Oluştur
+            Create New Event
           </Button>
         </Box>
         <Typography variant="h5" gutterBottom>
-          Yaklaşan Etkinlikler
+          Upcoming Events
         </Typography>
         {upcoming.length ? (
           <Grid container spacing={3} mb={4}>
@@ -287,7 +287,7 @@ const OrganizerDashboard = () => {
           </Grid>
         ) : (
           <Typography color="text.secondary" mb={4}>
-            Yaklaşan etkinlik yok.
+            No Upcoming Events.
           </Typography>
         )}
 
@@ -299,7 +299,7 @@ const OrganizerDashboard = () => {
             {past.map(renderEventCard)}
           </Grid>
         ) : (
-          <Typography color="text.secondary">Geçmiş etkinlik yok.</Typography>
+          <Typography color="text.secondary">No Past Events.</Typography>
         )}
         <Typography variant="h5" gutterBottom>
           Requested Venues
@@ -322,7 +322,7 @@ const OrganizerDashboard = () => {
                 >
                   <CardContent>
                     <Chip
-                      label="Waiting for Request"
+                      label="Waiting For Approval"
                       color="warning"
                       sx={{ fontSize: "1rem", fontWeight: "bold", mb: 2 }}
                     />

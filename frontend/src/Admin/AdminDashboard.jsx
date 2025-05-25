@@ -27,9 +27,10 @@ import apiService from "../apiService";
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
-  // Dummy data
-  const [pendingVenues, setPendingVenues] = useState(0);
+  const [dailySales, setDailySales] = useState(0);
+  const [weeklySales, setWeeklySales] = useState(0);
 
+  const [pendingVenues, setPendingVenues] = useState(0);
   useEffect(() => {
     const fetchPendingCount = async () => {
       try {
@@ -39,24 +40,22 @@ const AdminDashboard = () => {
         console.error("Failed to fetch pending venues count", err);
       }
     };
+
+    const fetchSalesSummary = async () => {
+      try {
+        const res = await apiService.getSalesSummary();
+        setDailySales(res.daily.count);
+        setWeeklySales(res.weekly.count);
+      } catch (err) {
+        console.error("Failed to fetch sales summary", err);
+      }
+    };
+
     fetchPendingCount();
+    fetchSalesSummary();
   }, []);
-  const [dailySales] = useState(124);
-  const [weeklySales] = useState(842);
-
-  const [recentLogins] = useState([
-    { username: "ayse@example.com", lastLogin: "2025-05-24T12:41:23" },
-    { username: "mehmet@example.com", lastLogin: "2025-05-24T11:41:23" },
-    { username: "ali@example.com", lastLogin: "2025-05-23T13:41:23" },
-  ]);
-
-  const [alerts] = useState([
-    { message: "Ödeme hatası tespit edildi", date: "2025-05-24T13:11:23" },
-    { message: "Etkinlik silinme talebi var", date: "2025-05-24T12:11:23" },
-  ]);
 
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
 
   if (loading) {
     return (
@@ -121,15 +120,15 @@ const AdminDashboard = () => {
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={4}>
           {[
             {
-              label: "Bekleyen Venue Onayları",
+              label: "Waiting Venue Requests",
               value: pendingVenues,
             },
             {
-              label: "Günlük Bilet Satışı",
+              label: "Daily Ticket Sales",
               value: dailySales,
             },
             {
-              label: "Haftalık Bilet Satışı",
+              label: "Weekly Ticket Sales",
               value: weeklySales,
             },
           ].map((item) => (
@@ -152,17 +151,17 @@ const AdminDashboard = () => {
         <Grid container spacing={3} mb={4}>
           {[
             {
-              label: "Venue Yönetimi",
+              label: "Venue Management",
               icon: <LocationOnIcon fontSize="large" />,
               to: "/admin/venues",
             },
             {
-              label: "Raporlar & Analiz",
+              label: "Reports & Analysis",
               icon: <BarChartIcon fontSize="large" />,
               to: "/admin/reports",
             },
             {
-              label: "Ödeme İzleme",
+              label: "Ticket Sales Report",
               icon: <PaymentIcon fontSize="large" />,
               to: "/admin/payments",
             },

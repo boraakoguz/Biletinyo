@@ -20,64 +20,62 @@ import { useNavigate } from "react-router-dom";
 import {
   LineChart,
   Line,
-  BarChart,
-  Bar,
   XAxis,
   YAxis,
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
+import apiService from "../apiService";
 
 export default function AdminReports() {
   const navigate = useNavigate();
   const [popularEvents, setPopularEvents] = useState([]);
-  const [topOrganizers, setTopOrganizers] = useState([]);
+  const [topRevenueEvents, setTopRevenueEvents] = useState([]);
   const [salesData, setSalesData] = useState([]);
-  const [refundData, setRefundData] = useState([]);
+  const [refundData, setRefundData] = useState([]); // still mocked
 
   useEffect(() => {
-    // Mock API data
-    setPopularEvents([
-      { title: "Rock Fest 2025", ticketsSold: 1200 },
-      { title: "Tech Summit", ticketsSold: 900 },
-      { title: "Jazz Night Live", ticketsSold: 800 },
-    ]);
-    setTopOrganizers([
-      { name: "boraakoguz", revenue: 30000 },
-      { name: "tech_org", revenue: 25000 },
-      { name: "filmclub", revenue: 20000 },
-    ]);
-    setSalesData([
-      { date: "2025-05-01", sales: 200 },
-      { date: "2025-05-05", sales: 450 },
-      { date: "2025-05-10", sales: 300 },
-      { date: "2025-05-15", sales: 600 },
-      { date: "2025-05-20", sales: 500 },
-      { date: "2025-05-25", sales: 700 },
-    ]);
-    setRefundData([
-      { category: "Müzik", rate: 5 },
-      { category: "Konferans", rate: 3 },
-      { category: "Spor", rate: 2 },
-      { category: "Tiyatro", rate: 4 },
-    ]);
+    (async () => {
+      try {
+        const topEvents = await apiService.getTopEvents();
+        const dailyRevenue = await apiService.getDailyRevenue();
+
+        setPopularEvents(
+          topEvents.map((e) => ({
+            title: e.event_title,
+            ticketsSold: e.tickets_sold,
+          }))
+        );
+
+        setTopRevenueEvents(
+          topEvents.map((e) => ({
+            title: e.event_title,
+            revenue: e.revenue,
+          }))
+        );
+
+        setSalesData(
+          dailyRevenue.map((r) => ({ date: r.date, sales: r.total_amount }))
+        );
+      } catch (err) {
+        console.error("Failed to load reports:", err);
+      }
+    })();
   }, []);
 
   const exportCSV = () => {
     const rows = [
       ["Event Title", "Tickets Sold"],
-      ...popularEvents.map(e => [e.title, e.ticketsSold]),
+      ...popularEvents.map((e) => [e.title, e.ticketsSold]),
       [],
-      ["Organizer", "Revenue"],
-      ...topOrganizers.map(o => [o.name, o.revenue]),
+      ["Event Title", "Revenue"],
+      ...topRevenueEvents.map((e) => [e.title, e.revenue]),
       [],
       ["Date", "Sales"],
-      ...salesData.map(s => [s.date, s.sales]),
+      ...salesData.map((s) => [s.date, s.sales]),
       [],
-      ["Category", "Refund Rate (%)"],
-      ...refundData.map(r => [r.category, r.rate]),
     ];
-    const csv = rows.map(r => r.join(",")).join("\n");
+    const csv = rows.map((r) => r.join(",")).join("\n");
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
@@ -121,14 +119,14 @@ export default function AdminReports() {
             <Card sx={{ boxShadow: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  En Popüler Etkinlikler
+                  Most Popular Events
                 </Typography>
                 <List dense>
                   {popularEvents.map((e, i) => (
                     <ListItem key={i}>
                       <ListItemText
                         primary={e.title}
-                        secondary={`${e.ticketsSold} bilet satıldı`}
+                        secondary={`${e.ticketsSold} Ticket sold`}
                       />
                     </ListItem>
                   ))}
@@ -137,19 +135,19 @@ export default function AdminReports() {
             </Card>
           </Grid>
 
-          {/* Top Organizers */}
+          {/* Highest Revenue Events */}
           <Grid item xs={12} md={6}>
             <Card sx={{ boxShadow: 3 }}>
               <CardContent>
                 <Typography variant="h6" gutterBottom>
-                  En Çok Gelir Getiren Organizer’lar
+                  Most Earning Events
                 </Typography>
                 <List dense>
-                  {topOrganizers.map((o, i) => (
+                  {topRevenueEvents.map((e, i) => (
                     <ListItem key={i}>
                       <ListItemText
-                        primary={`@${o.name}`}
-                        secondary={`${o.revenue.toLocaleString()} ₺`}
+                        primary={e.title}
+                        secondary={`${e.revenue.toLocaleString()} ₺`}
                       />
                     </ListItem>
                   ))}
@@ -163,7 +161,7 @@ export default function AdminReports() {
           {/* Sales Over Time */}
           <Grid item xs={12} md={6} height={300}>
             <Typography variant="h6" gutterBottom>
-              Bilet Satış Grafiği (Günlük)
+              Ticket Sales Graph (Daily)
             </Typography>
             <ResponsiveContainer width="100%" height="80%">
               <LineChart data={salesData}>
@@ -174,30 +172,12 @@ export default function AdminReports() {
               </LineChart>
             </ResponsiveContainer>
           </Grid>
-
-          {/* Refund Rates */}
-          <Grid item xs={12} md={6} height={300}>
-            <Typography variant="h6" gutterBottom>
-              İptal Oranları (%)
-            </Typography>
-            <ResponsiveContainer width="100%" height="80%">
-              <BarChart data={refundData}>
-                <XAxis dataKey="category" />
-                <YAxis />
-                <Tooltip />
-                <Bar dataKey="rate" fill="#d32f2f" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Grid>
         </Grid>
 
         {/* Export Buttons */}
         <Stack direction="row" spacing={2}>
           <Button variant="contained" onClick={exportCSV}>
             CSV Olarak İndir
-          </Button>
-          <Button variant="outlined" disabled>
-            PDF Olarak İndir
           </Button>
         </Stack>
       </Container>
