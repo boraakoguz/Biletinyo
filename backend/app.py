@@ -4,6 +4,8 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 import psycopg2
 from psycopg2 import pool
+from routes.mail import mail
+
 import bcrypt
 from routes import users, events, tickets, comments, images, venues, login, register, payments, reports, follows
 
@@ -13,6 +15,20 @@ app = Flask(__name__, static_url_path="/images", static_folder="images")
 app.config['UPLOAD_FOLDER'] = IMAGE_FOLDER
 app.config["JWT_SECRET_KEY"] = "RandomStringForJWTGeneration"
 app.config["JWT_ACCESS_TOKEN_EXPIRES"]  = 900
+
+app.config.update(
+    MAIL_SERVER="smtp.gmail.com",
+    MAIL_PORT=587,
+    MAIL_USE_TLS=True,
+    MAIL_USERNAME=os.getenv("EMAIL_USER"),
+    MAIL_PASSWORD=os.getenv("EMAIL_PASS"),
+    MAIL_DEFAULT_SENDER=(
+        "Biletinyo",
+        os.getenv("EMAIL_USER")
+    )
+)
+
+mail.init_app(app)
 
 CORS(app)
 

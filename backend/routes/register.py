@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from database import db_pool
 import bcrypt
 import definitions
+from routes.mail import Mail
 
 bp = Blueprint("register", __name__)
 @bp.route("/", methods=["POST"])
@@ -41,6 +42,8 @@ def register():
                 """, (user_id, organization_name))
                 
             conn.commit()
+        
+        Mail.send_welcome_email(email, name)
         return jsonify({"Success": "User Created"}), 200
 
     except Exception as e:
