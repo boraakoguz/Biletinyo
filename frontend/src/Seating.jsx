@@ -56,33 +56,38 @@ function Seating() {
     );
   };
 
-  const handleContinue = async () => {
-    const eventId = localStorage.getItem("event_id");
-    if (!eventId || selectedSeats.length === 0) return;
+const handleContinue = async () => {
+  const eventId = localStorage.getItem("event_id");
+  if (!eventId || selectedSeats.length === 0) return;
 
-    const params = new URLSearchParams();
-    params.append("event_id", eventId);
-    selectedSeats.forEach(seat => {
-      const [row, col] = seat.split("-");
-      params.append("seats", `${parseInt(row)}-${parseInt(col)}`);
+  const params = new URLSearchParams();
+  params.append("event_id", eventId);
+
+  selectedSeats.forEach((seat) => {
+    const [row, col] = seat.split("-").map((n) => parseInt(n) - 1);
+    params.append("seats", `${row}-${col}`);
+  });
+
+  try {
+    const res = await fetch(`http://localhost:8080/api/tickets/?${params.toString()}`);
+    if (!res.ok) throw new Error("Failed to fetch tickets");
+    const tickets = await res.json();
+
+    const ticketIds = tickets.map(ticket => ticket.ticket_id);
+    localStorage.setItem("selected_ticket_ids", JSON.stringify(ticketIds));
+
+    const ticketNames = selectedSeats.map((seat) => {
+      const [row, col] = seat.split("-").map(Number);
+      return `${toRowLabel(row)}${col}`;
     });
+    localStorage.setItem("selected_ticket_names", JSON.stringify(ticketNames));
 
-    try {
-      const res = await fetch(`http://localhost:8080/api/tickets/?${params.toString()}`);
-      if (!res.ok) throw new Error("Failed to fetch tickets");
-      const tickets = await res.json();
-      const ticketIds = tickets.map(ticket => ticket.ticket_id);
-      localStorage.setItem("selected_ticket_ids", JSON.stringify(ticketIds));
-      const ticketNames = selectedSeats.map(seat => {
-        const [row, col] = seat.split("-").map(Number);
-        return `${toRowLabel(row)}${col}`;
-      });
-      localStorage.setItem("selected_ticket_names", JSON.stringify(ticketNames));
-      navigate(`/event/${eventId}/guest`);
-    } catch (err) {
-      console.error("Ticket fetch error:", err);
-    }
-  };
+    navigate(`/event/${eventId}/guest`);
+  } catch (err) {
+    console.error("Ticket fetch error:", err);
+  }
+};
+
 
   if (loading || !event) return <CircularProgress sx={{ m: 5 }} />;
 
