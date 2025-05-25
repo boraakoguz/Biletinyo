@@ -25,7 +25,6 @@ import ConfigureSeating from "./Organizer/ConfigureSeating";
 import AdminDashboard from "./Admin/AdminDashboard";
 import AdminVenueManagement from "./Admin/VenueManagement";
 import AdminAddVenue from "./Admin/AdminAddVenue";
-import AdminEditSeatingConfig from "./Admin/AdminEditSeatingConfig";
 import AdminPendingEvents from "./Admin/AdminPendingEvents";
 import AdminUserManagement from "./Admin/UserManagement";
 import AdminReports from "./Admin/AdminReports";
@@ -218,15 +217,6 @@ function App() {
           element={
             <AuthRoute requireAdmin={true}>
               <AdminVenueSeatMap />
-            </AuthRoute>
-          }
-        />
-
-        <Route
-          path="/admin/venues/:id/edit"
-          element={
-            <AuthRoute requireAdmin={true}>
-              <AdminEditSeatingConfig />
             </AuthRoute>
           }
         />

@@ -51,8 +51,8 @@ const AdminDashboard = () => {
   ]);
 
   const [alerts] = useState([
-    { message: "Ödeme hatası tespit edildi", date: "2025-05-24T13:11:23" },
-    { message: "Etkinlik silinme talebi var", date: "2025-05-24T12:11:23" },
+    { message: "Payment error occured", date: "2025-05-24T13:11:23" },
+    { message: "Event deletion request", date: "2025-05-24T12:11:23" },
   ]);
 
   const [loading, setLoading] = useState(false);
@@ -121,15 +121,15 @@ const AdminDashboard = () => {
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={4}>
           {[
             {
-              label: "Bekleyen Venue Onayları",
+              label: "Waiting Venue Requests",
               value: pendingVenues,
             },
             {
-              label: "Günlük Bilet Satışı",
+              label: "Daily Ticket Sales",
               value: dailySales,
             },
             {
-              label: "Haftalık Bilet Satışı",
+              label: "Weekly Ticket Sales",
               value: weeklySales,
             },
           ].map((item) => (
@@ -152,17 +152,17 @@ const AdminDashboard = () => {
         <Grid container spacing={3} mb={4}>
           {[
             {
-              label: "Venue Yönetimi",
+              label: "Venue Management",
               icon: <LocationOnIcon fontSize="large" />,
               to: "/admin/venues",
             },
             {
-              label: "Raporlar & Analiz",
+              label: "Reports & Analysis",
               icon: <BarChartIcon fontSize="large" />,
               to: "/admin/reports",
             },
             {
-              label: "Ödeme İzleme",
+              label: "Ticket Sales Report",
               icon: <PaymentIcon fontSize="large" />,
               to: "/admin/payments",
             },
