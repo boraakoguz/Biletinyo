@@ -339,6 +339,7 @@ def put_event_by_id(event_id):
     new_vip_ticket_price = data.get("vip_ticket_price")
     new_premium_ticket_price = data.get("premium_ticket_price")
     new_seat_type_map = data.get("seat_type_map")
+
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
@@ -373,6 +374,8 @@ def put_event_by_id(event_id):
                 premium_ticket_price,
                 seat_type_map
             ) = old
+
+            old_seat_type_map = seat_type_map
 
             if new_organizer_id:
                 organizer_id = new_organizer_id
@@ -431,42 +434,48 @@ def put_event_by_id(event_id):
                 )
             )
 
-            if new_seat_type_map is not None:
-                cur.execute("""SELECT seat_map
-                             FROM venue WHERE
-                             venue_id = %s;""",
-                            (venue_id,)
-                            )
-                
-                seat_map = cur.fetchone()
-                if not seat_map:
-                    raise RuntimeError(f"Venue {venue_id} not found")
-                seat_map = seat_map[0]
-
-                for row in range(len(seat_map)):
-                    for col in range(len(seat_map[row])):
-                        if row >= len(new_seat_type_map) or col >= len(new_seat_type_map[row]):
-                            return jsonify({"error": "Invalid new_seat_type_map"}), 500
-                        if seat_map[row][col] == 0 and new_seat_type_map[row][col] != 0:
-                            return jsonify({"error": "Invalid new_seat_type_map"}), 500
-
-                for row in range(len(new_seat_type_map)):
-                    for col in range(len(new_seat_type_map[row])):
-                        seat_type = new_seat_type_map[row][col]
-
-                        price = default_ticket_price
-
-                        if seat_type == definitions.DEFAULT_SEAT:
-                            price = default_ticket_price
-                        elif seat_type == definitions.VIP_SEAT:
-                            price = vip_ticket_price                    
-                        elif seat_type == definitions.PREMIUM_SEAT:
-                            price = premium_ticket_price
-
-                        cur.execute(
-                            "UPDATE ticket SET ticket_class = %s, price = %s WHERE event_id = %s AND seat_row = %s AND seat_column = %s;",
-                            (seat_type, price, event_id, row, col)
+            cur.execute("""SELECT seat_map
+                            FROM venue WHERE
+                            venue_id = %s;""",
+                        (venue_id,)
                         )
+            
+            seat_map = cur.fetchone()
+
+            if not seat_map:
+                raise RuntimeError(f"Venue {venue_id} not found")
+            
+            seat_map = seat_map[0]
+
+            for row in range(len(seat_map)):
+                for col in range(len(seat_map[row])):
+                    if row >= len(seat_type_map) or col >= len(seat_type_map[row]):
+                        return jsonify({"error": "Invalid seat_type_map"}), 500
+                    
+                    if seat_map[row][col] == 0 and seat_type_map[row][col] != 0:
+                        return jsonify({"error": "Invalid seat_type_map"}), 500
+
+            for row in range(len(seat_type_map)):
+                for col in range(len(seat_type_map[row])):
+                    if old_seat_type_map[row][col] == definitions.OCCUPIED_SEAT:
+                        continue
+                    
+                    seat_type = seat_type_map[row][col]
+
+                    price = default_ticket_price
+
+                    if seat_type == definitions.DEFAULT_SEAT:
+                        price = default_ticket_price
+                    elif seat_type == definitions.VIP_SEAT:
+                        price = vip_ticket_price                    
+                    elif seat_type == definitions.PREMIUM_SEAT:
+                        price = premium_ticket_price
+
+                    cur.execute("""
+                                UPDATE ticket SET ticket_class = %s, price = %s
+                                WHERE event_id = %s AND seat_row = %s AND seat_column = %s;""",
+                                (seat_type, price, event_id, row, col)
+                                )
 
         conn.commit()
         return jsonify({"event_id": event_id}), 200
@@ -475,7 +484,6 @@ def put_event_by_id(event_id):
     finally:
         if conn:
             db_pool.putconn(conn)
-
 
 @bp.route("/<int:event_id>/capacity", methods=["GET"])
 def get_event_capacity(event_id):
