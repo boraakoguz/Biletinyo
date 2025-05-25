@@ -45,6 +45,19 @@ function MainPage() {
     ORGANIZERS: isLoggedIn ? 2 : 1,
   };
 
+  const loadFollowerCounts = async () => {
+    try {
+      const counts = await apiService.getFollowerCounts();
+      const countMap = {};
+      counts.forEach(({ organizer_id, follower_count }) => {
+        countMap[organizer_id] = follower_count;
+      });
+      setFollowerCounts(countMap);
+    } catch (err) {
+      console.error("Failed to load follower counts:", err);
+    }
+  };
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
@@ -82,26 +95,10 @@ function MainPage() {
   }, [tab]);
 
   useEffect(() => {
-    if (tab !== TABS.ORGANIZERS) return;
-
-    const controller = new AbortController();
-
-    Promise.all([
-      apiService.getUsers({ user_type: 1, search }),
-      apiService.getFollowerCounts(),
-    ])
-      .then(([users, counts]) => {
-        setOrgs(users);
-        const countMap = {};
-        counts.forEach(({ organizer_id, follower_count }) => {
-          countMap[organizer_id] = follower_count;
-        });
-        setFollowerCounts(countMap);
-      })
-      .catch(console.error);
-
-    return () => controller.abort();
-  }, [tab, search]);
+    if (tab === TABS.ORGANIZERS || tab === TABS.FOLLOWED) {
+      loadFollowerCounts();
+    }
+  }, [tab, search, refreshKey]);
 
   useEffect(() => {
     if (tab !== TABS.FOLLOWED) return;
@@ -461,7 +458,9 @@ function MainPage() {
                   >
                     <CardMedia
                       component="img"
-                      image={`http://localhost:8080${event.image_urls?.[0] || "/api/images/default.png"}`}
+                      image={`http://localhost:8080${
+                        event.image_urls?.[0] || "/api/images/default.png"
+                      }`}
                       alt={event.title}
                       sx={{ height: 180, objectFit: "cover" }}
                     />

@@ -1,5 +1,3 @@
-// frontend/src/Organizer/ManageEvents.jsx
-
 import React, { useEffect, useState } from "react";
 import {
   AppBar,
@@ -16,6 +14,7 @@ import {
   CircularProgress,
   Chip,
 } from "@mui/material";
+import apiService from "../apiService";
 import { useNavigate } from "react-router-dom";
 
 const ManageEvents = () => {
@@ -23,68 +22,47 @@ const ManageEvents = () => {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-
   useEffect(() => {
-    // ─── Mock API çağrısı ───
-    setTimeout(() => {
-      setEvents([
-        {
-          event_id: 1,
-          event_title: "Rock Concert – Duman",
-          event_date: "2025-05-02T20:00",
-          venue_name: "Main Hall",
-          location: "Congresium, Ankara",
-          tickets_sold: 120,
-          capacity: 200
-        },
-        {
-          event_id: 2,
-          event_title: "Ajda Pekkan Open-Air",
-          event_date: "2025-06-20T21:00",
-          venue_name: "Open-Air Stage",
-          location: "City Park, İstanbul",
-          tickets_sold: 80,
-          capacity: 100
-        },
-        {
-          event_id: 3,
-          event_title: "Jazz Night Live",
-          event_date: "2025-07-10T19:30",
-          venue_name: "City Jazz Club",
-          location: "Beyoğlu, İstanbul",
-          tickets_sold: 45,
-          capacity: 50
-        },
-        {
-          event_id: 4,
-          event_title: "Tech Meetup",
-          event_date: "2025-08-05T18:00",
-          venue_name: "Convention Center",
-          location: "Alsancak, İzmir",
-          tickets_sold: 30,
-          capacity: 50
-        },
-        {
-          event_id: 5,
-          event_title: "Art Exhibition Opening",
-          event_date: "2025-09-12T17:00",
-          venue_name: "Gallery 21",
-          location: "Çankaya, Ankara",
-          tickets_sold: 10,
-          capacity: 30
-        },
-        {
-          event_id: 6,
-          event_title: "Stand-Up Comedy Night",
-          event_date: "2025-10-01T20:00",
-          venue_name: "Laugh Factory",
-          location: "Kadıköy, İstanbul",
-          tickets_sold: 25,
-          capacity: 40
-        },
-      ]);
-      setLoading(false);
-    }, 500);
+    const user = JSON.parse(localStorage.getItem("user"));
+    const userId = user?.id;
+
+    if (!userId) {
+      console.error("No logged-in organizer found");
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        const data = await apiService.getEventsByOrganizer(userId);
+
+        const enriched = await Promise.all(
+          data.map(async (evt) => {
+            const [capacityData, occupiedData] = await Promise.all([
+              apiService
+                .getEventCapacityById(evt.event_id)
+                .catch(() => ({ capacity: 0 })),
+              apiService
+                .getEventOccupiedSeatsById(evt.event_id)
+                .catch(() => ({ occupied: 0 })),
+            ]);
+
+            return {
+              ...evt,
+              capacity: capacityData.capacity,
+              occupied: occupiedData.occupied,
+            };
+          })
+        );
+
+        setEvents(enriched);
+      } catch (err) {
+        console.error("Failed to fetch organizer events:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
   }, []);
 
   if (loading) {
@@ -167,9 +145,13 @@ const ManageEvents = () => {
                   {/* Doluluk oranı göstergesi */}
                   <Box sx={{ mt: 1 }}>
                     <Chip
-                      label={`${evt.tickets_sold} / ${evt.capacity} doluluk`}
+                      label={`${evt.occupied} / ${evt.capacity} doluluk`}
                       size="small"
-                      color={evt.tickets_sold / evt.capacity > 0.8 ? "error" : "primary"}
+                      color={
+                        evt.capacity > 0 && evt.occupied / evt.capacity > 0.8
+                          ? "error"
+                          : "primary"
+                      }
                     />
                   </Box>
                 </CardContent>
@@ -181,7 +163,9 @@ const ManageEvents = () => {
                   <Button
                     size="small"
                     variant="contained"
-                    onClick={() => navigate(`/organizer/events/${evt.event_id}`)}
+                    onClick={() =>
+                      navigate(`/organizer/events/${evt.event_id}`)
+                    }
                   >
                     Yönet
                   </Button>

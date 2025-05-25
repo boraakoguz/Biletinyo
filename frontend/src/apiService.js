@@ -86,6 +86,20 @@ export const apiService = {
     return res.json();
   },
   
+  getEventCapacityById: async (id) => {
+    const res = await fetch(`${API_BASE_URL}/events/${id}/capacity`);
+    if (!res.ok) {
+      throw new Error("Failed to fetch event capacity");
+    }
+    return res.json();
+  },
+
+  getEventOccupiedSeatsById: async (event_id) => {
+    const res = await fetch(`http://localhost:8080/api/events/${event_id}/occupied`);
+    if (!res.ok) throw new Error("Failed to fetch occupied seat count");
+    return res.json();
+  },
+
   createEvent: async (eventData) => {
     const res = await fetchWithAuth('/events/', {
       method: 'POST',
@@ -272,7 +286,7 @@ export const apiService = {
     return res.text();
   },
   getFollowerCounts: async () => {
-    const res = await fetchWithAuth("/follows/counts");
+    const res = await fetchWithAuth("/follows/count");
     if (!res.ok) throw new Error("Failed to fetch follower counts");
     return res.json();
   },

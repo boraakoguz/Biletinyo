@@ -153,6 +153,7 @@ INSERT INTO users (name, email, password, user_type, phone, birth_date) VALUES
 ('User johnson', 'user@user.com', '$2b$12$KKprei.9FfMVomfUWlYYAu8icc7TS58KesyN11GQpI.2eYteMWUXC', 0, '555-1234', '1995-06-15'),
 ('Organizer Smith', 'org@org.com', '$2b$12$Srau6Ny7nGQQQ1tHeiBfUOsuinZZOdyplF2c831mVqlUgFqcetwmq', 1, '555-5678', '2000-06-15'),
 ('Ege Babs', 'ege@gmail.com', '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-8765', '2015-06-15'),
+('Admin', 'admin@admin.com', '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 2, '555-8765', '2015-06-15'),
 ('Attendee Four',     'four@ex.com',    '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-0004', '1990-01-04'),
 ('Attendee Five',     'five@ex.com',    '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-0005', '1990-01-05'),
 ('Attendee Six',      'six@ex.com',     '$2b$12$xy.NXj5K8QAeYdgiGhGmW.9DKlsHIw7jf6PU8JfhSEwpCpp4wPA9K', 0, '555-0006', '1990-01-06'),
@@ -187,7 +188,11 @@ INSERT INTO venue (capacity, location, venue_name, venue_description, city, seat
   (120, 'Alsancak, İzmir',       'Harbor Arena',      'Waterfront open-air arena.',           'Izmir',
    '{{1,1,1,1,1},{1,1,1,1,1}}',                                      1),
   (50,  'Odunpazarı, Eskişehir', 'Pavilion A',        'Small intimate performance space.',    'Eskişehir',
-   '{{1,1,1},{1,1,1}}',                                              1);
+   '{{1,1,1},{1,1,1}}',                                              1), 
+  (150, 'Konak, İzmir',      'Culture Dome',      'Modern cultural events center.',           'İzmir',
+   '{{1,1,1,1},{1,1,1,1}}',                                        0),
+  (250, 'Lara, Antalya',     'Sunset Pavilion',   'Outdoor pavilion with sea views.',         'Antalya',
+   '{{1,1,1},{1,1,1},{1,1,1}}',                                    0);
 
 INSERT INTO event (
   organizer_id, venue_id, event_title, event_time, event_status,

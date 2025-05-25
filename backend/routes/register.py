@@ -13,7 +13,7 @@ def register():
     phone = data.get("phone")
     birth_date = data.get("birth_date")
     user_type = data.get("user_type")
-    organization_name = data.get("organization_name")  # Optional
+    organization_name = data.get("organization_name")
 
     if not all([name, email, password, phone, birth_date]) or user_type is None:
         return jsonify({"error": "Missing required fields"}), 400
@@ -39,13 +39,7 @@ def register():
                     INSERT INTO organizer (user_id, organization_name)
                     VALUES (%s, %s);
                 """, (user_id, organization_name))
-
-            if user_type == 0:
-                cur.execute("""
-                    INSERT INTO attendee (user_id, attended_event_count, account_balance)
-                    VALUES (%s, %s, %s);
-                """, (user_id, 0, 0.0))
-
+                
             conn.commit()
         return jsonify({"Success": "User Created"}), 200
 

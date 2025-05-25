@@ -78,7 +78,7 @@ def unfollow(user_id, organizer_id):
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/counts", methods=["GET"])
+@bp.route("/count", methods=["GET"])
 def get_follower_counts():
     try:
         conn = db_pool.getconn()
