@@ -27,9 +27,10 @@ import apiService from "../apiService";
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
-  // Dummy data
-  const [pendingVenues, setPendingVenues] = useState(0);
+  const [dailySales, setDailySales] = useState(0);
+  const [weeklySales, setWeeklySales] = useState(0);
 
+  const [pendingVenues, setPendingVenues] = useState(0);
   useEffect(() => {
     const fetchPendingCount = async () => {
       try {
@@ -39,24 +40,22 @@ const AdminDashboard = () => {
         console.error("Failed to fetch pending venues count", err);
       }
     };
+
+    const fetchSalesSummary = async () => {
+      try {
+        const res = await apiService.getSalesSummary();
+        setDailySales(res.daily.count);
+        setWeeklySales(res.weekly.count);
+      } catch (err) {
+        console.error("Failed to fetch sales summary", err);
+      }
+    };
+
     fetchPendingCount();
+    fetchSalesSummary();
   }, []);
-  const [dailySales] = useState(124);
-  const [weeklySales] = useState(842);
-
-  const [recentLogins] = useState([
-    { username: "ayse@example.com", lastLogin: "2025-05-24T12:41:23" },
-    { username: "mehmet@example.com", lastLogin: "2025-05-24T11:41:23" },
-    { username: "ali@example.com", lastLogin: "2025-05-23T13:41:23" },
-  ]);
-
-  const [alerts] = useState([
-    { message: "Ödeme hatası tespit edildi", date: "2025-05-24T13:11:23" },
-    { message: "Etkinlik silinme talebi var", date: "2025-05-24T12:11:23" },
-  ]);
 
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
 
   if (loading) {
     return (

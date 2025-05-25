@@ -153,7 +153,6 @@ export default function CreateEvent() {
       setError(errorMessage);
       return;
     }
-    s;
     const draftEvent = {
       ...formData,
       event_status: 1,
