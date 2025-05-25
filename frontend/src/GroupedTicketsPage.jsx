@@ -60,6 +60,7 @@ export default function GroupedTicketsPage() {
         >
           <Typography
             variant="h4"
+            onClick={() => navigate("/")}
             sx={{
               textDecoration: "underline",
               fontWeight: "bold",

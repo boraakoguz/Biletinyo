@@ -159,6 +159,7 @@ export default function PaymentPage() {
       >
         <Typography
           variant="h4"
+          onClick={() => navigate("/")}
           sx={{ textDecoration: "underline", fontWeight: "bold", fontStyle: "italic" }}
         >
           Biletinyo

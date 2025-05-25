@@ -170,6 +170,7 @@ function GuestPage() {
       >
         <Typography
           variant="h4"
+          onClick={() => navigate("/")}
           sx={{
             textDecoration: "underline",
             fontWeight: "bold",
