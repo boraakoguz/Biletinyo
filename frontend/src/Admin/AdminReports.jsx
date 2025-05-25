@@ -1,5 +1,3 @@
-// src/Admin/AdminReports.jsx
-
 import React, { useEffect, useState } from "react";
 import {
   AppBar,
@@ -32,7 +30,6 @@ export default function AdminReports() {
   const [popularEvents, setPopularEvents] = useState([]);
   const [topRevenueEvents, setTopRevenueEvents] = useState([]);
   const [salesData, setSalesData] = useState([]);
-  const [refundData, setRefundData] = useState([]); // still mocked
 
   useEffect(() => {
     (async () => {

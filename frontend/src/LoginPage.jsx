@@ -23,7 +23,6 @@ function LoginPage() {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
 
-    // Check for redirect message
     const redirectState = location.state;
     if (redirectState?.message) {
       setMessage(redirectState.message);
@@ -133,7 +132,12 @@ function LoginPage() {
             >
               {loading ? "Logging in..." : "Login"}
             </Button>
-            <Button type="button" variant="text" color="zort" onClick={() => navigate("/forgot-password")}>
+            <Button
+              type="button"
+              variant="text"
+              color="zort"
+              onClick={() => navigate("/forgot-password")}
+            >
               Forgot Password?
             </Button>
             <Button

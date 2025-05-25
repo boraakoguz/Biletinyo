@@ -54,7 +54,7 @@ export default function ConfigureSeating() {
     });
   };
   const handleSubmit = async () => {
-    if (submitting) return; // prevent double click
+    if (submitting) return;
     setSubmitting(true);
     const hasInvalidPrices = Object.entries(prices).some(([label, val]) => {
       const num = parseFloat(val);

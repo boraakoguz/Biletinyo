@@ -32,7 +32,7 @@ export default function OrganizerPage() {
     try {
       const counts = await apiService.getFollowerCounts();
       const count = counts.find((c) => c.organizer_id === Number(id));
-      setFollowerCount(count ? count.follower_count : 0); // <-- fix
+      setFollowerCount(count ? count.follower_count : 0);
     } catch (err) {
       console.error("Error fetching follower count:", err);
     }
@@ -199,7 +199,9 @@ export default function OrganizerPage() {
             px: 6,
           }}
         >
-        <a href="/" className={"header-main"}>Biletinyo</a>
+          <a href="/" className={"header-main"}>
+            Biletinyo
+          </a>
 
           <Stack direction="row" spacing={1}>
             {isLoggedIn ? (

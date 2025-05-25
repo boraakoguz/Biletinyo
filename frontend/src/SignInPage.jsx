@@ -68,7 +68,6 @@ function SignInPage() {
     validatePhone(e.target.value, phoneNumber);
   };
 
-  // Phone validation: require country code and 6-14 digits
   const validatePhone = (code, number) => {
     const phoneRegex = /^\d{6,14}$/;
     if (!phoneRegex.test(number)) {
@@ -84,7 +83,6 @@ function SignInPage() {
 
   const handleTabChange = (event, newValue) => {
     setRole(newValue);
-    // Clear organization name if switching to attendee
     if (newValue === "attendee") {
       setFormData((prev) => ({ ...prev, organization: "" }));
     }
@@ -252,10 +250,10 @@ function SignInPage() {
                 helperText={phoneError}
                 variant="outlined"
                 inputProps={{
-                    maxLength: 14,
-                    inputMode: "numeric",
-                    pattern: "[0-9]*"
-                  }}
+                  maxLength: 14,
+                  inputMode: "numeric",
+                  pattern: "[0-9]*",
+                }}
               />
             </Box>
             <TextField
@@ -265,7 +263,10 @@ function SignInPage() {
               name="birthDate"
               label="Birth Date"
               InputLabelProps={{ shrink: true }}
-              inputProps={{min: "1900-01-01", max: new Date().toISOString().split("T")[0] }}
+              inputProps={{
+                min: "1900-01-01",
+                max: new Date().toISOString().split("T")[0],
+              }}
               value={formData.birthDate}
               onChange={handleChange}
               required

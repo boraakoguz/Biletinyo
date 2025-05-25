@@ -99,7 +99,7 @@ const OrganizerDashboard = () => {
         const [evs, revenueData, ticketCountData] = await Promise.all([
           apiService.getEventsByOrganizer(userId),
           apiService.getOrganizerRevenue(userId),
-          apiService.getOrganizerTicketCount(userId), // new call
+          apiService.getOrganizerTicketCount(userId),
         ]);
 
         setEvents(evs);
@@ -108,7 +108,7 @@ const OrganizerDashboard = () => {
           totalRevenue: revenueData.total_revenue,
         }));
 
-        setSoldTicketCount(ticketCountData.ticket_count); // save it
+        setSoldTicketCount(ticketCountData.ticket_count);
         await fetchFollowerCount();
       } catch (e) {
         console.error("Failed to load dashboard data", e);
@@ -304,9 +304,13 @@ const OrganizerDashboard = () => {
           <Typography color="text.secondary">No Past Events.</Typography>
         )}
 
-        <Typography variant="h5" sx={{
-                    mt: 3
-                  }} gutterBottom>
+        <Typography
+          variant="h5"
+          sx={{
+            mt: 3,
+          }}
+          gutterBottom
+        >
           Requested Venues
         </Typography>
         {requestedVenues.length ? (

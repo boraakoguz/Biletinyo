@@ -57,7 +57,6 @@ export default function AdminVenueSeatMap() {
         <Paper sx={{ p: 3, mt: 2, overflowX: "auto" }}>
           <Box sx={{ minWidth: cols * 45 }}>
             {" "}
-            {/* ensures enough space */}
             <Grid container direction="column" spacing={1}>
               {seatMap.map((row, rowIdx) => (
                 <Grid
@@ -65,7 +64,7 @@ export default function AdminVenueSeatMap() {
                   item
                   key={rowIdx}
                   spacing={1}
-                  wrap="nowrap" // prevents row from wrapping
+                  wrap="nowrap"
                   alignItems="center"
                 >
                   {row.map((seat, colIdx) => (
