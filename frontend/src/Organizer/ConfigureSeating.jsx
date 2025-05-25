@@ -96,7 +96,7 @@ export default function ConfigureSeating() {
 
       localStorage.removeItem("draftEvent");
       setSnackbar({ open: true, message: "Etkinlik başarıyla oluşturuldu." });
-      setTimeout(() => navigate("/organizer/events"), 1500);
+      navigate("/organizer/events");
     } catch (err) {
       setSnackbar({ open: true, message: "Hata: " + err.message });
     } finally {
