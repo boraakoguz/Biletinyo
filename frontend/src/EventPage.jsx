@@ -30,9 +30,10 @@ function EventPage() {
   useEffect(() => {
     if (event?.image_ids?.length) {
       const imgId = event.image_ids[imgIndex];
-      apiService.getImageById(imgId)
+      apiService
+        .getImageById(imgId)
         .then((url) => setImageSrc(url))
-        .catch((err) => console.error('Failed to load image:', err));
+        .catch((err) => console.error("Failed to load image:", err));
     }
   }, [event, imgIndex]);
 
@@ -134,7 +135,9 @@ function EventPage() {
             px: 6,
           }}
         >
-          <a href="/" className={"header-main"}>Biletinyo</a>
+          <a href="/" className={"header-main"}>
+            Biletinyo
+          </a>
           <Box sx={{ flexGrow: 1, mx: 5, minWidth: 200 }}>
             <TextField
               disabled
@@ -295,6 +298,20 @@ function EventPage() {
                 <Typography variant="body1" sx={{ mb: 2 }}>
                   {event.description}
                 </Typography>
+                {event.regulations && (
+                  <Box sx={{ mt: 3 }}>
+                    <Typography variant="h6" fontWeight={600} gutterBottom>
+                      Regulations
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      sx={{ whiteSpace: "pre-line" }}
+                    >
+                      {event.regulations}
+                    </Typography>
+                  </Box>
+                )}
                 <Typography variant="caption">
                   Organized by: {organizerName}
                 </Typography>
