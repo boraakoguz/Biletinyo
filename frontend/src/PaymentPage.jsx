@@ -220,16 +220,15 @@ export default function PaymentPage() {
               </Stack>
             </Card>
           </Stack>
-
-          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
-            <Button variant="contained" size="large" onClick={handlePurchase}>
-              Confirm Payment
-            </Button>
-            {method === "Wallet" && balance < totalPrice && (
+          {method === "Wallet" && balance < totalPrice && (
             <Typography color="error" sx={{ mt: 1 }}>
               Your account balance is insufficient.
             </Typography>
             )}
+          <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 4 }}>
+            <Button variant="contained" size="large" onClick={handlePurchase}>
+              Confirm Payment
+            </Button>
           </Box>
         </Card>
       </Box>
