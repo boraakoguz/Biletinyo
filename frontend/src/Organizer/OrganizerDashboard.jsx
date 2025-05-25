@@ -27,6 +27,7 @@ const OrganizerDashboard = () => {
   const [followerCount, setFollowerCount] = useState(0);
   const now = new Date();
   const [requestedVenues, setRequestedVenues] = useState([]);
+  const [soldTicketCount, setSoldTicketCount] = useState(0);
 
   useEffect(() => {
     localStorage.removeItem("draftEvent");
@@ -95,9 +96,10 @@ const OrganizerDashboard = () => {
   useEffect(() => {
     (async () => {
       try {
-        const [evs, revenueData] = await Promise.all([
+        const [evs, revenueData, ticketCountData] = await Promise.all([
           apiService.getEventsByOrganizer(userId),
           apiService.getOrganizerRevenue(userId),
+          apiService.getOrganizerTicketCount(userId), // new call
         ]);
 
         setEvents(evs);
@@ -106,6 +108,7 @@ const OrganizerDashboard = () => {
           totalRevenue: revenueData.total_revenue,
         }));
 
+        setSoldTicketCount(ticketCountData.ticket_count); // save it
         await fetchFollowerCount();
       } catch (e) {
         console.error("Failed to load dashboard data", e);
@@ -246,10 +249,12 @@ const OrganizerDashboard = () => {
 
         <Stack direction={{ xs: "column", sm: "row" }} spacing={2} mb={4}>
           <Card sx={{ flex: 1, minWidth: 150 }}>
-            <CardContent>
-              <Typography variant="subtitle1">Total Sales</Typography>
-              <Typography variant="h5">{summary.totalSales}</Typography>
-            </CardContent>
+            <Card sx={{ flex: 1, minWidth: 150 }}>
+              <CardContent>
+                <Typography variant="subtitle1">Tickets Sold</Typography>
+                <Typography variant="h5">{soldTicketCount}</Typography>
+              </CardContent>
+            </Card>
           </Card>
           <Card sx={{ flex: 1, minWidth: 150 }}>
             <CardContent>
