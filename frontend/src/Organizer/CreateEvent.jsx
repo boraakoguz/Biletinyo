@@ -216,6 +216,7 @@ export default function CreateEvent() {
               name="description"
               value={formData.description}
               onChange={handleChange}
+              required
               multiline
               rows={3}
               fullWidth
