@@ -190,39 +190,6 @@ export default function CreateEvent() {
           >
             Biletinyo
           </Typography>
-          <Box sx={{ flexGrow: 1, maxWidth: 400, mx: 2 }}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Search event or venue..."
-              disabled
-              sx={{
-                backgroundColor: "white",
-                borderRadius: 3,
-                "& .MuiOutlinedInput-root fieldset": { border: "none" },
-              }}
-            />
-          </Box>
-          <Stack direction="row" spacing={1}>
-            <Button
-              color="inherit"
-              onClick={() => navigate("/login")}
-              sx={{ "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" } }}
-            >
-              Üye Girişi
-            </Button>
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={() => navigate("/signin")}
-              sx={{
-                borderColor: "white",
-                "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
-              }}
-            >
-              Üye Ol
-            </Button>
-          </Stack>
         </Toolbar>
       </AppBar>
 
