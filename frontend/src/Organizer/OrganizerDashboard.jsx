@@ -11,6 +11,7 @@ import {
   Card,
   CardContent,
   Grid,
+  Chip,
   CircularProgress,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
@@ -24,6 +25,18 @@ const OrganizerDashboard = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [followerCount, setFollowerCount] = useState(0);
   const now = new Date();
+  const [requestedVenues, setRequestedVenues] = useState([]);
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const venues = await apiService.getRequestedVenues();
+        setRequestedVenues(venues);
+      } catch (e) {
+        console.error("Failed to fetch requested venues", e);
+      }
+    })();
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -279,6 +292,55 @@ const OrganizerDashboard = () => {
           </Grid>
         ) : (
           <Typography color="text.secondary">Geçmiş etkinlik yok.</Typography>
+        )}
+        <Typography variant="h5" gutterBottom>
+          Requested Venues
+        </Typography>
+        {requestedVenues.length ? (
+          <Grid container spacing={3} mb={4}>
+            {requestedVenues.map((v) => (
+              <Grid item xs={12} sm={6} md={4} key={v.venue_id}>
+                <Card
+                  sx={{
+                    height: "100%",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    p: 2,
+                    bgcolor: "#f9f9f9",
+                    borderRadius: 2,
+                    boxShadow: 3,
+                  }}
+                >
+                  <CardContent>
+                    <Chip
+                      label="Waiting for Request"
+                      color="warning"
+                      sx={{ fontSize: "1rem", fontWeight: "bold", mb: 2 }}
+                    />
+                    <Typography variant="h6" gutterBottom>
+                      {v.venue_name}
+                    </Typography>
+
+                    <Typography
+                      variant="body2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      City: {v.city}
+                    </Typography>
+                    <Typography variant="body2">
+                      Description: {v.venue_description || "Açıklama yok"}
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+            ))}
+          </Grid>
+        ) : (
+          <Typography color="text.secondary" mb={4}>
+            No requested venue
+          </Typography>
         )}
       </Container>
     </>
