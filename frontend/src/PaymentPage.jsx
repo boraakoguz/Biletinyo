@@ -203,7 +203,7 @@ export default function PaymentPage() {
 
                 <Typography fontWeight={700}>Load Amount</Typography>
                 <TextField
-                  placeholder="e.g. 100.00"
+                  placeholder="TL"
                   size="small"
                   fullWidth
                   value={amount}
