@@ -48,9 +48,10 @@ function LoginPage() {
       localStorage.setItem("token", data.access_token);
       localStorage.setItem("user", JSON.stringify(data.user));
 
-      // Redirect to the page user was trying to access, or default based on user type
       if (location.state?.from) {
         navigate(location.state.from);
+      } else if (data.user.user_type === 2) {
+        navigate("/admin/dashboard");
       } else if (data.user.user_type === 1) {
         navigate("/organizer/dashboard");
       } else {

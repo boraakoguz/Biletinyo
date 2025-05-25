@@ -326,3 +326,33 @@ def put_venue_by_id(venue_id):
     finally:
         if conn:
             db_pool.putconn(conn)
+
+@bp.route("/<int:venue_id>/capacity", methods=["GET"])
+def get_venue_computed_capacity(venue_id):
+    conn = None
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT seat_map
+                FROM venue
+                WHERE venue_id = %s;
+            """, (venue_id,))
+            row = cur.fetchone()
+            if not row:
+                return jsonify({"error": "Venue not found"}), 404
+
+            seat_map = row[0] or []
+            capacity = sum(
+                1 for row in seat_map for seat in row if seat != 0
+            )
+
+            return jsonify({
+                "venue_id": venue_id,
+                "capacity": capacity
+            }), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)

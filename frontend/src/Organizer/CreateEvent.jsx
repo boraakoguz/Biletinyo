@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import apiService from "../apiService";
 import {
   AppBar,
   Toolbar,
@@ -76,8 +77,7 @@ export default function CreateEvent() {
     }
     (async () => {
       try {
-        const res = await fetch("http://localhost:8080/api/venues");
-        const data = await res.json();
+        const data = await apiService.getAvailableVenues();
         setVenues(data);
       } catch (err) {
         console.error(err);
