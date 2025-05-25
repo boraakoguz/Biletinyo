@@ -22,6 +22,8 @@ function ForgotPassword() {
   const [cooldown, setCooldown] = useState(0);
   const [message, setMessage] = useState("");
 
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
@@ -37,6 +39,11 @@ function ForgotPassword() {
   }, [navigate, location]);
 
   const handleSendCode = async () => {
+    if (!isValidEmail(email)) {
+      alert("Please enter a valid email address.");
+      return;
+    }
+
     setLoading(true);
     try {
       await apiService.sendResetCode(email);
@@ -134,6 +141,8 @@ function ForgotPassword() {
             <TextField
               label="Email"
               variant="outlined"
+              inputProps={{ maxLength: 30 }}
+              type="email"
               required
               onChange={(e) => setEmail(e.target.value)}
               value={email}
@@ -154,6 +163,7 @@ function ForgotPassword() {
               label="Enter Code"
               required
               variant="outlined"
+              inputProps={{ maxLength: 40 }}
               onChange={(e) => setCode(e.target.value)}
               value={code}
             />
@@ -162,6 +172,7 @@ function ForgotPassword() {
               variant="outlined"
               type="password"
               required
+              inputProps={{ maxLength: 30 }}
               onChange={(e) => setNewPassword(e.target.value)}
               value={newPassword}
             />
