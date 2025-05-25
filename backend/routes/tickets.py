@@ -14,6 +14,9 @@ from reportlab.platypus import (
 from reportlab.lib.utils import ImageReader
 import definitions
 import datetime
+from routes.mail import Mail
+import base64
+
 
 
 bp = Blueprint("tickets", __name__)
@@ -98,6 +101,10 @@ def get_tickets():
                     }
                     for guest in cur.fetchall()
                 ]
+                qr_buf = make_qr_from_str(
+                    f"http://localhost:5173/tickets/group?event_id={event_id}&attendee_id={attendee_id}"
+                )
+                qr_b64 = base64.b64encode(qr_buf.getvalue()).decode('utf-8')
                 results.append({
                     "ticket_id": ticket_id,
                     "attendee_id": attendee_id,
@@ -108,7 +115,8 @@ def get_tickets():
                     "price": price,
                     "seat_row": seat_row,
                     "seat_column": seat_column,
-                    "ticket_guest": guests
+                    "ticket_guest": guests,
+                    "qr_code": qr_b64
                 })
         return jsonify(results), 200
     except Exception as e:
@@ -176,6 +184,11 @@ def get_ticket_by_id(ticket_id):
         ticket = get_ticket(ticket_id)
         if not ticket:
             return jsonify({"error": "Ticket not found"}), 404
+        qr_buf = make_qr_from_str(
+            f"http://localhost:5173/tickets/group?event_id={ticket['event_id']}&attendee_id={ticket['attendee_id']}"
+        )
+        qr_bytes = qr_buf.getvalue()
+        ticket['qr_code'] = base64.b64encode(qr_bytes).decode('utf-8')
         return jsonify(ticket), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -362,8 +375,25 @@ def sell_ticket(ticket_id):
                 "UPDATE event SET revenue = %s WHERE event_id = %s;",
                 (revenue, event_id)
             )
+            
+            cur.execute(
+                "SELECT u.name, u.email "
+                "FROM users u "
+                "JOIN attendee a ON a.user_id=u.user_id "
+                "WHERE a.user_id=%s",
+                (user_id,)
+            )
+            mail_row = cur.fetchone()
 
-            conn.commit()     
+            conn.commit()
+
+            if mail_row:
+                recipient_name, recipient_email = mail_row
+                pdf_bytes = build_pdf(ticket_id)
+                Mail.send_ticket_email(recipient_email, recipient_name, ticket_id, pdf_bytes)
+                for g in [guest_info]:
+                    Mail.send_ticket_email(g['guest_mail'], g['guest_name'], ticket_id, pdf_bytes)
+                    
         return jsonify({
                 "ticket_id": ticket_id,
                 "payment_id": new_payment_id
@@ -373,7 +403,7 @@ def sell_ticket(ticket_id):
     finally:
         if conn:
             db_pool.putconn(conn)
-
+    
 def make_qr_from_str(data):
     qr = qrcode.make(data)
     buffer = BytesIO()
@@ -404,6 +434,83 @@ def fetch_event(event_id):
             return dict(zip(keys, row))
     finally:
         db_pool.putconn(conn)
+
+def build_pdf(ticket_id):
+    buf = BytesIO()
+    doc = SimpleDocTemplate(
+        buf,
+        pagesize=A4,
+        rightMargin=20*mm, leftMargin=20*mm,
+        topMargin=20*mm, bottomMargin=20*mm
+    )
+
+    styles = getSampleStyleSheet()
+    title_style = ParagraphStyle(
+        'Title', parent=styles['Heading1'],
+        fontSize=20, alignment=1,
+        textColor=colors.HexColor('#333333')
+    )
+    label_style = ParagraphStyle(
+        'Label', parent=styles['Normal'],
+        fontSize=12, textColor=colors.HexColor('#555555'),
+        spaceAfter=4
+    )
+
+    ticket = get_ticket(ticket_id)
+    event  = fetch_event(ticket['event_id'])
+
+    flowables = [
+        Paragraph(f"{event['event_title']}", title_style),
+        Spacer(1, 4*mm),
+        Paragraph(
+            f"<b>Date:</b> {event['event_date'].strftime('%Y-%m-%d')} &nbsp;&nbsp;"
+            f"<b>Time:</b> {event['event_time']}",
+            label_style
+        ),
+        Paragraph(
+            f"<b>Venue:</b> {event['venue_name']} — {event['city']}, {event['location']}",
+            label_style
+        ),
+        Spacer(1, 8*mm),
+        Paragraph(f"Ticket #{ticket['ticket_id']}", styles['Heading2']),
+        Spacer(1, 4*mm),
+        Paragraph(
+            f"<b>Class:</b> {ticket['ticket_class']} &nbsp;&nbsp;"
+            f"<b>Price:</b> ${ticket['price']} &nbsp;&nbsp;"
+            f"<b>Seat:</b> Row {ticket['seat_row']}, Col {ticket['seat_column']}",
+            label_style
+        ),
+        Spacer(1, 6*mm)
+    ]
+
+    data = [['Name','Email','Phone','Birth Date']]
+    for g in ticket['ticket_guest']:
+        data.append([
+            g['guest_name'],
+            g['guest_mail'],
+            g['guest_phone'],
+            g['guest_birth_date'].strftime('%Y-%m-%d')
+        ])
+    tbl = Table(data, colWidths=[50*mm,60*mm,40*mm,30*mm])
+    tbl.setStyle(TableStyle([
+        ('BACKGROUND',(0,0),(-1,0),colors.HexColor('#f5f5f5')),
+        ('FONTNAME',(0,0),(-1,0),'Helvetica-Bold'),
+        ('ALIGN',(0,0),(-1,-1),'LEFT'),
+        ('GRID',(0,0),(-1,-1),0.5,colors.HexColor('#dddddd')),
+    ]))
+    flowables.append(tbl)
+    flowables.append(Spacer(1,12*mm))
+
+    qr_buf = make_qr_from_str(
+        f"http://localhost:5173/tickets/group?event_id={ticket['event_id']}&attendee_id={ticket['attendee_id']}"
+    )
+    qr = Image(qr_buf, 35*mm, 35*mm)
+    qr.hAlign = 'RIGHT'
+    flowables.append(qr)
+
+    doc.build(flowables)
+    buf.seek(0)
+    return buf.read()
 
 @bp.route("/<int:ticket_id>/pdf", methods=["GET"])
 def pdf_ticket(ticket_id):
@@ -479,7 +586,9 @@ def pdf_ticket(ticket_id):
     flowables.append(tbl)
     flowables.append(Spacer(1,12*mm))
 
-    qr_buf = make_qr_from_str(f"https://localhost:8080/api/tickets/{ticket_id}")
+    qr_buf = make_qr_from_str(
+        f"http://localhost:5173/tickets/group?event_id={ticket['event_id']}&attendee_id={ticket['attendee_id']}"
+    )
     qr_buf.seek(0)
     qr = Image(qr_buf, 35*mm, 35*mm)
     qr.hAlign = 'RIGHT'

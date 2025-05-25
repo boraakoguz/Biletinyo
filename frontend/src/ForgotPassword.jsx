@@ -17,7 +17,9 @@ function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [cooldown, setCooldown] = useState(0);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -39,6 +41,7 @@ function ForgotPassword() {
     try {
       await apiService.sendResetCode(email);
       alert("Code sent to your email.");
+      setCooldown(60);
     } catch (error) {
       console.error("Error sending code:", error.message);
       alert("Failed to send code.");
@@ -46,9 +49,49 @@ function ForgotPassword() {
       setLoading(false);
     }
   };
+  useEffect(() => {
+    if (cooldown === 0) return;
+
+    const interval = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [cooldown]);
 
   const handleConfirm = async () => {
-    
+    if (!code || !newPassword || !confirmPassword) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await apiService.resetPasswordWithToken(code, newPassword);
+
+      if (res.error) {
+        alert(res.error);
+      } else {
+        alert("Password successfully changed.");
+        navigate("/login");
+      }
+    } catch (err) {
+      console.error("Reset error:", err.message);
+      alert("Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -101,12 +144,17 @@ function ForgotPassword() {
               variant="contained"
               color="primary"
               onClick={handleSendCode}
-              disabled={loading || !email}
+              disabled={loading || !email || cooldown > 0}
             >
-              {loading ? "Sending..." : "Send Code"}
+              {cooldown > 0
+                ? `Send Code (${cooldown}s)`
+                : loading
+                ? "Sending..."
+                : "Send Code"}
             </Button>
             <TextField
               label="Enter Code"
+              required
               variant="outlined"
               inputProps={{ maxLength: 40 }}
               onChange={(e) => setCode(e.target.value)}
@@ -116,9 +164,18 @@ function ForgotPassword() {
               label="Enter New Password"
               variant="outlined"
               type="password"
+              required
               inputProps={{ maxLength: 30 }}
               onChange={(e) => setNewPassword(e.target.value)}
               value={newPassword}
+            />
+            <TextField
+              label="Confirm Password"
+              variant="outlined"
+              type="password"
+              required
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              value={confirmPassword}
             />
             <Button
               variant="contained"

@@ -76,34 +76,50 @@ export default function GroupedTicketsPage() {
       <Box sx={{ bgcolor: "#fafafa" }}>
         <Divider />
       </Box>
-      <Container sx={{ mt: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          {eventInfo ? eventInfo.event_title : `Event #${eventId}`}
-        </Typography>
-        {eventInfo && (
-          <Box sx={{ mb: 3 }}>
-            <Typography><strong>Date:</strong> {eventInfo.event_date} at {eventInfo.event_time}</Typography>
-            <Typography><strong>Location:</strong> {eventInfo.location}, {eventInfo.city}</Typography>
-            <Typography><strong>Venue:</strong> {eventInfo.venue_name}</Typography>
-            <Typography><strong>Category:</strong> {eventInfo.category}</Typography>
-            {eventInfo.regulations && (
-              <Typography><strong>Rules:</strong> {eventInfo.regulations}</Typography>
-            )}
-            {eventInfo.description && (
-              <Typography><strong>Description:</strong> {eventInfo.description}</Typography>
-            )}
-          </Box>
+      <Box sx={{ position: 'relative' }}>
+        {tickets[0]?.qr_code && (
+          <Box
+            component="img"
+            src={`data:image/png;base64,${tickets[0].qr_code}`}
+            alt="QR Code"
+            sx={{
+              position: 'absolute',
+              top: 16,
+              right: 16,
+              width: 150,
+              height: 150,
+            }}
+          />
         )}
-        {tickets.map((t) => (
-          <Paper key={t.ticket_id} sx={{ p: 2, mb: 2 }}>
-            <Typography><strong>Ticket ID:</strong> {t.ticket_id}</Typography>
-            <Typography><strong>Guest:</strong> {t.ticket_guest[0]?.guest_name || "—"}</Typography>
-            <Typography><strong>Seat:</strong> Row {t.seat_row}, Col {t.seat_column}</Typography>
-            <Typography><strong>Price:</strong> ${t.price}</Typography>
-            <Typography><strong>Status:</strong> {t.ticket_state === 1 ? "Active" : "Cancelled"}</Typography>
-          </Paper>
-        ))}
-      </Container>
+        <Container sx={{ mt: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            {eventInfo ? eventInfo.event_title : `Event #${eventId}`}
+          </Typography>
+          {eventInfo && (
+            <Box sx={{ mb: 3 }}>
+              <Typography><strong>Date:</strong> {eventInfo.event_date} at {eventInfo.event_time}</Typography>
+              <Typography><strong>Location:</strong> {eventInfo.location}, {eventInfo.city}</Typography>
+              <Typography><strong>Venue:</strong> {eventInfo.venue_name}</Typography>
+              <Typography><strong>Category:</strong> {eventInfo.category}</Typography>
+              {eventInfo.regulations && (
+                <Typography><strong>Rules:</strong> {eventInfo.regulations}</Typography>
+              )}
+              {eventInfo.description && (
+                <Typography><strong>Description:</strong> {eventInfo.description}</Typography>
+              )}
+            </Box>
+          )}
+          {tickets.map((t) => (
+            <Paper key={t.ticket_id} sx={{ p: 2, mb: 2 }}>
+              <Typography><strong>Ticket ID:</strong> {t.ticket_id}</Typography>
+              <Typography><strong>Guest:</strong> {t.ticket_guest[0]?.guest_name || "—"}</Typography>
+              <Typography><strong>Seat:</strong> Row {t.seat_row}, Col {t.seat_column}</Typography>
+              <Typography><strong>Price:</strong> ${t.price}</Typography>
+              <Typography><strong>Status:</strong> {t.ticket_state === 1 ? "Active" : "Cancelled"}</Typography>
+            </Paper>
+          ))}
+        </Container>
+      </Box>
     </>
   );
 }
