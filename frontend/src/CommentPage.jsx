@@ -21,6 +21,7 @@ export default function CommentPage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const { id } = useParams();
   const navigate = useNavigate();
+  const [sending, setSending] = useState(false);
 
   const handleSignInRedirect = () => {
     navigate("/signin");
@@ -69,14 +70,18 @@ export default function CommentPage() {
   const [newTitle, setNewTitle] = useState("");
 
   const avg = comments.reduce((s, c) => s + c.rating, 0) / comments.length || 0;
-
   const send = async () => {
+    if (sending) return; // Prevent spam clicks
+
     if (!newTitle.trim() || !newText.trim() || newRate === 0) return;
+
+    setSending(true); // Start cooldown
 
     const token = localStorage.getItem("token");
     const raw = localStorage.getItem("user");
     const user = raw ? JSON.parse(raw) : null;
     const userId = user ? Number(user.id) : null;
+
     const commentPayload = {
       event_id: parseInt(eventId),
       rating: newRate,
@@ -109,6 +114,9 @@ export default function CommentPage() {
       setNewRate(0);
     } catch (err) {
       console.error("Comment send failed:", err);
+    } finally {
+      // Cooldown lasts 1 second
+      setTimeout(() => setSending(false), 1000);
     }
   };
 
@@ -289,8 +297,9 @@ export default function CommentPage() {
                   variant="contained"
                   sx={{ mt: 1 }}
                   onClick={send}
+                  disabled={sending}
                 >
-                  Send
+                  {sending ? "Sending..." : "Send"}
                 </Button>
               </Box>
             ) : (
