@@ -421,6 +421,25 @@ export const apiService = {
     const blob = await res.blob();
     return URL.createObjectURL(blob);
   },
+  
+  sendResetCode: async (email) => {
+    const res = await fetch("http://localhost:8080/api/forgot_password/", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    return await res.json();
+  },
+
+
+  resetPasswordWithToken: async (token, password) => {
+    const res = await fetch(`http://localhost:8080/api/forgot_password/${token}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ password }),
+    });
+    return await res.json();
+  },
 }; 
 
 

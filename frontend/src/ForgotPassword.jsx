@@ -17,6 +17,7 @@ function ForgotPassword() {
   const [email, setEmail] = useState("");
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -48,7 +49,32 @@ function ForgotPassword() {
   };
 
   const handleConfirm = async () => {
-    
+    if (!code || !newPassword || !confirmPassword) {
+      alert("Please fill in all fields.");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match.");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const res = await apiService.resetPasswordWithToken(code, newPassword);
+
+      if (res.error) {
+        alert(res.error);
+      } else {
+        alert("Password successfully changed.");
+        navigate("/login");
+      }
+    } catch (err) {
+      console.error("Reset error:", err.message);
+      alert("Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -115,6 +141,13 @@ function ForgotPassword() {
               type="password"
               onChange={(e) => setNewPassword(e.target.value)}
               value={newPassword}
+            />
+            <TextField
+              label="Confirm Password"
+              variant="outlined"
+              type="password"
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              value={confirmPassword}
             />
             <Button
               variant="contained"
