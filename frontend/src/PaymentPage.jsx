@@ -209,6 +209,11 @@ export default function PaymentPage() {
                   fullWidth
                   value={amount}
                   onChange={handleAmountChange}
+                  inputProps={{
+                    maxLength: 7,
+                    inputMode: "decimal",
+                    pattern: "^[0-9]*\\.?[0-9]*$",
+                  }}
                 />
                 <Button
                   variant="outlined"

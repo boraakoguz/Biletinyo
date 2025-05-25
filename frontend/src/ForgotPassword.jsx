@@ -134,6 +134,8 @@ function ForgotPassword() {
             <TextField
               label="Email"
               variant="outlined"
+              inputProps={{ maxLength: 30 }}
+              type="email"
               required
               onChange={(e) => setEmail(e.target.value)}
               value={email}
@@ -154,6 +156,7 @@ function ForgotPassword() {
               label="Enter Code"
               required
               variant="outlined"
+              inputProps={{ maxLength: 40 }}
               onChange={(e) => setCode(e.target.value)}
               value={code}
             />
@@ -162,6 +165,7 @@ function ForgotPassword() {
               variant="outlined"
               type="password"
               required
+              inputProps={{ maxLength: 30 }}
               onChange={(e) => setNewPassword(e.target.value)}
               value={newPassword}
             />
