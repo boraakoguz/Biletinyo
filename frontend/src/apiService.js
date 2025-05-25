@@ -319,9 +319,38 @@ export const apiService = {
   },
   
   // Reports
-  getSalesReport: async (organizerId) => {
-    const res = await fetchWithAuth(`/reports/sales/${organizerId}`);
-    return res.json();
+  getAllReports: async () => {
+    const res = await fetch(`${API_BASE_URL}/reports`);
+    if (!res.ok) throw new Error("Failed to fetch reports");
+    return await res.json();
+  },
+
+  getReportById: async (reportId) => {
+    const res = await fetch(`${API_BASE_URL}/reports/${reportId}`);
+    if (!res.ok) throw new Error("Failed to fetch report by ID");
+    return await res.json();
+  },
+
+  getDailyRevenue: async (startDate, endDate) => {
+    const params = new URLSearchParams();
+    if (startDate) params.append("start_date", startDate);
+    if (endDate) params.append("end_date", endDate);
+
+    const res = await fetch(`${API_BASE_URL}/reports/daily_revenue?${params.toString()}`);
+    if (!res.ok) throw new Error("Failed to fetch daily revenue");
+    return await res.json();
+  },
+
+  getSalesSummary: async () => {
+    const res = await fetch(`${API_BASE_URL}/reports/sales_summary`);
+    if (!res.ok) throw new Error("Failed to fetch sales summary");
+    return await res.json();
+  },
+
+  getTopEvents: async () => {
+    const res = await fetch(`${API_BASE_URL}/reports/top_events`);
+    if (!res.ok) throw new Error("Failed to fetch top events");
+    return await res.json();
   },
 
   getUserFollows: async (userId, organizerId = null) => {
