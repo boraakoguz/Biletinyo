@@ -81,7 +81,7 @@ export default function CreateEvent() {
         setVenues(data);
       } catch (err) {
         console.error(err);
-        setError("Mekanlar yüklenirken hata oluştu.");
+        setError("Error occured when loading venues.");
       }
     })();
   }, []);
@@ -194,7 +194,7 @@ export default function CreateEvent() {
             <TextField
               fullWidth
               size="small"
-              placeholder="Etkinlik veya lokasyon ara..."
+              placeholder="Search event or venue..."
               disabled
               sx={{
                 backgroundColor: "white",

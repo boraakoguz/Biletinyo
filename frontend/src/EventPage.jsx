@@ -94,13 +94,13 @@ function EventPage() {
   if (error || !event) {
     return (
       <Box sx={{ p: 4, textAlign: "center" }}>
-        <Typography variant="h6">Etkinlik bulunamadı</Typography>
+        <Typography variant="h6">Could not find event</Typography>
         <Button
           variant="contained"
           sx={{ mt: 2 }}
           onClick={() => navigate("/")}
         >
-          Ana sayfaya dön
+          Return to Main Page
         </Button>
       </Box>
     );

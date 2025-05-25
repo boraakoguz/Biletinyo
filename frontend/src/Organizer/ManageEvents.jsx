@@ -128,7 +128,7 @@ const ManageEvents = () => {
                   {/* Doluluk oranı göstergesi */}
                   <Box sx={{ mt: 1 }}>
                     <Chip
-                      label={`${evt.occupied} / ${evt.capacity} doluluk`}
+                      label={`${evt.occupied} / ${evt.capacity} fullness`}
                       size="small"
                       color={
                         evt.capacity > 0 && evt.occupied / evt.capacity > 0.8
