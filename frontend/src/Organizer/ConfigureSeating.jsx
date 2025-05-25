@@ -92,7 +92,7 @@ export default function ConfigureSeating() {
 
         if (!imgRes.ok) throw new Error(await imgRes.text());
       }
-
+      localStorage.removeItem("draftEvent");
       setSnackbar({ open: true, message: "Etkinlik başarıyla oluşturuldu." });
       setTimeout(() => navigate("/organizer/events"), 1500);
     } catch (err) {
