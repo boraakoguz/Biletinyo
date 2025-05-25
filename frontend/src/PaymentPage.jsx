@@ -77,48 +77,56 @@ export default function PaymentPage() {
   };
 
   const handlePurchase = async () => {
-    if (method === "Wallet" && balance < totalPrice) return;
     const guests = JSON.parse(localStorage.getItem("guest_info")) || [];
-    for (let i = 0; i < selectedTicketIds.length; i++) {
-      const ticketId = selectedTicketIds[i];
-      const body = {
-        user_id: userId,
-        payment_method: method === "Wallet" ? 1 : 0,
-        guest_info: {
-          guest_name: guests[i]?.name,
-          guest_mail: guests[i]?.mail,
-          guest_phone: guests[i]?.contact,
-          guest_birth_date: guests[i]?.birth_date,
-        },
-      };
+    const sales = selectedTicketIds.map((ticketId, idx) => ({
+      ticket_id: ticketId,
+      guest_info: {
+        guest_name: guests[idx]?.name,
+        guest_mail: guests[idx]?.mail,
+        guest_phone: guests[idx]?.contact,
+        guest_birth_date: guests[idx]?.birth_date,
+      },
+    }));
 
-      const res = await fetch(
-        `http://localhost:8080/api/tickets/${ticketId}/sell`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(body),
-        }
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        console.error("Sell error:", data);
-        return;
-      }
+    const payload = {
+      user_id: userId,
+      payment_method: method === "Wallet" ? 1 : 0,
+      sales: sales,
+    };
+
+    const res = await fetch("http://localhost:8080/api/tickets/sell", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      console.error("Payment error:", data);
+      alert(data?.error || "Payment failed.");
+      return;
+    }
+
+    const failed = data.filter((r) => r.status !== "success");
+    if (failed.length > 0) {
+      console.error("Some tickets failed:", failed);
+      alert("Some tickets could not be purchased.");
+      return;
     }
 
     if (method === "Wallet") {
-      const newB = balance - totalPrice;
-      await fetch(`http://localhost:8080/api/users/${userId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ account_balance: newB }),
-      });
-      setBalance(newB);
+      setBalance((prev) => prev - totalPrice);
     }
 
+    localStorage.removeItem("guest_info");
+    localStorage.removeItem("selected_ticket_ids");
+    localStorage.removeItem("selected_ticket_names");
+    localStorage.removeItem("event_id");
+
     navigate("/");
-  };
+};
+
 
   if (loading) {
     return (

@@ -253,7 +253,8 @@ function SignInPage() {
                 variant="outlined"
                 inputProps={{
                     maxLength: 14,
-                    inputMode: "integer",
+                    inputMode: "numeric",
+                    pattern: "[0-9]*"
                   }}
               />
             </Box>

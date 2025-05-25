@@ -131,7 +131,8 @@ function GuestPage() {
           size="small"
           inputProps={{
             maxLength: 14,
-            inputMode: "integer",
+            inputMode: "numeric",
+            pattern: "[0-9]*"
           }}
           fullWidth
           value={guestData[i]?.contact || ""}
