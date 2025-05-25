@@ -204,6 +204,14 @@ def post_event():
     seat_type_map = data.get("seat_type_map")
 
     conn = db_pool.getconn()
+    
+    with conn.cursor() as cur:
+        cur.execute(
+            "SELECT 1 FROM event WHERE venue_id = %s AND event_date = %s AND event_time = %s",
+            (venue_id, event_date, event_time)
+        )
+        if cur.fetchone():
+            return jsonify({"error": "Conflicting event at this venue, date and time"}), 409
     try:
         with conn.cursor() as cur:
             cur.execute(

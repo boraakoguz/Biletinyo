@@ -273,6 +273,11 @@ def get_organizer_revenue(organizer_id):
     try:
         conn = db_pool.getconn()
         with conn.cursor() as cur:
+            cur.execute("SELECT user_type FROM users WHERE user_id = %s", (organizer_id,))
+            row = cur.fetchone()
+            if not row or row[0] != definitions.USER_TYPE_ORGANIZER:
+                return jsonify({"error": "Given user is not an organizer"}), 403
+            
             cur.execute("""
                 SELECT COALESCE(SUM(revenue), 0)
                 FROM event
@@ -281,6 +286,32 @@ def get_organizer_revenue(organizer_id):
             total_revenue = cur.fetchone()[0]
 
         return jsonify({"organizer_id": organizer_id, "total_revenue": total_revenue}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
+@bp.route("/organizer/<int:organizer_id>/ticket_count", methods=["GET"])
+def get_organizer_sold_ticket_count(organizer_id):
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("SELECT user_type FROM users WHERE user_id = %s", (organizer_id,))
+            row = cur.fetchone()
+            if not row or row[0] != definitions.USER_TYPE_ORGANIZER:
+                return jsonify({"error": "Given user is not an organizer"}), 403
+
+            cur.execute("""
+                        SELECT COALESCE(COUNT(t.ticket_id), 0)
+                        FROM ticket t
+                        JOIN event e ON t.event_id = e.event_id
+                        WHERE e.organizer_id = %s AND t.ticket_state = %s;
+                        """, (organizer_id, definitions.TICKET_STATE_SOLD))
+            ticket_count = cur.fetchone()[0]
+        
+        return jsonify({"organizer_id": organizer_id, "ticket_count": ticket_count}), 200
+    
     except Exception as e:
         return jsonify({"error": str(e)}), 500
     finally:
