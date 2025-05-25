@@ -59,16 +59,16 @@ function MainPage() {
   };
 
   useEffect(() => {
-    if(localStorage.getItem("event_id")){
+    if (localStorage.getItem("event_id")) {
       localStorage.removeItem("event_id");
     }
-    if(localStorage.getItem("guest_info")){
+    if (localStorage.getItem("guest_info")) {
       localStorage.removeItem("guest_info");
     }
-    if(localStorage.getItem("selected_ticket_ids")){
+    if (localStorage.getItem("selected_ticket_ids")) {
       localStorage.removeItem("selected_ticket_ids");
     }
-    if(localStorage.getItem("selected_ticket_names")){
+    if (localStorage.getItem("selected_ticket_names")) {
       localStorage.removeItem("selected_ticket_names");
     }
     const token = localStorage.getItem("token");
@@ -174,9 +174,18 @@ function MainPage() {
           if (endDate) params.append("end_date", endDate);
         }
         const data = await apiService.getEvents(params.toString());
+
         console.log("Fetched events:", data);
         console.log("Fetching with:", params.toString());
-        setEvents(data);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const futureEvents = data.filter((event) => {
+          const eventDate = new Date(event.event_date);
+          eventDate.setHours(0, 0, 0, 0);
+          return eventDate >= today;
+        });
+
+        setEvents(futureEvents);
       } catch (err) {
         console.error("Error loading events:", err);
         setError(err.message);
@@ -547,7 +556,9 @@ function MainPage() {
                         <CardActionArea onClick={() => openEvent(event)}>
                           <CardMedia
                             component="img"
-                            image={event.image}
+                            image={`http://localhost:8080${
+                              event.image_urls?.[0] || "/api/images/default.png"
+                            }`}
                             alt={event.title}
                             sx={{ height: 180, objectFit: "cover" }}
                           />

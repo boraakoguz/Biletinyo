@@ -128,7 +128,14 @@ export default function OrganizerPage() {
     <Grid item key={ev.event_id}>
       <Card sx={{ width: 280 }}>
         <CardActionArea onClick={() => navigate(`/event/${ev.event_id}`)}>
-          <CardMedia component="img" sx={{ height: 150 }} image={ev.image} />
+          <CardMedia
+            component="img"
+            sx={{ height: 150, objectFit: "cover" }}
+            image={`http://localhost:8080${
+              ev.image_urls?.[0] || "/api/images/default.png"
+            }`}
+            alt={ev.event_title}
+          />
           <CardContent>
             <Typography fontWeight={600}>{ev.event_title}</Typography>
             <Typography variant="body2" color="text.secondary">
