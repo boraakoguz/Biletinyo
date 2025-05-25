@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import apiService from "../apiService";
 import {
   AppBar,
@@ -105,10 +105,11 @@ export default function CreateEvent() {
     }
     console.log("Form: ", formData);
   };
+  const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files || []);
-    const validFiles = files.filter((file) => file.type === "image/png");
+    const validFiles = files.filter((f) => f.type === "image/png");
 
     if (validFiles.length !== files.length) {
       setError("Only PNG files are accepted");
@@ -121,6 +122,8 @@ export default function CreateEvent() {
       images: [...(p.images || []), ...validFiles],
     }));
     setError(null);
+
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
   const [today, setToday] = useState("");
 
@@ -350,6 +353,7 @@ export default function CreateEvent() {
                   : "Choose File"}
                 <input
                   hidden
+                  ref={fileInputRef}
                   type="file"
                   accept="image/png"
                   multiple
