@@ -126,7 +126,7 @@ export default function AdminReports() {
                     <ListItem key={i}>
                       <ListItemText
                         primary={e.title}
-                        secondary={`${e.ticketsSold} bilet satıldı`}
+                        secondary={`${e.ticketsSold} Ticket sold`}
                       />
                     </ListItem>
                   ))}

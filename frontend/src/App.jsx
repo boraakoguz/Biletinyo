@@ -25,8 +25,6 @@ import ConfigureSeating from "./Organizer/ConfigureSeating";
 import AdminDashboard from "./Admin/AdminDashboard";
 import AdminVenueManagement from "./Admin/VenueManagement";
 import AdminAddVenue from "./Admin/AdminAddVenue";
-import AdminPendingEvents from "./Admin/AdminPendingEvents";
-import AdminUserManagement from "./Admin/UserManagement";
 import AdminReports from "./Admin/AdminReports";
 import AdminPayments from "./Admin/AdminPayments";
 import ForgotPassword from "./ForgotPassword";
@@ -220,24 +218,6 @@ function App() {
             </AuthRoute>
           }
         />
-
-        <Route
-          path="/admin/events/pending"
-          element={
-            <AuthRoute requireAdmin={true}>
-              <AdminPendingEvents />
-            </AuthRoute>
-          }
-        />
-        <Route
-          path="/admin/users"
-          element={
-            <AuthRoute requireAdmin={true}>
-              <AdminUserManagement />
-            </AuthRoute>
-          }
-        />
-
         <Route
           path="/admin/reports"
           element={

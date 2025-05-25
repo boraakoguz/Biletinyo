@@ -40,7 +40,7 @@ export default function AdminVenueManagement() {
           ...requested.map((v) => ({
             ...v,
             status: "pending",
-            organizerNote: `Oluşturan: ${v.venue_description || ""}`,
+            organizerNote: `Created by: ${v.venue_description || ""}`,
           })),
         ];
         setVenues(normalized);
@@ -165,7 +165,7 @@ export default function AdminVenueManagement() {
             <TextField
               fullWidth
               size="small"
-              placeholder="Mekan ara..."
+              placeholder="Search event..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               sx={{
@@ -224,7 +224,7 @@ export default function AdminVenueManagement() {
                     }
                     sx={{ mt: 1 }}
                   >
-                    {expandedVenueId === v.venue_id ? "Gizle" : "Detaylar"}
+                    {expandedVenueId === v.venue_id ? "Hide" : "Details"}
                   </Button>
                   <Collapse in={expandedVenueId === v.venue_id}>
                     <Divider sx={{ my: 1 }} />
@@ -233,7 +233,7 @@ export default function AdminVenueManagement() {
                     </Typography>
                     <Typography variant="body2" gutterBottom>
                       <strong>Description: </strong>
-                      {v.venue_description || "Belirtilmemiş"}
+                      {v.venue_description || "Undefined"}
                     </Typography>
                     {renderSeatMap(v.seat_map)}
                   </Collapse>
