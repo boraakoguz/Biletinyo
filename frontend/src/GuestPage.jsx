@@ -65,7 +65,7 @@ function GuestPage() {
   if (!event) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", mt: 10 }}>
-        <Typography color="error">Etkinlik bulunamadı.</Typography>
+        <Typography color="error">Could not find event.</Typography>
       </Box>
     );
   }
