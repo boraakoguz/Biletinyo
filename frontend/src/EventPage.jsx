@@ -38,9 +38,6 @@ function EventPage() {
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
     setIsLoggedIn(!!token && !!user);
-    if (localStorage.getItem("event_id")) {
-      localStorage.removeItem("event_id");
-    }
   }, []);
 
   useEffect(() => {
@@ -320,7 +317,6 @@ function EventPage() {
                 </Typography>
               </Grid>
             </Grid>
-
             <Box
               sx={{
                 position: "absolute",

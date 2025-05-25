@@ -7,6 +7,7 @@ import {
   CircularProgress,
   Button,
 } from "@mui/material";
+import { useNavigate } from "react-router-dom";
 import armchair from "./assets/armchair.png";
 
 const SEAT_COLORS = {
@@ -30,13 +31,12 @@ function Seating() {
   const [event, setEvent] = useState(null);
   const [selectedSeats, setSelectedSeats] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const raw = localStorage.getItem("event_id");
     const eventId = raw ? parseInt(raw) : null;
-
     if (!eventId) return;
-
     fetch(`http://localhost:8080/api/events/${eventId}`)
       .then((res) => res.json())
       .then((data) => {
@@ -48,13 +48,40 @@ function Seating() {
   const toggleSeat = (rowIdx, colIdx) => {
     const val = event.seat_type_map[rowIdx][colIdx];
     if (val === 4) return;
-
     const seatId = `${rowIdx + 1}-${colIdx + 1}`;
     setSelectedSeats((prev) =>
       prev.includes(seatId)
         ? prev.filter((id) => id !== seatId)
         : [...prev, seatId]
     );
+  };
+
+  const handleContinue = async () => {
+    const eventId = localStorage.getItem("event_id");
+    if (!eventId || selectedSeats.length === 0) return;
+
+    const params = new URLSearchParams();
+    params.append("event_id", eventId);
+    selectedSeats.forEach(seat => {
+      const [row, col] = seat.split("-");
+      params.append("seats", `${parseInt(row)}-${parseInt(col)}`);
+    });
+
+    try {
+      const res = await fetch(`http://localhost:8080/api/tickets/?${params.toString()}`);
+      if (!res.ok) throw new Error("Failed to fetch tickets");
+      const tickets = await res.json();
+      const ticketIds = tickets.map(ticket => ticket.ticket_id);
+      localStorage.setItem("selected_ticket_ids", JSON.stringify(ticketIds));
+      const ticketNames = selectedSeats.map(seat => {
+        const [row, col] = seat.split("-").map(Number);
+        return `${toRowLabel(row)}${col}`;
+      });
+      localStorage.setItem("selected_ticket_names", JSON.stringify(ticketNames));
+      navigate(`/event/${eventId}/guest`);
+    } catch (err) {
+      console.error("Ticket fetch error:", err);
+    }
   };
 
   if (loading || !event) return <CircularProgress sx={{ m: 5 }} />;
@@ -166,12 +193,11 @@ function Seating() {
               Seat Indicators
             </Typography>
             <Grid container spacing={2}>
-              {[
-                { label: "Default", color: SEAT_COLORS[1] },
+              {[{ label: "Default", color: SEAT_COLORS[1] },
                 { label: "VIP", color: SEAT_COLORS[2] },
                 { label: "Premium", color: SEAT_COLORS[3] },
                 { label: "Occupied", color: SEAT_COLORS[4] },
-                { label: "Selected", color: "green" },
+                { label: "Selected", color: "green" }
               ].map(({ label, color }) => (
                 <Grid item key={label}>
                   <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -230,7 +256,7 @@ function Seating() {
               variant="contained"
               color="primary"
               disabled={selectedSeats.length === 0}
-              onClick={() => {}}
+              onClick={handleContinue}
             >
               Continue
             </Button>
