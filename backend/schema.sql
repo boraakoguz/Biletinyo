@@ -9,6 +9,13 @@ CREATE TABLE users (
     birth_date  DATE
 );
 
+CREATE TABLE password_reset (
+  id         SERIAL PRIMARY KEY,
+  user_id    INT UNIQUE NOT NULL REFERENCES users(user_id) ON DELETE CASCADE,
+  token      VARCHAR(128) NOT NULL UNIQUE,
+  expires_at TIMESTAMP NOT NULL
+);
+
 CREATE TABLE attendee (
     user_id                 INT PRIMARY KEY,
     

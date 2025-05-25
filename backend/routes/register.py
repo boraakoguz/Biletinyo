@@ -3,8 +3,10 @@ from database import db_pool
 import bcrypt
 import definitions
 from routes.mail import Mail
+import secrets
 
 bp = Blueprint("register", __name__)
+
 @bp.route("/", methods=["POST"])
 def register():
     data = request.get_json(force=True)
