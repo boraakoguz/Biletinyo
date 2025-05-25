@@ -248,7 +248,7 @@ def reject_venue_request(venue_id):
         if conn:
             db_pool.putconn(conn)
 
-@bp.route("/accept/<int:venue_id>", methods=["POST"])
+@bp.route("/unavailable/<int:venue_id>", methods=["POST"])
 def make_venue_unavailable(venue_id):
     conn = None
     try:
