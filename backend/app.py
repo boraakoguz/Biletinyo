@@ -7,7 +7,7 @@ from psycopg2 import pool
 from routes.mail import mail
 
 import bcrypt
-from routes import users, events, tickets, comments, images, venues, login, register, payments, reports, follows
+from routes import users, events, tickets, comments, images, venues, login, register, payments, reports, follows, forget_password
 
 IMAGE_FOLDER = "images"
 
@@ -43,6 +43,8 @@ app.register_blueprint(venues.bp, url_prefix='/api/venues')
 app.register_blueprint(payments.bp, url_prefix='/api/payments')
 app.register_blueprint(reports.bp, url_prefix='/api/reports')
 app.register_blueprint(follows.bp, url_prefix='/api/follows')
+app.register_blueprint(forget_password.bp, url_prefix='/api/forgot_password')
+
 
 jwt = JWTManager(app)
 if __name__ == "__main__":
