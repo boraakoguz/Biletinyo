@@ -103,14 +103,14 @@ export default function AdminReports() {
             onClick={() => navigate("/admin/dashboard")}
             sx={{ borderColor: "white" }}
           >
-            Geri
+            Back
           </Button>
         </Toolbar>
       </AppBar>
 
       <Container sx={{ mt: 4, mb: 6 }}>
         <Typography variant="h4" gutterBottom>
-          Raporlar & Analitik
+          Reports & Analytics
         </Typography>
 
         <Grid container spacing={4} mb={4}>
@@ -177,7 +177,7 @@ export default function AdminReports() {
         {/* Export Buttons */}
         <Stack direction="row" spacing={2}>
           <Button variant="contained" onClick={exportCSV}>
-            CSV Olarak İndir
+            Download as CSV
           </Button>
         </Stack>
       </Container>

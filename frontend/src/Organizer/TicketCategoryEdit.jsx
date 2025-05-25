@@ -72,33 +72,13 @@ export default function TicketCategoryEdit() {
           >
             Biletinyo
           </Typography>
-
-          {/* (Optional) search bar */}
-          <Box sx={{ flexGrow: 1, maxWidth: 400, mx: 2 }}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Etkinlik, mekan ya da sanatçı arayın..."
-              sx={{
-                backgroundColor: "white",
-                borderRadius: 3,
-                "& .MuiOutlinedInput-root fieldset": { border: "none" },
-              }}
-            />
-          </Box>
-
-          <Stack direction="row" spacing={1}>
-            <Button color="inherit" onClick={() => navigate("/login")}>
-              Login
-            </Button>
-            <Button
-              variant="outlined"
-              color="inherit"
-              onClick={() => navigate("/signin")}
-            >
-              Sign In
-            </Button>
-          </Stack>
+          <Button
+            variant="outlined"
+            color="inherit"
+            onClick={() => navigate("/organizer/dashboard")}
+          >
+            Back
+          </Button>
         </Toolbar>
       </AppBar>
 

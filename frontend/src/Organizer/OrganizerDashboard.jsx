@@ -304,7 +304,9 @@ const OrganizerDashboard = () => {
           <Typography color="text.secondary">No Past Events.</Typography>
         )}
 
-        <Typography variant="h5" gutterBottom>
+        <Typography variant="h5" sx={{
+                    mt: 3
+                  }} gutterBottom>
           Requested Venues
         </Typography>
         {requestedVenues.length ? (
