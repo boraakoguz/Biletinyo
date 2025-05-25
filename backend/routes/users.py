@@ -2,6 +2,7 @@ from flask import Blueprint, jsonify, request
 from database import db_pool
 from flask_jwt_extended import jwt_required, get_jwt_identity
 from psycopg2.extras import RealDictCursor
+import definitions
 
 bp = Blueprint("users", __name__)
 
@@ -38,7 +39,7 @@ def get_users():
                     "phone": u_phone,
                     "birth_date": u_birth.isoformat() if u_birth else None,
                 }
-                if o_organization and u_type==1:
+                if o_organization and u_type==definitions.USER_TYPE_ORGANIZER:
                     json["organization_name"]=o_organization
                 result.append(json)
             return jsonify(result), 200
@@ -91,7 +92,6 @@ def get_user_by_id(user_id):
             db_pool.putconn(conn)
 
 @bp.route("/<int:user_id>", methods=["DELETE"])
-#@jwt_required()
 def delete_user_by_id(user_id):
     try:
         conn = db_pool.getconn()
@@ -128,13 +128,13 @@ def post_user():
                 (name, email, password, user_type, phone, birth_date)
             )
             user_id = cur.fetchone()[0]
-            if user_type == 0 and attended_event_count is not None and account_balance is not None:
+            if user_type == definitions.USER_TYPE_ATTENDEE and attended_event_count is not None and account_balance is not None:
                 cur.execute(
                     "INSERT INTO attendee (user_id, attended_event_count, account_balance)"
                     "VALUES (%s, %s, %s);",
                     (user_id, attended_event_count, account_balance)
                 )
-            elif user_type == 1 and organization_name:
+            elif user_type == definitions.USER_TYPE_ORGANIZER and organization_name:
                 cur.execute(
                     "INSERT INTO organizer (user_id, organization_name)"
                     "VALUES (%s, %s);",
@@ -207,7 +207,7 @@ def put_user_by_id(user_id):
                 (name, email, password, user_type, phone, birth_date, user_id)
             )
 
-            if user_type == 0:
+            if user_type == definitions.USER_TYPE_ATTENDEE:
                 cur.execute("DELETE FROM organizer WHERE user_id = %s", (user_id,))
                 cur.execute(
                     """
@@ -220,7 +220,7 @@ def put_user_by_id(user_id):
                     """,
                     (user_id, attended_event_count, account_balance)
                 )
-            elif user_type == 1:
+            elif user_type == definitions.USER_TYPE_ORGANIZER:
                 cur.execute("DELETE FROM attendee WHERE user_id = %s", (user_id,))
                 cur.execute(
                     """
