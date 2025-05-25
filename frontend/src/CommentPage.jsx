@@ -1,3 +1,5 @@
+import "./main-header.css";
+
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -155,22 +157,7 @@ export default function CommentPage() {
             px: 6,
           }}
         >
-          <Typography
-            variant="h4"
-            onClick={() => navigate("/")}
-            sx={{
-              cursor: "pointer",
-              textDecoration: "underline",
-              fontWeight: "bold",
-              fontStyle: "italic",
-              "&:hover": {
-                textDecoration: "none",
-                opacity: 0.8,
-              },
-            }}
-          >
-            Biletinyo
-          </Typography>
+          <a href="/" className={"header-main"}>Biletinyo</a>
 
           <Stack direction="row" spacing={1}>
             {isLoggedIn ? (

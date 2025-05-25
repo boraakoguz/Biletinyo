@@ -1,3 +1,4 @@
+import "./main-header.css";
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import apiService from "./apiService";
@@ -172,22 +173,7 @@ export default function OrganizerPage() {
             px: 6,
           }}
         >
-          <Typography
-            variant="h4"
-            onClick={() => navigate("/")}
-            sx={{
-              cursor: "pointer",
-              textDecoration: "underline",
-              fontWeight: "bold",
-              fontStyle: "italic",
-              "&:hover": {
-                textDecoration: "none",
-                opacity: 0.8,
-              },
-            }}
-          >
-            Biletinyo
-          </Typography>
+        <a href="/" className={"header-main"}>Biletinyo</a>
 
           <Stack direction="row" spacing={1}>
             {isLoggedIn ? (

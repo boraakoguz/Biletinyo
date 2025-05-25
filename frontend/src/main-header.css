@@ -1,0 +1,16 @@
+.header-main {
+    display: block;
+    margin: 0;
+    font-weight: bold;
+
+    text-decoration: underline;
+    font-style: italic;
+    color: white;
+
+    font-size: 2.125rem;
+    line-height: 1.235;
+}
+
+.header-main:visited {
+    color: white;
+}
