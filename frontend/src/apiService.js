@@ -215,6 +215,17 @@ export const apiService = {
     const res = await fetch(`${API_BASE_URL}/venues/`);
     return res.json();
   },
+
+  getAvailableVenues: async () => {
+    const res = await fetch(`${API_BASE_URL}/venues/available`);
+    return res.json();
+  },
+
+  getRequestedVenues: async () => {
+    const res = await fetch(`${API_BASE_URL}/venues/request`);
+    return res.json();
+  },
+  
   
   getVenueById: async (id) => {
     const res = await fetch(`${API_BASE_URL}/venues/${id}`);
@@ -234,6 +245,45 @@ export const apiService = {
       method: 'PUT',
       body: JSON.stringify(venueData),
     });
+    return res.json();
+  },
+
+  requestVenue: async (venueData) => {
+    const res = await fetch("http://localhost:8080/api/venues/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(venueData),
+    });
+  
+    if (!res.ok) {
+      const errMsg = await res.text();
+      throw new Error(errMsg);
+    }
+  
+    return res.text();
+  },
+
+  acceptVenueRequest: async (venueId) => {
+    const res = await fetch(`http://localhost:8080/api/venues/accept/${venueId}`, {
+      method: "POST",
+    });
+    if (!res.ok) throw new Error("Failed to accept venue");
+    return res.text();
+  },
+
+  rejectVenueRequest: async (venueId) => {
+    const res = await fetch(`http://localhost:8080/api/venues/reject/${venueId}`, {
+      method: "DELETE",
+    });
+    if (!res.ok) throw new Error("Failed to reject venue");
+    return res.text();
+  },
+
+  getVenueCapacity: async (venueId) => {
+    const res = await fetch(`http://localhost:8080/api/venues/${venueId}/capacity`);
+    if (!res.ok) throw new Error("Failed to get venue capacity");
     return res.json();
   },
   

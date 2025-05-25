@@ -15,13 +15,14 @@ export default function VenueRequest() {
 
   const [venueName, setVenueName] = useState("");
   const [city, setCity] = useState("");
-  const [description, setDescription] = useState("");
+  const [location, setLocation] = useState("");
+  const [venue_description, setDescription] = useState("");
   const [rows, setRows] = useState(5);
   const [cols, setCols] = useState(5);
 
   const handleSubmit = () => {
     navigate("/organizer/venues/request/seatmap", {
-      state: { venueName, city, rows, cols },
+      state: { venueName, city, location, venue_description, rows, cols },
     });
   };
 
@@ -47,8 +48,15 @@ export default function VenueRequest() {
             required
           />
           <TextField
+            label="Location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            fullWidth
+            required
+          />
+          <TextField
             label="Description"
-            value={description}
+            value={venue_description}
             onChange={(e) => setDescription(e.target.value)}
             fullWidth
             required

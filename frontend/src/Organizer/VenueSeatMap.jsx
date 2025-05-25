@@ -1,11 +1,13 @@
 import React, { useState } from "react";
 import { Box, Container, Typography, Button, Paper, Grid } from "@mui/material";
 import { useLocation, useNavigate } from "react-router-dom";
+import apiService from "../apiService";
 
 export default function VenueSeatMap() {
   const navigate = useNavigate();
   const { state } = useLocation();
-  const { venueName, city, rows, cols } = state || {};
+  const { venueName, city, location, venue_description, rows, cols } =
+    state || {};
 
   const [seatMap, setSeatMap] = useState(
     Array.from({ length: rows }, () => Array.from({ length: cols }, () => 1))
@@ -20,15 +22,29 @@ export default function VenueSeatMap() {
   };
 
   const handleSubmit = async () => {
+    const capacity = seatMap.reduce(
+      (sum, row) => sum + row.filter((seat) => seat === 1).length,
+      0
+    );
+
     const venueData = {
       venue_name: venueName,
       city,
+      location,
+      venue_description,
+      capacity,
       seat_map: seatMap,
+      available: 0,
     };
-    console.log("Submitting venue:", venueData);
 
-    alert("Venue Requested!");
-    navigate("/organizer/events");
+    try {
+      await apiService.requestVenue(venueData);
+      alert("Venue request submitted!");
+      navigate("/organizer/events");
+    } catch (err) {
+      console.error("Error requesting venue:", err);
+      alert("Venue request failed: " + err.message);
+    }
   };
 
   return (
