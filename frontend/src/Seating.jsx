@@ -194,33 +194,34 @@ const handleContinue = async () => {
           </Grid>
 
           <Box sx={{ mt: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Seat Indicators
-            </Typography>
-            <Grid container spacing={2}>
-              {[{ label: "Default", color: SEAT_COLORS[1] },
-                { label: "VIP", color: SEAT_COLORS[2] },
-                { label: "Premium", color: SEAT_COLORS[3] },
-                { label: "Occupied", color: SEAT_COLORS[4] },
-                { label: "Selected", color: "green" }
-              ].map(({ label, color }) => (
-                <Grid item key={label}>
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Box
-                      sx={{
-                        width: 20,
-                        height: 20,
-                        bgcolor: color,
-                        border: "1px solid black",
-                        borderRadius: 0.5,
-                        mr: 1,
-                      }}
-                    />
-                    <Typography variant="body2">{label}</Typography>
-                  </Box>
-                </Grid>
+          <Typography variant="h6" gutterBottom>
+            Seat Indicators
+          </Typography>
+          <Grid container spacing={2}>
+            {[
+              { label: `Default (${event.default_ticket_price} TL)`, color: SEAT_COLORS[1] },
+              { label: `VIP (${event.vip_ticket_price} TL)`, color: SEAT_COLORS[2] },
+              { label: `Premium (${event.premium_ticket_price} TL)`, color: SEAT_COLORS[3] },
+              { label: "Occupied", color: SEAT_COLORS[4] },
+              { label: "Selected", color: "green" }
+            ].map(({ label, color }) => (
+              <Grid item key={label}>
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      width: 20,
+                      height: 20,
+                      bgcolor: color,
+                      border: "1px solid black",
+                      borderRadius: 0.5,
+                      mr: 1,
+                    }}
+                  />
+                  <Typography variant="body2">{label}</Typography>
+                </Box>
+              </Grid>
               ))}
-            </Grid>
+          </Grid>
           </Box>
 
           <Box sx={{ mt: 3 }}>

@@ -59,6 +59,18 @@ function MainPage() {
   };
 
   useEffect(() => {
+    if(localStorage.getItem("event_id")){
+      localStorage.removeItem("event_id");
+    }
+    if(localStorage.getItem("guest_info")){
+      localStorage.removeItem("guest_info");
+    }
+    if(localStorage.getItem("selected_ticket_ids")){
+      localStorage.removeItem("selected_ticket_ids");
+    }
+    if(localStorage.getItem("selected_ticket_names")){
+      localStorage.removeItem("selected_ticket_names");
+    }
     const token = localStorage.getItem("token");
     const user = localStorage.getItem("user");
     setIsLoggedIn(!!token && !!user);

@@ -167,7 +167,7 @@ CREATE TRIGGER update_daily_revenue_trigger
   FOR EACH ROW
   EXECUTE FUNCTION update_daily_revenue();
 
-CREATE OR REPLACE FUNCTION log_payment_sale()
+CREATE OR REPLACE FUNCTION log_ticket_sale()
 RETURNS TRIGGER AS $$
 BEGIN
   INSERT INTO report (
@@ -179,7 +179,7 @@ BEGIN
     'ticket_sale',
     now(),
     jsonb_build_object(
-      'ticket_id', NEW.payment_id,
+      'payment_id', NEW.payment_id,
       'amount',    NEW.payment_amount,
       'date',      NEW.payment_date
     )
@@ -191,7 +191,7 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER log_ticket_sale_trigger
   AFTER INSERT ON payment
   FOR EACH ROW
-  EXECUTE FUNCTION log_payment_sale();
+  EXECUTE FUNCTION log_ticket_sale();
 
 INSERT INTO users (name, email, password, user_type, phone, birth_date) VALUES
 ('User johnson', 'user@user.com', '$2b$12$KKprei.9FfMVomfUWlYYAu8icc7TS58KesyN11GQpI.2eYteMWUXC', 0, '555-1234', '1995-06-15'),
