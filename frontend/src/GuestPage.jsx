@@ -17,8 +17,12 @@ function GuestPage() {
   const [guestData, setGuestData] = useState([]);
 
   const eventId = localStorage.getItem("event_id");
-  const selectedTicketIds = JSON.parse(localStorage.getItem("selected_ticket_ids")) || [];
-  const selectedTicketNames = JSON.parse(localStorage.getItem("selected_ticket_names")) || [];
+  const selectedTicketIds =
+    JSON.parse(localStorage.getItem("selected_ticket_ids")) || [];
+  const selectedTicketNames =
+    JSON.parse(localStorage.getItem("selected_ticket_names")) || [];
+
+  const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
   useEffect(() => {
     if (!eventId) return;
@@ -50,6 +54,24 @@ function GuestPage() {
   };
 
   const handleContinue = () => {
+    for (let i = 0; i < guestData.length; i++) {
+      const guest = guestData[i];
+      if (
+        !guest.name.trim() ||
+        !guest.mail.trim() ||
+        !guest.contact.trim() ||
+        !guest.birth_date
+      ) {
+        alert(`Please fill out all fields for Guest ${i + 1}`);
+        return;
+      }
+
+      if (!isValidEmail(guest.mail)) {
+        alert(`Invalid email format for Guest ${i + 1}`);
+        return;
+      }
+    }
+
     localStorage.setItem("guest_info", JSON.stringify(guestData));
     navigate(`/event/${eventId}/payment`);
   };
@@ -108,9 +130,9 @@ function GuestPage() {
           label="Contact Number"
           size="small"
           inputProps={{
-                    maxLength: 14,
-                    inputMode: "integer",
-                  }}
+            maxLength: 14,
+            inputMode: "integer",
+          }}
           fullWidth
           value={guestData[i]?.contact || ""}
           onChange={(e) => handleChange(i, "contact", e.target.value)}
@@ -121,7 +143,10 @@ function GuestPage() {
           size="small"
           fullWidth
           InputLabelProps={{ shrink: true }}
-          inputProps={{min: "1900-01-01", max: new Date().toISOString().split("T")[0] }}
+          inputProps={{
+            min: "1900-01-01",
+            max: new Date().toISOString().split("T")[0],
+          }}
           value={guestData[i]?.birth_date || ""}
           onChange={(e) => handleChange(i, "birth_date", e.target.value)}
         />

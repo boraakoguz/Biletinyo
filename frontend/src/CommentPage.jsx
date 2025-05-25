@@ -71,11 +71,11 @@ export default function CommentPage() {
 
   const avg = comments.reduce((s, c) => s + c.rating, 0) / comments.length || 0;
   const send = async () => {
-    if (sending) return; // Prevent spam clicks
+    if (sending) return;
 
     if (!newTitle.trim() || !newText.trim() || newRate === 0) return;
 
-    setSending(true); // Start cooldown
+    setSending(true);
 
     const token = localStorage.getItem("token");
     const raw = localStorage.getItem("user");
@@ -115,7 +115,6 @@ export default function CommentPage() {
     } catch (err) {
       console.error("Comment send failed:", err);
     } finally {
-      // Cooldown lasts 1 second
       setTimeout(() => setSending(false), 1000);
     }
   };
