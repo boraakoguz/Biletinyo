@@ -188,7 +188,7 @@ const OrganizerDashboard = () => {
             <TextField
               fullWidth
               size="small"
-              placeholder="Etkinlik, mekan ya da sanatçı ara..."
+              placeholder="Search event, venue or artist..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               sx={{
@@ -224,7 +224,7 @@ const OrganizerDashboard = () => {
                     "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
                   }}
                 >
-                  Üye Girişi
+                  Login
                 </Button>
                 <Button
                   variant="outlined"
@@ -235,7 +235,7 @@ const OrganizerDashboard = () => {
                     "&:hover": { backgroundColor: "rgba(255,255,255,0.1)" },
                   }}
                 >
-                  Üye Ol
+                  Sign In
                 </Button>
               </>
             )}
@@ -292,7 +292,7 @@ const OrganizerDashboard = () => {
         )}
 
         <Typography variant="h5" gutterBottom>
-          Geçmiş Etkinlikler
+          Past Events
         </Typography>
         {past.length ? (
           <Grid container spacing={3}>
