@@ -56,7 +56,20 @@ export default function ConfigureSeating() {
   const handleSubmit = async () => {
     if (submitting) return; // prevent double click
     setSubmitting(true);
+    const hasInvalidPrices = Object.entries(prices).some(([label, val]) => {
+      const num = parseFloat(val);
+      return isNaN(num) || num < 5 || num > 10000;
+    });
 
+    if (hasInvalidPrices) {
+      setSnackbar({
+        open: true,
+        message:
+          "Please enter prices between 5 and 10,000 TL for all categories.",
+      });
+      setSubmitting(false);
+      return;
+    }
     try {
       const payload = {
         ...eventData,
@@ -121,6 +134,7 @@ export default function ConfigureSeating() {
             label="Default Price"
             type="number"
             required
+            inputProps={{ min: 5, max: 5000 }}
             value={prices.default_ticket_price}
             onChange={(e) =>
               setPrices((p) => ({ ...p, default_ticket_price: e.target.value }))
@@ -130,6 +144,7 @@ export default function ConfigureSeating() {
             label="VIP Price"
             type="number"
             required
+            inputProps={{ min: 5, max: 5000 }}
             value={prices.vip_ticket_price}
             onChange={(e) =>
               setPrices((p) => ({ ...p, vip_ticket_price: e.target.value }))
@@ -139,6 +154,7 @@ export default function ConfigureSeating() {
             label="Premium Price"
             required
             type="number"
+            inputProps={{ min: 5, max: 5000 }}
             value={prices.premium_ticket_price}
             onChange={(e) =>
               setPrices((p) => ({ ...p, premium_ticket_price: e.target.value }))

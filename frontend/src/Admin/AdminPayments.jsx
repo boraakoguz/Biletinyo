@@ -55,7 +55,7 @@ export default function AdminPayments() {
             Biletinyo Admin
           </Typography>
           <Typography variant="body2" sx={{ color: "white" }}>
-            Tüm Ticket Sale Raporları
+            All Ticket Sales Reports
           </Typography>
         </Toolbar>
       </AppBar>

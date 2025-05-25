@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import apiService from "../apiService";
 import {
   AppBar,
@@ -105,10 +105,11 @@ export default function CreateEvent() {
     }
     console.log("Form: ", formData);
   };
+  const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
     const files = Array.from(e.target.files || []);
-    const validFiles = files.filter((file) => file.type === "image/png");
+    const validFiles = files.filter((f) => f.type === "image/png");
 
     if (validFiles.length !== files.length) {
       setError("Only PNG files are accepted");
@@ -121,7 +122,16 @@ export default function CreateEvent() {
       images: [...(p.images || []), ...validFiles],
     }));
     setError(null);
+
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
+  const [today, setToday] = useState("");
+
+  useEffect(() => {
+    const d = new Date();
+    d.setHours(0, 0, 0, 0);
+    setToday(d.toISOString().split("T")[0]);
+  }, []);
   const validateForm = () => {
     const fieldLabels = {
       event_title: "Event Title",
@@ -130,7 +140,7 @@ export default function CreateEvent() {
       event_time: "Clock",
       category: "Category",
       venue_id: "Venue",
-      organizer_id: "Orgaizor",
+      organizer_id: "Organizer",
     };
 
     const requiredFields = Object.keys(fieldLabels);
@@ -141,13 +151,23 @@ export default function CreateEvent() {
       }
     }
 
+    const selectedDate = new Date(formData.event_date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (selectedDate < today) {
+      return "Event date cannot be in the past.";
+    }
+
     if (images.length === 0) {
       return "At least one PNG must be uploaded";
     }
 
     return null;
   };
+
   const handleContinue = () => {
+    setError(null);
     const errorMessage = validateForm();
     if (errorMessage) {
       setError(errorMessage);
@@ -202,6 +222,7 @@ export default function CreateEvent() {
             <TextField
               label="Event Title"
               name="event_title"
+              inputProps={{ maxLength: 100 }}
               value={formData.event_title}
               onChange={handleChange}
               required
@@ -210,6 +231,7 @@ export default function CreateEvent() {
             <TextField
               label="Description"
               name="description"
+              inputProps={{ maxLength: 500 }}
               value={formData.description}
               onChange={handleChange}
               required
@@ -223,6 +245,7 @@ export default function CreateEvent() {
               type="date"
               value={formData.event_date}
               onChange={handleChange}
+              inputProps={{ min: today }}
               InputLabelProps={{ shrink: true }}
               required
               fullWidth
@@ -286,6 +309,7 @@ export default function CreateEvent() {
             <TextField
               label="Regulations"
               name="regulations"
+              inputProps={{ maxLength: 300 }}
               value={formData.regulations}
               onChange={handleChange}
               multiline
@@ -329,6 +353,7 @@ export default function CreateEvent() {
                   : "Choose File"}
                 <input
                   hidden
+                  ref={fileInputRef}
                   type="file"
                   accept="image/png"
                   multiple

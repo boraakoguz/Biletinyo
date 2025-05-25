@@ -1,7 +1,5 @@
-// API service utility for handling authenticated requests
 const API_BASE_URL = 'http://localhost:8080/api';
 
-// Generic fetch function with authentication
 const fetchWithAuth = async (endpoint, options = {}) => {
   const token = localStorage.getItem('token');
   
@@ -10,7 +8,6 @@ const fetchWithAuth = async (endpoint, options = {}) => {
     ...options.headers,
   };
   
-  // Add authorization header if token exists
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
@@ -22,7 +19,6 @@ const fetchWithAuth = async (endpoint, options = {}) => {
   
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
   
-  // Handle unauthorized errors (token expired, invalid)
   if (response.status === 401) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -440,6 +436,15 @@ export const apiService = {
     });
     return await res.json();
   },
+
+  getOrganizerTicketCount: async (organizerId) => {
+    const res = await fetch(`${API_BASE_URL}/users/organizer/${organizerId}/ticket_count`, {
+      method: "GET",
+      headers: { "Content-Type": "application/json" },
+    });
+    return await res.json();
+  },
+  
 }; 
 
 

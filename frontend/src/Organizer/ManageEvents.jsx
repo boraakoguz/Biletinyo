@@ -82,7 +82,6 @@ const ManageEvents = () => {
 
   return (
     <>
-      {/* GLOBAL HEADER */}
       <AppBar position="static" color="primary" elevation={4}>
         <Toolbar sx={{ justifyContent: "space-between", flexWrap: "wrap" }}>
           <Typography
@@ -100,7 +99,6 @@ const ManageEvents = () => {
         </Toolbar>
       </AppBar>
 
-      {/* İÇERİK */}
       <Container sx={{ mt: 4, mb: 6 }}>
         <Typography variant="h4" gutterBottom>
           My Events
@@ -118,8 +116,6 @@ const ManageEvents = () => {
                   <Typography variant="body2" color="text.secondary">
                     {evt.venue_name}, {evt.location}
                   </Typography>
-
-                  {/* Doluluk oranı göstergesi */}
                   <Box sx={{ mt: 1 }}>
                     <Chip
                       label={`${evt.occupied} / ${evt.capacity} fullness`}
