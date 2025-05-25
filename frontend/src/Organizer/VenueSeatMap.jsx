@@ -72,34 +72,40 @@ export default function VenueSeatMap() {
             <Typography variant="body2">Unavailable</Typography>
           </Box>
         </Box>
-        <Paper sx={{ p: 3, mt: 2, overflowX: "auto" }}>
-          <Grid container direction="column" spacing={1}>
-            {seatMap.map((row, rowIdx) => (
-              <Grid
-                container
-                item
-                key={rowIdx}
-                spacing={1}
-                justifyContent="center"
-                alignItems="center"
-              >
-                {row.map((seat, colIdx) => (
-                  <Grid item key={`${rowIdx}-${colIdx}`}>
-                    <Box
-                      onClick={() => toggleSeat(rowIdx, colIdx)}
-                      sx={{
-                        width: 40,
-                        height: 40,
-                        bgcolor: seat === 1 ? "#1976d2" : "#ccc",
-                        borderRadius: 1,
-                        cursor: "pointer",
-                      }}
-                    />
-                  </Grid>
-                ))}
-              </Grid>
-            ))}
-          </Grid>
+        <Paper
+          sx={{
+            p: 3,
+            mt: 2,
+            maxHeight: 500,
+            maxWidth: 1,
+            overflow: "auto",
+          }}
+        >
+          <Box
+            sx={{
+              display: "grid",
+              gridTemplateColumns: `repeat(${cols}, 40px)`,
+              gridAutoRows: "40px",
+              gap: 1,
+              justifyContent: "center",
+            }}
+          >
+            {seatMap.map((row, rIdx) =>
+              row.map((seat, cIdx) => (
+                <Box
+                  key={`${rIdx}-${cIdx}`}
+                  onClick={() => toggleSeat(rIdx, cIdx)}
+                  sx={{
+                    width: 40,
+                    height: 40,
+                    bgcolor: seat ? "#1976d2" : "#ccc",
+                    borderRadius: 1,
+                    cursor: "pointer",
+                  }}
+                />
+              ))
+            )}
+          </Box>
         </Paper>
 
         <Box textAlign="right" mt={3}>
