@@ -264,6 +264,7 @@ export default function CommentPage() {
 
                 <TextField
                   fullWidth
+                  inputProps={{ maxLength: 30 }}
                   value={newTitle}
                   onChange={(e) => setNewTitle(e.target.value)}
                   placeholder="Title"
@@ -276,6 +277,7 @@ export default function CommentPage() {
                 />
 
                 <TextField
+                  inputProps={{ maxLength: 100 }}
                   multiline
                   minRows={5}
                   fullWidth

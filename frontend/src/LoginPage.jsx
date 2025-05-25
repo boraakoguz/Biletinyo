@@ -113,6 +113,7 @@ function LoginPage() {
               required
               onChange={(e) => setEmail(e.target.value)}
               value={email}
+              inputProps={{ maxLength: 30 }}
             />
             <TextField
               label="Password"
@@ -121,6 +122,7 @@ function LoginPage() {
               required
               onChange={(e) => setPassword(e.target.value)}
               value={password}
+              inputProps={{ maxLength: 30 }}
             />
             <Button
               type="submit"

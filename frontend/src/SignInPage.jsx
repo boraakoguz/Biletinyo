@@ -202,6 +202,7 @@ function SignInPage() {
               required
               onChange={handleChange}
               value={formData.name}
+              inputProps={{ maxLength: 30 }}
             />
             <TextField
               label="Surname"
@@ -210,6 +211,7 @@ function SignInPage() {
               required
               onChange={handleChange}
               value={formData.surname}
+              inputProps={{ maxLength: 30 }}
             />
             <TextField
               label="E‑Mail"
@@ -219,6 +221,7 @@ function SignInPage() {
               required
               onChange={handleChange}
               value={formData.email}
+              inputProps={{ maxLength: 30 }}
             />
             <Box sx={{ display: "flex", gap: 1 }}>
               <FormControl sx={{ minWidth: 110, flexShrink: 0 }} required>
@@ -248,6 +251,10 @@ function SignInPage() {
                 error={!!phoneError}
                 helperText={phoneError}
                 variant="outlined"
+                inputProps={{
+                    maxLength: 14,
+                    inputMode: "integer",
+                  }}
               />
             </Box>
             <TextField
@@ -257,7 +264,7 @@ function SignInPage() {
               name="birthDate"
               label="Birth Date"
               InputLabelProps={{ shrink: true }}
-              inputProps={{ max: '9999-12-31' }}
+              inputProps={{min: "1900-01-01", max: new Date().toISOString().split("T")[0] }}
               value={formData.birthDate}
               onChange={handleChange}
               required
@@ -271,6 +278,7 @@ function SignInPage() {
                 required
                 onChange={handleChange}
                 value={formData.organization}
+                inputProps={{ maxLength: 50 }}
               />
             )}
             <TextField
@@ -281,6 +289,7 @@ function SignInPage() {
               required
               onChange={handleChange}
               value={formData.password}
+              inputProps={{ maxLength: 30 }}
             />
             <TextField
               label="Confirm Password"
@@ -292,6 +301,7 @@ function SignInPage() {
               value={confirmPassword}
               error={!!passwordError}
               helperText={passwordError}
+              inputProps={{ maxLength: 30 }}
             />
             <Button
               type="submit"
@@ -301,7 +311,7 @@ function SignInPage() {
               sx={{ mt: 1 }}
               disabled={loading}
             >
-              REGISTER
+              Register
             </Button>
             <Button
               type="button"

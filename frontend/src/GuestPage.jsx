@@ -89,6 +89,7 @@ function GuestPage() {
         <TextField
           label="Name"
           size="small"
+          inputProps={{ maxLength: 30 }}
           fullWidth
           value={guestData[i]?.name || ""}
           onChange={(e) => handleChange(i, "name", e.target.value)}
@@ -96,13 +97,20 @@ function GuestPage() {
         <TextField
           label="Mail"
           size="small"
+          type="email"
+          required
+          inputProps={{ maxLength: 30 }}
           fullWidth
-          value={guestData[i]?.mail || ""}
+          value={guestData[i]?.mail}
           onChange={(e) => handleChange(i, "mail", e.target.value)}
         />
         <TextField
           label="Contact Number"
           size="small"
+          inputProps={{
+                    maxLength: 14,
+                    inputMode: "integer",
+                  }}
           fullWidth
           value={guestData[i]?.contact || ""}
           onChange={(e) => handleChange(i, "contact", e.target.value)}
@@ -113,7 +121,7 @@ function GuestPage() {
           size="small"
           fullWidth
           InputLabelProps={{ shrink: true }}
-          inputProps={{ max: today }}
+          inputProps={{min: "1900-01-01", max: new Date().toISOString().split("T")[0] }}
           value={guestData[i]?.birth_date || ""}
           onChange={(e) => handleChange(i, "birth_date", e.target.value)}
         />

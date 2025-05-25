@@ -263,6 +263,7 @@ function MainPage() {
               variant="outlined"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              inputProps={{ maxLength: 100 }}
               placeholder={
                 tab === 0
                   ? "Search events, venues or artists…"
