@@ -100,6 +100,24 @@ export const apiService = {
     return res.json();
   },
 
+  updateEventPrices: async (eventId, prices) => {
+    const res = await fetch(`http://localhost:8080/api/events/${eventId}`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        default_ticket_price: prices.cat1,
+        vip_ticket_price: prices.cat2,
+        premium_ticket_price: prices.cat3,
+      }),
+    });
+    if (!res.ok) {
+      throw new Error("Failed to update prices");
+    }
+    return res.json();
+  },
+
   createEvent: async (eventData) => {
     const res = await fetchWithAuth('/events/', {
       method: 'POST',
@@ -135,6 +153,8 @@ export const apiService = {
     if (!res.ok) throw new Error("Failed to fetch users");
     return res.json();
   },
+
+
 
   getEventsByOrganizer: async (organizerId) => {
     const res = await fetch(`${API_BASE_URL}/events/?organizer_id=${organizerId}`);
@@ -263,6 +283,12 @@ export const apiService = {
     }
   
     return res.text();
+  },
+
+  getPendingVenueCount: async () => {
+    const res = await fetch("http://localhost:8080/api/venues/request/count");
+    if (!res.ok) throw new Error("Failed to fetch count");
+    return res.json();
   },
 
   acceptVenueRequest: async (venueId) => {

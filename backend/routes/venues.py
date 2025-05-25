@@ -124,6 +124,24 @@ def get_requested_venues():
         if conn:
             db_pool.putconn(conn)
 
+@bp.route("/request/count", methods=["GET"])
+def get_requested_venue_count():
+    conn = None
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT COUNT(*) FROM venue
+                WHERE available = %s;
+            """, (definitions.VENUE_REQUEST,))
+            count = cur.fetchone()[0]
+        return jsonify({"count": count}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    finally:
+        if conn:
+            db_pool.putconn(conn)
+
 @bp.route("/<int:venue_id>", methods=["GET"])
 def get_venue_by_id(venue_id):
     conn = None

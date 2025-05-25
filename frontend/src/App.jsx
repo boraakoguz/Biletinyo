@@ -23,22 +23,23 @@ import OrganizerPage from "./OrganizerPage";
 import VenueRequest from "./Organizer/VenueRequest";
 import VenueSeatMap from "./Organizer/VenueSeatMap";
 import ConfigureSeating from "./Organizer/ConfigureSeating";
-import AdminDashboard from "./Admin/AdminDashboard"; 
+import AdminDashboard from "./Admin/AdminDashboard";
 import AdminVenueManagement from "./Admin/VenueManagement";
-import AdminAddVenue        from "./Admin/AdminAddVenue";
+import AdminAddVenue from "./Admin/AdminAddVenue";
 import AdminEditSeatingConfig from "./Admin/AdminEditSeatingConfig";
 import AdminPendingEvents from "./Admin/AdminPendingEvents";
-import AdminUserManagement  from "./Admin/UserManagement";
-import AdminReports           from "./Admin/AdminReports";
-import AdminPayments        from "./Admin/AdminPayments";
-
+import AdminUserManagement from "./Admin/UserManagement";
+import AdminReports from "./Admin/AdminReports";
+import AdminPayments from "./Admin/AdminPayments";
+import AdminVenueSeatMap from "./Admin/AdminVenueSeatMap";
+import HomeRedirect from "./HomeRedirect";
 
 function App() {
   return (
     <BrowserRouter>
       <Routes>
         {/* Public Routes */}
-        <Route path="/" element={<MainPage />} />
+        <Route path="/" element={<HomeRedirect />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/signin" element={<SignInPage />} />
         <Route path="/event/:id" element={<EventPage />} />
@@ -70,10 +71,7 @@ function App() {
             </AuthRoute>
           }
         />
-        <Route
-          path="/tickets/group"
-          element={<GroupedTicketsPage />}
-        />
+        <Route path="/tickets/group" element={<GroupedTicketsPage />} />
         <Route
           path="/event/:id/payment"
           element={
@@ -206,8 +204,8 @@ function App() {
             </AuthRoute>
           }
         />
-               
-       <Route
+
+        <Route
           path="/admin/venues/new"
           element={
             <AuthRoute requireAdmin={true}>
@@ -215,8 +213,16 @@ function App() {
             </AuthRoute>
           }
         />
+        <Route
+          path="/admin/venues/new/seatmap"
+          element={
+            <AuthRoute requireAdmin={true}>
+              <AdminVenueSeatMap />
+            </AuthRoute>
+          }
+        />
 
-       <Route
+        <Route
           path="/admin/venues/:id/edit"
           element={
             <AuthRoute requireAdmin={true}>
@@ -233,7 +239,7 @@ function App() {
             </AuthRoute>
           }
         />
-         <Route
+        <Route
           path="/admin/users"
           element={
             <AuthRoute requireAdmin={true}>
@@ -243,23 +249,22 @@ function App() {
         />
 
         <Route
-        path="/admin/reports"
-        element={
-          <AuthRoute requireAdmin={true}>
-            <AdminReports />
-         </AuthRoute>
-        }
-      />
+          path="/admin/reports"
+          element={
+            <AuthRoute requireAdmin={true}>
+              <AdminReports />
+            </AuthRoute>
+          }
+        />
 
-      <Route
-        path="/admin/payments"
-        element={
-          <AuthRoute requireAdmin={true}>
-            <AdminPayments />
-          </AuthRoute>
-        }
-      />
-
+        <Route
+          path="/admin/payments"
+          element={
+            <AuthRoute requireAdmin={true}>
+              <AdminPayments />
+            </AuthRoute>
+          }
+        />
       </Routes>
     </BrowserRouter>
   );

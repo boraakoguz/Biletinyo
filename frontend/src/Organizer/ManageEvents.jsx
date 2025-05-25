@@ -97,36 +97,19 @@ const ManageEvents = () => {
           >
             Biletinyo
           </Typography>
-          <Box sx={{ flexGrow: 1, maxWidth: 400, mx: 2 }}>
-            <TextField
-              fullWidth
-              size="small"
-              placeholder="Etkinlik veya lokasyon ara..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              sx={{
-                backgroundColor: "white",
-                borderRadius: 3,
-                "& .MuiOutlinedInput-root fieldset": {
-                  border: "none",
-                },
-              }}
-            />
-          </Box>
+
           <Button
             variant="contained"
             color="secondary"
             onClick={() => navigate("/organizer/events/new")}
-          >
-            + Yeni Etkinlik
-          </Button>
+          ></Button>
         </Toolbar>
       </AppBar>
 
       {/* İÇERİK */}
       <Container sx={{ mt: 4, mb: 6 }}>
         <Typography variant="h4" gutterBottom>
-          Etkinliklerim
+          My Events
         </Typography>
 
         <Grid container spacing={3}>
@@ -162,21 +145,14 @@ const ManageEvents = () => {
                 >
                   <Button
                     size="small"
-                    variant="contained"
-                    onClick={() =>
-                      navigate(`/organizer/events/${evt.event_id}`)
-                    }
-                  >
-                    Yönet
-                  </Button>
-                  <Button
-                    size="small"
                     variant="outlined"
                     onClick={() =>
-                      navigate(`/organizer/events/${evt.event_id}/categories`)
+                      navigate(`/organizer/events/${evt.event_id}/categories`, {
+                        state: { event_id: evt.event_id },
+                      })
                     }
                   >
-                    Kategorileri Düzenle
+                    Change Prices
                   </Button>
                 </Stack>
               </Card>
@@ -185,7 +161,7 @@ const ManageEvents = () => {
 
           {filtered.length === 0 && (
             <Typography color="text.secondary" sx={{ m: 4 }}>
-              Gösterilecek etkinlik yok.
+              No events !
             </Typography>
           )}
         </Grid>
