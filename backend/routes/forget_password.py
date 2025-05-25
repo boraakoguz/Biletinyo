@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from database import db_pool
 import bcrypt
 import definitions
-from routes.mail import Mail
+from routes.mail import EmailService
 import secrets
 import datetime
 
@@ -33,7 +33,7 @@ def forgot_password():
                           expires_at = EXCLUDED.expires_at;
                 """, (user_id, token, expires))
                 conn.commit()
-                Mail.send_password_reset_email(email, name, token)
+                EmailService.send_password_reset_email(email, name, token)
     except Exception as e:
         if conn:
             conn.rollback()

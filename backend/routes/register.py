@@ -2,7 +2,7 @@ from flask import Blueprint, jsonify, request
 from database import db_pool
 import bcrypt
 import definitions
-from routes.mail import Mail
+from routes.mail import EmailService
 import secrets
 
 bp = Blueprint("register", __name__)
@@ -45,7 +45,7 @@ def register():
                 
             conn.commit()
         
-        Mail.send_welcome_email(email, name)
+        EmailService.send_welcome_email(email, name)
         return jsonify({"Success": "User Created"}), 200
 
     except Exception as e:

@@ -1,8 +1,9 @@
 from flask_mail import Message, Mail
+from flask import current_app
 
 mail = Mail()
 
-class Mail:
+class EmailService:
     @staticmethod
     def send_welcome_email(email, name):
         msg = Message(
@@ -11,6 +12,7 @@ class Mail:
         )
         msg.body = f"Hi {name},\n\nThanks for signing up!"
         msg.html = f"<p>Hi {name},</p><p>Welcome to Biletinyo!</p>"
+
         mail.send(msg)
     
     @staticmethod
