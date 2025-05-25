@@ -225,6 +225,11 @@ export default function PaymentPage() {
             <Button variant="contained" size="large" onClick={handlePurchase}>
               Confirm Payment
             </Button>
+            {method === "Wallet" && balance < totalPrice && (
+            <Typography color="error" sx={{ mt: 1 }}>
+              Your account balance is insufficient.
+            </Typography>
+            )}
           </Box>
         </Card>
       </Box>
