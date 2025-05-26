@@ -200,6 +200,27 @@ CREATE TRIGGER log_ticket_sale_trigger
   FOR EACH ROW
   EXECUTE FUNCTION log_ticket_sale();
 
+CREATE OR REPLACE VIEW user_view AS
+SELECT
+  u.user_id,
+  u.name,
+  u.email,
+  u.user_type,
+  CASE
+    WHEN u.user_type = 0 THEN 'attendee'
+    WHEN u.user_type = 1 THEN 'organizer'
+    WHEN u.user_type = 2 THEN 'admin'
+    ELSE 'unknown'
+  END AS user_role,
+  a.attended_event_count,
+  a.account_balance,
+  o.organization_name,
+  u.phone,
+  u.birth_date
+FROM users u
+LEFT JOIN attendee a ON a.user_id = u.user_id
+LEFT JOIN organizer o ON o.user_id = u.user_id;
+
 INSERT INTO users (name, email, password, user_type, phone, birth_date) VALUES
 ('User user', 'user@user.com', '$2b$12$KKprei.9FfMVomfUWlYYAu8icc7TS58KesyN11GQpI.2eYteMWUXC', 0, '555-1234', '1995-06-15'),
 ('Organizer Organizer', 'org@org.com', '$2b$12$Srau6Ny7nGQQQ1tHeiBfUOsuinZZOdyplF2c831mVqlUgFqcetwmq', 1, '555-5678', '2000-06-15'),

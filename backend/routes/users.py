@@ -317,3 +317,61 @@ def get_organizer_sold_ticket_count(organizer_id):
     finally:
         if conn:
             db_pool.putconn(conn)
+    
+@bp.route("/profiles", methods=["GET"])
+def get_user_profiles():
+    conn = None
+    try:
+        conn = db_pool.getconn()
+        with conn.cursor() as cur:
+            cur.execute("""
+                SELECT
+                  user_id,
+                  name,
+                  email,
+                  user_type,
+                  user_role,
+                  attended_event_count,
+                  account_balance,
+                  organization_name,
+                  phone,
+                  birth_date
+                FROM user_view;
+            """)
+            rows = cur.fetchall()
+
+        result = []
+        for (
+            user_id,
+            name,
+            email,
+            user_type,
+            user_role,
+            attended_event_count,
+            account_balance,
+            organization_name,
+            phone,
+            birth_date
+        ) in rows:
+            profile = {
+                "user_id": user_id,
+                "name": name,
+                "email": email,
+                "user_type": user_type,
+                "user_role": user_role,
+                "attended_event_count": attended_event_count,
+                "account_balance": float(account_balance) if account_balance is not None else None,
+                "organization_name": organization_name,
+                "phone": phone,
+                "birth_date": birth_date.isoformat() if birth_date else None
+            }
+            result.append(profile)
+
+        return jsonify(result), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+    finally:
+        if conn:
+            db_pool.putconn(conn)
