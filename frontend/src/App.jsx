@@ -26,6 +26,7 @@ import AdminPayments from "./Admin/AdminPayments";
 import ForgotPassword from "./ForgotPassword";
 import AdminVenueSeatMap from "./Admin/AdminVenueSeatMap";
 import HomeRedirect from "./HomeRedirect";
+import AdminViewProfile from "./Admin/AdminViewProfiles";
 
 function App() {
   return (
@@ -179,6 +180,14 @@ function App() {
           element={
             <AuthRoute requireAdmin={true}>
               <AdminVenueSeatMap />
+            </AuthRoute>
+          }
+        />
+        <Route
+          path="/admin/profile"
+          element={
+            <AuthRoute requireAdmin={true}>
+              <AdminViewProfile />
             </AuthRoute>
           }
         />

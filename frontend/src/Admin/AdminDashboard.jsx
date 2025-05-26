@@ -193,6 +193,10 @@ const AdminDashboard = () => {
               icon: <PaymentIcon fontSize="large" />,
               to: "/admin/payments",
             },
+            {
+              label: "View Profiles",
+              to: "/admin/profile",
+            },
           ].map((sec) => (
             <Grid item xs={12} sm={6} md={4} key={sec.label}>
               <Card
