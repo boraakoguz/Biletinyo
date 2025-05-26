@@ -1,6 +1,12 @@
 # Biletinyo
 A full-stack event ticket marketplace built with Flask, React, and PostgreSQL
 
+## Example User Information for testing (email/password)
+
+Attendee Account:   user@user.com     / user
+Organizer Account:  org@org.com       / org
+Admin Account:      admin@admin.com   / admin
+
 ## Steps to Run Project
 1. Make sure Docker Desktop and Docker Compose is installed on your machine
     
@@ -32,3 +38,4 @@ frontend-1  |   ➜  Local:   http://localhost:5173/
 frontend-1  |   ➜  Network: http://172.18.0.3:5173/
 ```
 You can view the project via the link given in Local. Defaults to http://localhost:5173/
+
