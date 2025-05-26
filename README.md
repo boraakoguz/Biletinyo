@@ -3,9 +3,11 @@ A full-stack event ticket marketplace built with Flask, React, and PostgreSQL
 
 ## Example User Information for testing (email/password)
 
-Attendee Account:   user@user.com     / user
-Organizer Account:  org@org.com       / org
-Admin Account:      admin@admin.com   / admin
+- **Attendee Account:** `user@user.com` / `user`
+
+- **Organizer Account:** `org@org.com` / `org`
+
+- **Admin Account:** `admin@admin.com` / `admin`
 
 ## Steps to Run Project
 1. Make sure Docker Desktop and Docker Compose is installed on your machine
