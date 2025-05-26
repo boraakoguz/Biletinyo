@@ -66,7 +66,7 @@ export default function AdminPayments() {
           {payloads.map((p, idx) => (
             <Card key={idx} sx={{ boxShadow: 2 }}>
               <CardContent>
-                <Typography variant="h6">Ticket #{p.payment_id}</Typography>
+                <Typography variant="h6">Payment #{p.payment_id}</Typography>
                 <Divider sx={{ my: 1 }} />
                 <Typography>
                   <strong>Amount:</strong> {p.amount} ₺
