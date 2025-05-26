@@ -237,10 +237,16 @@ function EventPage() {
           <Box sx={{ position: "relative" }}>
             <CardMedia
               component="img"
-              height="300"
               image={imageSrc}
               alt={event.event_title}
-              sx={{ objectFit: "cover", width: "100%" }}
+              sx={{
+                width: "100%",
+                height: "auto",
+                maxHeight: 400,
+                objectFit: "contain",
+                borderBottom: "1px solid #ccc",
+                backgroundColor: "#f5f5f5",
+              }}
             />
             {imageUrls.length > 1 && (
               <Box

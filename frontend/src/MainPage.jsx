@@ -484,7 +484,13 @@ function MainPage() {
                         event.image_urls?.[0] || "/api/images/default.png"
                       }`}
                       alt={event.title}
-                      sx={{ height: 180, objectFit: "cover" }}
+                      sx={{
+                        width: "100%",
+                        height: 180,
+                        objectFit: "contain",
+                        backgroundColor: "#f5f5f5",
+                        borderBottom: "1px solid #ddd",
+                      }}
                     />
                     <CardContent sx={{ flexGrow: 1 }}>
                       <Typography variant="h6">{event.event_title}</Typography>
@@ -561,7 +567,13 @@ function MainPage() {
                               event.image_urls?.[0] || "/api/images/default.png"
                             }`}
                             alt={event.title}
-                            sx={{ height: 180, objectFit: "cover" }}
+                            sx={{
+                              width: "100%",
+                              height: 180,
+                              objectFit: "contain",
+                              backgroundColor: "#f5f5f5",
+                              borderBottom: "1px solid #ddd",
+                            }}
                           />
                           <CardContent>
                             <Typography variant="h6">

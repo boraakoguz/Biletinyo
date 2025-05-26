@@ -204,7 +204,7 @@ export default function AdminVenueManagement() {
                   >
                     <Typography variant="h6">{v.venue_name}</Typography>
                     <Chip
-                      label={v.status === "pending" ? "Bekliyor" : "Onaylandı"}
+                      label={v.status === "pending" ? "Waiting" : "Accepted"}
                       color={v.status === "pending" ? "warning" : "success"}
                       size="small"
                     />

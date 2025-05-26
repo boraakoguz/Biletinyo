@@ -136,11 +136,17 @@ export default function OrganizerPage() {
             <Box>
               <CardMedia
                 component="img"
-                sx={{ height: 150, objectFit: "cover" }}
                 image={`http://localhost:8080${
                   ev.image_urls?.[0] || "/api/images/default.png"
                 }`}
                 alt={ev.event_title}
+                sx={{
+                  width: "100%",
+                  height: 150,
+                  objectFit: "contain",
+                  backgroundColor: "#f5f5f5",
+                  borderBottom: "1px solid #eee",
+                }}
               />
               <CardContent>
                 <Typography fontWeight={600}>{ev.event_title}</Typography>
@@ -154,11 +160,17 @@ export default function OrganizerPage() {
             <CardActionArea onClick={() => navigate(`/event/${ev.event_id}`)}>
               <CardMedia
                 component="img"
-                sx={{ height: 150, objectFit: "cover" }}
                 image={`http://localhost:8080${
                   ev.image_urls?.[0] || "/api/images/default.png"
                 }`}
                 alt={ev.event_title}
+                sx={{
+                  width: "100%",
+                  height: 150,
+                  objectFit: "contain",
+                  backgroundColor: "#f5f5f5",
+                  borderBottom: "1px solid #eee",
+                }}
               />
               <CardContent>
                 <Typography fontWeight={600}>{ev.event_title}</Typography>
