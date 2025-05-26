@@ -74,17 +74,28 @@ CREATE TABLE event (
     FOREIGN KEY (venue_id) REFERENCES venue(venue_id)
 );
 
+CREATE TABLE daily_revenue (
+  rev_date    DATE        PRIMARY KEY,
+  total_amount NUMERIC(12,2) NOT NULL DEFAULT 0.00
+);
+
+CREATE TABLE payment(
+    payment_id			SERIAL PRIMARY KEY,
+    attendee_id         INT NOT NULL,
+
+    payment_amount		DECIMAL(10,2) NOT NULL, 
+    payment_method		VARCHAR(50),
+    payment_date		DATE,
+    FOREIGN KEY (attendee_id) REFERENCES attendee(user_id),
+    FOREIGN KEY (payment_date) REFERENCES daily_revenue(rev_date)
+);
+
 CREATE TABLE report (
     report_id               SERIAL PRIMARY KEY,
   
     report_name    VARCHAR(100) NOT NULL DEFAULT 'generic_report',
     generated_at   TIMESTAMP WITH TIME ZONE DEFAULT now(),
     payload        JSONB
-);
-
-CREATE TABLE daily_revenue (
-  rev_date    DATE        PRIMARY KEY,
-  total_amount NUMERIC(12,2) NOT NULL DEFAULT 0.00
 );
 
 CREATE TABLE comment(
@@ -99,16 +110,6 @@ CREATE TABLE comment(
 
     FOREIGN KEY (attendee_id) REFERENCES attendee(user_id),
     FOREIGN KEY (event_id) REFERENCES event(event_id)
-);
-
-CREATE TABLE payment(
-    payment_id			SERIAL PRIMARY KEY,
-    attendee_id         INT NOT NULL,
-
-    payment_amount		DECIMAL(10,2) NOT NULL, 
-    payment_method		VARCHAR(50),
-    payment_date		DATE,
-    FOREIGN KEY (attendee_id) REFERENCES attendee(user_id)
 );
 
 CREATE TABLE ticket (
@@ -170,7 +171,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE TRIGGER update_daily_revenue_trigger
-  AFTER INSERT ON payment
+  BEFORE INSERT ON payment
   FOR EACH ROW
   EXECUTE FUNCTION update_daily_revenue();
 
